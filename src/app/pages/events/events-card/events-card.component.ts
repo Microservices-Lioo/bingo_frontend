@@ -1,0 +1,73 @@
+import { Component, input } from '@angular/core';
+import { EventModel } from '../../../models';
+import { CommonModule } from '@angular/common';
+import { BtnPrimaryComponent } from "../../../components/btn-primary/btn-primary.component";
+
+@Component({
+  selector: 'app-events-card',
+  imports: [CommonModule, BtnPrimaryComponent],
+  template: `
+    <div
+      class="bg-card shadow-md border rounded-xl p-6 flex flex-col gap-6 relative"
+    >
+      <div class="mx-auto" >
+        <img src="favicon.ico" alt="" class="w-[200px] h-[100px] object-contain">
+        <div class="flex flex-col mt-2">
+          <span class="text-md font-bold">{{ event().name }}</span>
+          <span class="text-sm">{{ event().description }}</span>
+          <div class="flex justify-start mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v12m3-8.5C15 8.12 13.657 7 12 7S9 8.12 9 9.5s1.343 2.5 3 2.5s3 1.12 3 2.5s-1.343 2.5-3 2.5s-3-1.12-3-2.5"/></g></svg>
+            <span class="text-sm px-2">{{ event().val_cart }}</span>
+          </div>
+          <div class="flex justify-start mt-1">            
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="13" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4l2.5 2.5m-11-11l4-2.5m13 2.5l-4-2.5"/></g></svg>
+            <span class="text-sm px-2">{{  event().start_time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>            
+          </div>
+          @if ( event().status == 'active' ) {
+            <app-btn-primary label="Jugar" class="mt-3"/>
+          } @else {
+            @if ( event().status == 'scheduled' ) {
+              <app-btn-primary label="Comprar Cartón" class="mt-3"/>
+            }
+          }
+
+          <div class="absolute top-2 right-3 text-sm font-bold">
+            @if ( event().status == 'active' && compareToDate(event().start_time)) {
+              <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Ahora</span>
+            }
+            @if ( event().status == 'active' && isToday(event().start_time)) {
+              <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Hoy</span>
+            }
+            @if ( event().status == 'scheduled' ) {
+              <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Programada</span>
+            }
+            @if ( event().status == 'culminated' ) {
+              <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Culminada</span>
+            }
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: `
+    .bg-card {
+      background: var(--bg-third-color);
+    }
+  `
+})
+export class EventsCardComponent {
+
+  event = input.required<EventModel>();
+
+  compareToDate(date: Date): boolean {
+    const now = new Date();
+    return date <= now; 
+  }
+
+  isToday(date: Date): boolean {
+    const now = new Date();
+    return date > now;
+  }
+
+}
