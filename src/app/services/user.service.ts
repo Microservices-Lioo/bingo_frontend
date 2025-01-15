@@ -3,9 +3,10 @@ import { UserModel } from '../models';
 import { LoginInterface, RegisterInterface } from '../interfaces';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { BehaviorSubject, catchError, Observable } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { handleError } from '../errors';
 import { AuthInterface } from '../interfaces/auth';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,8 @@ export class UserService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) { }
 
   get currentUser(): UserModel {
@@ -37,10 +39,30 @@ export class UserService {
       .pipe(catchError(handleError));
   }
 
+  refreshToken(): Observable<string> {
+    const refresh_token = localStorage.getItem('refresh_token');
+
+    if ( !refresh_token ) {
+      this.logOut();
+      return throwError(() => handleError);
+    }
+
+    return this.http.post<{ refresh_token: string }>(`${this.url}refresh-token`, { refresh_token })
+    .pipe(
+      map(response => response.refresh_token ),
+      tap((newAccessToken: string) => {
+        localStorage.setItem('access_token', newAccessToken);
+      }),
+      catchError(error => {
+        this.logOut();
+        return throwError(() => error);
+      })
+    );
+  }
+
   logOut() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-    // this.currentUserSubject.next(null);
+    localStorage.clear();
+    this.currentUserSubject.complete();
+    this.router.navigate(['/', 'auth']);
   }
 }

@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { BtnPrimaryComponent } from "../btn-primary/btn-primary.component";
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { UserModel } from '../../models';
 import { Subscription } from 'rxjs';
@@ -76,7 +76,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private userServ: UserService,
-    private router: Router,
   ){}
 
   ngOnInit() {
@@ -99,7 +98,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.userServ.logOut();
     this.user = null;
     this.sesion = false;
-    this.router.navigate(['/', 'home']);
   }
 
 
