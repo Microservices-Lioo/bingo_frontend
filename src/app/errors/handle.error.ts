@@ -2,7 +2,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { throwError } from "rxjs";
 
 export function handleError(error: HttpErrorResponse) {
-    if (error.status === 0) {
+    if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
       console.error('An error occurred:', error.error);
     } else {

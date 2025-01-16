@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class UserService {
-  url: string = environment.apiUrl + 'auth/';
+  url: string = environment.apiUrl + 'auth';
   private currentUserSubject: BehaviorSubject<UserModel> = new BehaviorSubject({} as UserModel);
   currentUser$ = this.currentUserSubject.asObservable();
 
@@ -26,7 +26,7 @@ export class UserService {
   }
 
   login(loginInterface: LoginInterface): Observable<AuthInterface> {
-    return this.http.post<AuthInterface>(`${this.url}log-in`, loginInterface)
+    return this.http.post<AuthInterface>(`${this.url}/log-in`, loginInterface)
       .pipe(catchError(handleError));
   }
 
@@ -35,8 +35,13 @@ export class UserService {
   }
 
   register(registerInterface: RegisterInterface): Observable<AuthInterface> {
-    return this.http.post<AuthInterface>(`${this.url}sign-up`, registerInterface)
+    return this.http.post<AuthInterface>(`${this.url}/sign-up`, registerInterface)
       .pipe(catchError(handleError));
+  }
+
+  verifyToken(token: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.url}/verify-token`, { token })
+    .pipe(catchError(handleError));
   }
 
   refreshToken(): Observable<string> {
@@ -47,7 +52,7 @@ export class UserService {
       return throwError(() => handleError);
     }
 
-    return this.http.post<{ refresh_token: string }>(`${this.url}refresh-token`, { refresh_token })
+    return this.http.post<{ refresh_token: string }>(`${this.url}/refresh-token`, { refresh_token })
     .pipe(
       map(response => response.refresh_token ),
       tap((newAccessToken: string) => {

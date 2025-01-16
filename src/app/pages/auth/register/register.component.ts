@@ -1,46 +1,23 @@
 import { UserService } from './../../../services/user.service';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { BtnPrimaryComponent } from "../../../components/btn-primary/btn-primary.component";
 import { Router, RouterLink } from '@angular/router';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastService } from '../../../services/components/toast.service';
+import { CustomInputComponent } from '../../../components/custom-input/custom-input.component';
+
+export interface ItemForm {
+    name: FormControl<string>,
+    lastname: FormControl<string>,
+    email: FormControl<string>,
+    password: FormControl<string>
+}
 
 @Component({
     selector: 'app-register',
-    imports: [BtnPrimaryComponent, RouterLink, ReactiveFormsModule],
-    template: `
-    <div class="bg-container flex justify-center items-center  mt-[56px]">      
-
-    <div class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-[#14294a]">
-    <form class="space-y-4" [formGroup]="registerForm">
-        <h5 class="text-xl font-medium text-gray-900 dark:text-white">Registrarse</h5>
-        <div>
-            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
-            <input type="text" formControlName="name" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Tu nombre" required />
-        </div>
-        <div>
-            <label for="lastname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Apellidos</label>
-            <input type="text" formControlName="lastname" id="lastname" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Tu apellido" required />
-        </div>
-        <div>
-            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico</label>
-            <input type="email" formControlName="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="name@company.com" required />
-        </div>
-        <div>
-            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contraseña</label>
-            <input type="password" formControlName="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
-        </div>
-        <div class="mt-3"></div>
-        <app-btn-primary label="Crear" type="submit" [disabled]="!registerForm.valid" (btnCliked)="OnSubmit()" 
-        [loading]="loading"/>
-        <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
-            Ya tienes cuenta? <a routerLink="/auth" class="text-blue-700 hover:underline dark:text-blue-500">Entrar</a>
-        </div>
-    </form>
-</div>
-
-</div>
-  `,
+    standalone: true,
+    imports: [BtnPrimaryComponent, RouterLink, ReactiveFormsModule, CustomInputComponent],
+    templateUrl: './register.component.html',
     styles: `
     .bg-container {
       width: 100%;
@@ -55,26 +32,43 @@ import { ToastService } from '../../../services/components/toast.service';
 })
 export class RegisterComponent {
     loading: boolean = false;
-    registerForm: FormGroup;
 
+    fb = inject(NonNullableFormBuilder);
+
+    registerForm: FormGroup<ItemForm>;
     constructor(
         private userServ: UserService,
         private toastServ: ToastService,
         private router: Router
 
     ) {
-        this.registerForm = new FormGroup({
-            name: new FormControl('', [Validators.required]),
-            lastname: new FormControl('', [Validators.required]),
-            email: new FormControl('', [Validators.required, Validators.email]),
-            password: new FormControl('', [Validators.required, Validators.minLength(8)]),
+        this.registerForm = this.fb.group<ItemForm>({
+            name: this.fb.control('', { validators: [Validators.required] }),
+            lastname: this.fb.control('', { validators: [Validators.required] }),
+            email: this.fb.control('', { validators: [Validators.required, Validators.email] }),
+            password: this.fb.control('', { validators: [Validators.required, Validators.minLength(8)] }),
         });
     }
 
     OnSubmit() {
+        if (this.registerForm.invalid) {
+            console.log('Form is invalid:', this.registerForm.errors);
+            return;
+        }
+        this.loading = true;
+
+        const values = this.registerForm.value;
+        const registerData =
+        {
+            name: values.name ?? '',
+            lastname: values.lastname ?? '',
+            email: values.email ?? '',
+            password: values.password ?? ''
+        };
+
         if (this.registerForm.valid) {
             this.loading = true;
-            this.userServ.register(this.registerForm.value)
+            this.userServ.register(registerData)
                 .subscribe(
                     (values) => {
                         if (values && values.user && values.access_token && values.refresh_token) {
