@@ -1,11 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-btn-primary',
-  imports: [],
+  imports: [RouterLink],
   template: `
     <button class="bg-btn text-white w-full px-5 py-2 rounded-xl shadow-md hover:opacity-90"
     [disabled]="disabled"
+    [routerLink]="url"
     (click)="this.btnCliked.emit()" >
       @if (loading) {
         <svg aria-hidden="true" role="status" class="inline w-4 h-4 me-3 text-white animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,6 +27,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class BtnPrimaryComponent {
   @Input() label: string = '';
+  @Input() url: string = '';
   @Output() btnCliked = new EventEmitter<String>();
   @Input() disabled: boolean = false;
   @Input() loading: boolean = false;
