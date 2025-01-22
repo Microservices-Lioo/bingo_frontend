@@ -23,7 +23,7 @@ export class CustomInputComponent implements ControlValueAccessor {
   placeholder = input<string>('');
   control = input.required<FormControl<any>>();
   disabled = input<boolean>(false);
-
+  
   onTouched = () => { };
   onChange = (_value: any) => { };
 
