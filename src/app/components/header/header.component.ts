@@ -1,9 +1,9 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BtnPrimaryComponent } from "../btn-primary/btn-primary.component";
 import { RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { UserModel } from '../../models';
-import { Subscription } from 'rxjs';
+import { Dropdown } from 'flowbite';
 
 @Component({
   selector: 'app-header',
@@ -16,35 +16,25 @@ import { Subscription } from 'rxjs';
     }
   `
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
   sesion = false;
   user: UserModel | any = null;
-  private userSubscription: Subscription | undefined; 
 
-  constructor(
+  constructor(  
     private userServ: UserService,
+    private cdRef: ChangeDetectorRef
   ){}
 
   ngOnInit() {
-    this.userSubscription = this.userServ.currentUser$.subscribe(user => {
-      if (localStorage.getItem('user') && localStorage.getItem('access_token')
-        && localStorage.getItem('refresh_token')) {
-        this.sesion = true;
-        this.user = JSON.parse(localStorage.getItem('user')!);
-      }
-    });    
-  }
-
-  ngOnDestroy() {
-    if ( this.userSubscription ) {
-      this.userSubscription.unsubscribe();
-    }
+    this.userServ.isLoggedIn$.subscribe(value => {
+      this.sesion = value;
+      this.user = this.userServ.currentUser;
+    });
   }
 
   logOut() {
     this.userServ.logOut();
     this.user = null;
-    this.sesion = false;
   }
 
 
