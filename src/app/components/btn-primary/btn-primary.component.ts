@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <button class="bg-btn text-white w-full px-5 py-2 rounded-xl shadow-md hover:opacity-90"
+    [type]="type"
     [disabled]="disabled"
     [routerLink]="url"
     (click)="this.btnCliked.emit()" >
@@ -27,7 +28,8 @@ import { RouterLink } from '@angular/router';
 })
 export class BtnPrimaryComponent {
   @Input() label: string = '';
-  @Input() url: string = '';
+  @Input() type: 'button' | 'submit' = 'button';
+  @Input() url: string | undefined;
   @Output() btnCliked = new EventEmitter<String>();
   @Input() disabled: boolean = false;
   @Input() loading: boolean = false;

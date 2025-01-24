@@ -1,9 +1,8 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BtnPrimaryComponent } from "../btn-primary/btn-primary.component";
 import { RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
-import { UserModel } from '../../models';
-import { Dropdown } from 'flowbite';
+import { UserInterface } from '../../interfaces';
 
 @Component({
   selector: 'app-header',
@@ -18,11 +17,10 @@ import { Dropdown } from 'flowbite';
 })
 export class HeaderComponent implements OnInit {
   sesion = false;
-  user: UserModel | any = null;
+  user: UserInterface | any = null;
 
   constructor(  
     private userServ: UserService,
-    private cdRef: ChangeDetectorRef
   ){}
 
   ngOnInit() {
@@ -36,6 +34,5 @@ export class HeaderComponent implements OnInit {
     this.userServ.logOut();
     this.user = null;
   }
-
 
 }
