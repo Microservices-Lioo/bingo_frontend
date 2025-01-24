@@ -1,3 +1,4 @@
+import { catchError, of, switchMap } from 'rxjs';
 import { Component, inject, OnInit } from '@angular/core';
 import { CustomInputComponent } from '../../../components/custom-input/custom-input.component';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +11,6 @@ import { Router } from '@angular/router';
 export interface ItemForm {
   name: FormControl<string>,
   lastname: FormControl<string>,
-  email: FormControl<string>,
   new_email: FormControl<string>,
   password: FormControl<string>,
   new_password: FormControl<string>
@@ -47,7 +47,6 @@ export class EditProfileComponent implements OnInit {
     this.editProfileForm = this.fb.group<ItemForm>({
       name: this.fb.control('', { validators: [Validators.required] }),
       lastname: this.fb.control('', { validators: [Validators.required] }),
-      email: this.fb.control({value: '', disabled: true}, { validators: [Validators.required, Validators.email] },),
       new_email: this.fb.control('', { validators: [Validators.email] },),
       password: this.fb.control('', { validators: [Validators.required, Validators.minLength(8)] }),
       new_password: this.fb.control('', { validators: [Validators.minLength(8)] }),
@@ -67,7 +66,6 @@ export class EditProfileComponent implements OnInit {
     this.editProfileForm.setValue({
       name: this.user.name,
       lastname: this.user.lastname,
-      email: this.user.email,
       new_email: '',
       password: '',
       new_password: '',
@@ -84,24 +82,38 @@ export class EditProfileComponent implements OnInit {
     this.loading = true;
 
     const data = this.editProfileForm.value;
-    data.email = this.user.email;
-    if (data.new_email == '') delete data.new_email;
-    if (data.new_password == '') delete data.new_password;
-    if (data.repit_new_password == '') delete data.repit_new_password;
     
-    this.userServ.updateUser(data as UpdateUserInterface).subscribe({
-      next: (user) => {
-        if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
-          this.userServ.setCurrentUser(user);
+    if (!data.new_email) delete data.new_email;
+    if (!data.new_password) delete data.new_password;
+    if (!data.repit_new_password) delete data.repit_new_password;
+
+    this.userServ.updateUser(data as UpdateUserInterface).pipe(
+      switchMap((user) => {
+        if (!user) {
           this.loading = false;
-          this.router.navigate(['/profile']);
-          this.toastServ.openToast('update-profile', 'success', 'Información actualizada');
+          this.toastServ.openToast('update-profile', 'danger', 'No se pudo obtener el usuario actualizado');
+          throw new Error('User not found');
         }
+
+        localStorage.setItem('user', JSON.stringify(user));
+        this.userServ.setCurrentUser(user);
+        return this.userServ.updateInfoToken();
+      }),
+      catchError((error) => {
+        this.toastServ.openToast('update-profile', 'danger', error.message);
+        this.loading = false;
+        throw error;
+      })
+    ).subscribe({
+      next: (data) => {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        this.loading = false;
+        this.router.navigate(['/profile']);
+        this.toastServ.openToast('update-profile', 'success', 'Información actualizada');
       },
       error: (error) => {
-        this.loading = false;
-        this.toastServ.openToast('update-profile', 'danger', error.message);
+        this.toastServ.openToast('update-token', 'danger', error.message);
       }
     });
   }
