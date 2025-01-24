@@ -23,8 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      
-      if ((error.status == 401 || error.status == 403) && refresh_token) {
+      if ((error.status == 401 || error.status == 403) && (error.error.error == 'invalid_token' || error.error.error == 'invalid_refresh_token') && refresh_token) {
         return authServ.refreshToken().pipe(
           switchMap(newToken => {
             if (!newToken) return throwError(() => new Error('No se puede actualizar el token'));
