@@ -36,6 +36,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           })
         )
       }
+      if ( (error.status == 401 || error.status == 403) && error.error.error == 'cannot_modify_user' ) {
+        authServ.logOut();
+      }
+      
       return throwError(() => error);
     })
   );
