@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 @Component({
@@ -11,5 +11,5 @@ import { HeaderComponent } from './components/header/header.component';
   styles: [],
 })
 export class AppComponent {
-  title = 'bingo_fronted';  
+  title = 'bingo_fronted';
 }

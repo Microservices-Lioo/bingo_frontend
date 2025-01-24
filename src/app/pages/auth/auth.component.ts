@@ -1,11 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { BtnPrimaryComponent } from "../../components/btn-primary/btn-primary.component";
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
-import { FormArray, FormBuilder, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserModel } from '../../models';
+import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastService } from '../../services/components/toast.service';
 import { CustomInputComponent } from '../../components/custom-input/custom-input.component';
+import { UserInterface } from '../../interfaces';
 
 export interface ItemForm {
   email: FormControl<string>,
@@ -40,10 +40,6 @@ export class AuthComponent {
     private toastServ: ToastService,
     private router: Router,
   ) {
-    // this.loginForm = this.fb.group({
-    //   email: new FormControl('', [Validators.required, Validators.email]),
-    //   password: new FormControl('', [Validators.required, Validators.minLength(8)]),
-    // });
     this.loginForm = this.fb.group<ItemForm>({
       email: this.fb.control('', { validators: [Validators.required, Validators.email] }),
       password: this.fb.control('', { validators: [Validators.required, Validators.minLength(8)] }),
@@ -65,11 +61,12 @@ export class AuthComponent {
     this.userServ.login(loginData).subscribe({
       next: (values) => {
         if (values && values.user && values.access_token && values.refresh_token) {
-          const user: UserModel = values.user;
+          const user: UserInterface = values.user;
           localStorage.setItem('access_token', values.access_token);
           localStorage.setItem('refresh_token', values.refresh_token);
           localStorage.setItem('user', JSON.stringify(user));
           this.userServ.setCurrentUser(user);
+          this.userServ.setLoggedIn(true);
           this.loading = false;
           this.router.navigate(['/', 'home']);
 

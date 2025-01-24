@@ -76,6 +76,7 @@ export class RegisterComponent {
                             localStorage.setItem('refresh_token', values.refresh_token);
                             localStorage.setItem('user', JSON.stringify(values.user));
                             this.userServ.setCurrentUser(values.user);
+                            this.userServ.setLoggedIn(true);
                             this.loading = false;
                             this.router.navigate(['/', 'home']);
 

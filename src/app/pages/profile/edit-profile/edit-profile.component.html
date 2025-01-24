@@ -23,7 +23,6 @@
                     formControlName="lastname"
                 />
             </div>
-            
 
             <app-custom-input
                 [id]="'email'"
@@ -31,7 +30,17 @@
                 [type]="'email'"
                 [placeholder]="'Tu correo electrónico'"
                 [control]="editProfileForm.controls.email"
+                [disabled]="true"
                 formControlName="email"
+            />
+
+            <app-custom-input
+                [id]="'new_email'"
+                [label]="'Nuevo Correo electrónico'"
+                [type]="'email'"
+                [placeholder]="'Tu nuevo correo electrónico'"
+                [control]="editProfileForm.controls.new_email"
+                formControlName="new_email"
             />
 
             <app-custom-input
@@ -64,7 +73,7 @@
             </div>
             
             <div class="mt-3">
-                <app-btn-primary label="Actualizar" [disabled]="!editProfileForm.valid" (btnCliked)="OnSutmitEditProfil()"
+                <app-btn-primary label="Actualizar" [type]="'submit'" [disabled]="!editProfileForm.valid" (btnCliked)="OnSutmitEditProfil()"
                 [loading]="loading"/>
             </div>
         </form>

@@ -2,15 +2,16 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CustomInputComponent } from '../../../components/custom-input/custom-input.component';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BtnPrimaryComponent } from '../../../components/btn-primary/btn-primary.component';
-import { UserModel } from '../../../models';
 import { UserService } from '../../../services/user.service';
 import { ToastService } from '../../../services/components/toast.service';
-import { UpdateUserInterface } from '../../../interfaces';
+import { UpdateUserInterface, UserInterface } from '../../../interfaces';
+import { Router } from '@angular/router';
 
 export interface ItemForm {
   name: FormControl<string>,
   lastname: FormControl<string>,
   email: FormControl<string>,
+  new_email: FormControl<string>,
   password: FormControl<string>,
   new_password: FormControl<string>
   repit_new_password: FormControl<string>
@@ -32,7 +33,7 @@ export interface ItemForm {
     } `
 })
 export class EditProfileComponent implements OnInit {
-  user: UserModel | any = null;
+  user: UserInterface | any = null;
   loading: boolean = false;
 
   fb = inject(NonNullableFormBuilder);
@@ -41,11 +42,13 @@ export class EditProfileComponent implements OnInit {
   constructor(
     private userServ: UserService,
     private toastServ: ToastService,
+    private router: Router
   ) {
     this.editProfileForm = this.fb.group<ItemForm>({
-      name: this.fb.control('', { validators: [] }),
-      lastname: this.fb.control('', { validators: [] }),
-      email: this.fb.control('', { validators: [Validators.email] },),
+      name: this.fb.control('', { validators: [Validators.required] }),
+      lastname: this.fb.control('', { validators: [Validators.required] }),
+      email: this.fb.control({value: '', disabled: true}, { validators: [Validators.required, Validators.email] },),
+      new_email: this.fb.control('', { validators: [Validators.email] },),
       password: this.fb.control('', { validators: [Validators.required, Validators.minLength(8)] }),
       new_password: this.fb.control('', { validators: [Validators.minLength(8)] }),
       repit_new_password: this.fb.control('', { validators: [Validators.minLength(8)] })
@@ -65,6 +68,7 @@ export class EditProfileComponent implements OnInit {
       name: this.user.name,
       lastname: this.user.lastname,
       email: this.user.email,
+      new_email: '',
       password: '',
       new_password: '',
       repit_new_password: ''
@@ -80,15 +84,18 @@ export class EditProfileComponent implements OnInit {
     this.loading = true;
 
     const data = this.editProfileForm.value;
+    data.email = this.user.email;
+    if (data.new_email == '') delete data.new_email;
     if (data.new_password == '') delete data.new_password;
     if (data.repit_new_password == '') delete data.repit_new_password;
-
+    
     this.userServ.updateUser(data as UpdateUserInterface).subscribe({
-      next: (updateUser) => {
-        if (updateUser) {
-          localStorage.setItem('user', JSON.stringify(updateUser));
-          this.userServ.setCurrentUser(updateUser);
+      next: (user) => {
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          this.userServ.setCurrentUser(user);
           this.loading = false;
+          this.router.navigate(['/profile']);
           this.toastServ.openToast('update-profile', 'success', 'Información actualizada');
         }
       },

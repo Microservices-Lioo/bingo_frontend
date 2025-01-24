@@ -1,11 +1,10 @@
-import { Injectable, signal } from '@angular/core';
-import { UserModel } from '../models';
+import { Injectable } from '@angular/core';
 import { LoginInterface, RegisterInterface } from '../interfaces';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { handleError } from '../errors';
-import { AuthInterface } from '../interfaces/auth';
+import { AuthInterface, UpdateUserInterface, UserInterface } from '../interfaces';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -13,34 +12,50 @@ import { Router } from '@angular/router';
 })
 export class UserService {
   url: string = environment.apiUrl + 'auth';
-  private currentUserSubject: BehaviorSubject<UserModel> = new BehaviorSubject({} as UserModel);
-  currentUser$ = this.currentUserSubject.asObservable();
+  private loggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  private currentUserSubject: BehaviorSubject<UserInterface> = new BehaviorSubject({} as UserInterface);
+  
+  isLoggedIn$: Observable<boolean> = this.loggedIn.asObservable();
+  currentUser$: Observable<UserInterface> = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
     private router: Router
-  ) { }
+  ) {
+    const token = localStorage.getItem('access_token');
+    const current_user = localStorage.getItem('user');
+    
+    if ( token && current_user ) {
+      const user = JSON.parse(current_user);
+      this.setCurrentUser(user);
+      this.setLoggedIn(true);
+    }
+  }
 
-  get currentUser(): UserModel {
+  setCurrentUser(user: UserInterface) {
+    this.currentUserSubject.next(user);
+  }
+
+  setLoggedIn(value: boolean) {
+    this.loggedIn.next(value);
+  }
+
+  get currentUser(): UserInterface {
     return this.currentUserSubject.value;
   }
 
   login(loginInterface: LoginInterface): Observable<AuthInterface> {
     return this.http.post<AuthInterface>(`${this.url}/log-in`, loginInterface)
       .pipe(catchError(handleError));
-  }
-
-  setCurrentUser(user: UserModel) {
-    this.currentUserSubject.next(user);
-  }
+  }  
 
   register(registerInterface: RegisterInterface): Observable<AuthInterface> {
     return this.http.post<AuthInterface>(`${this.url}/sign-up`, registerInterface)
       .pipe(catchError(handleError));
   }
 
-  verifyToken(token: string): Observable<boolean> {
-    return this.http.post<boolean>(`${this.url}/verify-token`, { token })
+  verifyToken(access_token: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.url}/verify-token`, { access_token })
     .pipe(catchError(handleError));
   }
 
@@ -65,9 +80,17 @@ export class UserService {
     );
   }
 
+  updateUser(user: UpdateUserInterface): Observable<UserInterface> {
+    const id = this.currentUser.id;
+    return this.http.put<UserInterface>(`${this.url}/${id}`, user)
+    .pipe(catchError(handleError));
+  }
+
   logOut() {
+    console.log('cerro');
     localStorage.clear();
     this.currentUserSubject.complete();
+    this.loggedIn.next(false);
     this.router.navigate(['/', 'auth']);
   }
 }
