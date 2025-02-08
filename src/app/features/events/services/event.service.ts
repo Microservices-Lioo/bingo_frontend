@@ -1,12 +1,21 @@
 import { Injectable, signal } from '@angular/core';
 import { EventModel } from '../models';
+import { environment } from '../../../../environments/environment';
+import { catchError, Observable } from 'rxjs';
+import { CreateEvent, EventInterface } from '../interfaces';
+import { HttpClient } from '@angular/common/http';
+import { handleError } from '../../../core/errors';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
 
-  constructor() { }
+  url: string = environment.apiUrl + 'event';
+
+  constructor(
+    private http: HttpClient
+  ) { }
 
   eventList = signal<EventModel[]>([
     {
@@ -272,4 +281,9 @@ export class EventService {
   // addToEvent(newEvent: EventModel) {
   //   this.eventList.set([...this.eventList(), newEvent]);
   // }
+
+  createEvent(createEvent: CreateEvent): Observable<EventInterface> {
+    return this.http.post<EventInterface>(this.url, createEvent )
+      .pipe(catchError(handleError));
+  }
 }

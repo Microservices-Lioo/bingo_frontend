@@ -171,7 +171,7 @@
                     </ul>
             </div>
 
-            <app-primary-button class="mt-2" label="Crear Evento" type="button" (btnCliked)="createEvent()" />
+            <app-primary-button class="mt-2" label="Crear Evento" type="button" [loading]="loadingConfirmation" (btnCliked)="createEvent()" />
 
         </div>
     </div>

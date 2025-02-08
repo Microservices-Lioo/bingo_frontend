@@ -5,7 +5,8 @@ import { FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveForm
 import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { Router } from '@angular/router';
-import { CreateEvent } from '../../interfaces';
+import { CreateEvent, EventInterface } from '../../interfaces';
+import { AwardService } from '../../../award/services/award.service';
 
 export interface ItemEventForm {
   name: FormControl<string>,
@@ -30,14 +31,15 @@ export interface ItemStepper {
 }
 
 @Component({
-  selector: 'app-create',
+  selector: 'app-create-event',
   imports: [CustomInputComponent, PrimaryButtonComponent, ReactiveFormsModule],
-  templateUrl: './create.component.html',
+  templateUrl: './create-event.component.html',
   styles: ``,
   standalone: true
 })
-export class CreateComponent implements OnInit {
+export class CreateEventComponent implements OnInit {
   loadingEvent: boolean = false;
+  loadingConfirmation: boolean = false;
   listSteppers: ItemStepper[] = [];
   dataEvent: CreateEvent | null = null;
 
@@ -58,6 +60,7 @@ export class CreateComponent implements OnInit {
 
   constructor(
     private eventServ: EventService,
+    private awardServ: AwardService,
     private toastServ: ToastService,
     private router: Router
   ) {
@@ -100,6 +103,7 @@ export class CreateComponent implements OnInit {
   OnSubmitEventNextAward() {
     if(this.createEventForm.invalid) {
       console.log('Form is invalid:', this.createEventForm.errors);
+      this.toastServ.openToast('create-event', 'danger', 'Se debe completar todos los campos requeridos');
       return;
     }
 
@@ -118,7 +122,7 @@ export class CreateComponent implements OnInit {
       return;
     }
 
-    if (this.itemsAward.length <= 0) {
+    if (this.itemsAward().length <= 0) {
       this.toastServ.openToast('create-event', 'danger', 'Se debe agregar un premio como mínimo');
       return;
     }
@@ -152,8 +156,45 @@ export class CreateComponent implements OnInit {
   }
 
   createEvent() {
-    // petición con para guardar el nuevo evento
-    // pretición para guardar los premios para el evento
+    if (!this.dataEvent) {
+      this.toastServ.openToast('creating-event', 'danger', 'Primero se debe completar el primer paso');
+      this.loadingConfirmation = false;
+      return;
+    }
+    
+    this.loadingConfirmation = true;
+
+    this.eventServ.createEvent(this.dataEvent).subscribe({
+      next: (dataEvent) => {
+        this.createAwards(dataEvent);
+      },
+      error: (error) => {
+        this.loadingConfirmation = false;
+        this.toastServ.openToast('creating-event', 'danger', error.message);
+      }
+    });
+  }
+
+  createAwards(dataEvent: EventInterface) {
+    if (this.itemsAward().length <= 0) {
+      this.toastServ.openToast('creating-award', 'danger', 'Es necesario ingresar un premio y completar el segundo paso');
+      this.loadingConfirmation = false;
+      return;
+    }
+
+    const dataAwards = this.createAwardForm.getRawValue().items.map(({name, description_award}) => ({ name: name, description: description_award, eventId: dataEvent.id }));
+
+    this.awardServ.createAwards(dataAwards).subscribe({
+      next: (dataAward) => {
+        this.loadingConfirmation = false;
+        this.toastServ.openToast('creating-award', 'success', 'Evento creado con exito');
+        this.router.navigate(['/events']);
+      },
+      error: (error) => {
+        this.loadingConfirmation = false;
+        this.toastServ.openToast('creating-award', 'danger', error.message);
+      }
+    })
   }
 
 }
