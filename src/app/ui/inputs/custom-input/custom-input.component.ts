@@ -1,7 +1,7 @@
 import { Component, forwardRef, input } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
-export type InputType = 'text' | 'number' | 'tel' | 'email' | 'password';
+export type InputType = 'text' | 'number' | 'tel' | 'email' | 'password' | 'datetime-local';
 
 @Component({
   selector: 'app-custom-input',
