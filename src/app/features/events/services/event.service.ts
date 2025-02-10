@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { EventModel } from '../models';
 import { environment } from '../../../../environments/environment';
 import { catchError, Observable } from 'rxjs';
-import { CreateEvent, EventInterface } from '../interfaces';
+import { CreateEvent, EventAwardPagination, EventAwardsInterface, EventInterface } from '../interfaces';
 import { HttpClient } from '@angular/common/http';
 import { handleError } from '../../../core/errors';
 
@@ -284,6 +284,12 @@ export class EventService {
 
   createEvent(createEvent: CreateEvent): Observable<EventInterface> {
     return this.http.post<EventInterface>(this.url, createEvent )
+      .pipe(catchError(handleError));
+  }
+
+  getEventsByUserWithAwards(limit?: number, page?: number): Observable<EventAwardPagination> {
+    const pagination: {limit?: number, page?: number} = { limit, page };
+    return this.http.get<EventAwardPagination>(this.url + '/for-user/awards', { params: pagination} )
       .pipe(catchError(handleError));
   }
 }
