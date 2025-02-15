@@ -7,6 +7,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { Router } from '@angular/router';
 import { CreateEvent, EventInterface } from '../../interfaces';
 import { AwardService } from '../../../award/services/award.service';
+import { formatDate } from '@angular/common';
 
 export interface ItemEventForm {
   name: FormControl<string>,
@@ -42,6 +43,7 @@ export class CreateEventComponent implements OnInit {
   loadingConfirmation: boolean = false;
   listSteppers: ItemStepper[] = [];
   dataEvent: CreateEvent | null = null;
+  minDate: string = '';
 
   fb = inject(NonNullableFormBuilder);
 
@@ -72,6 +74,9 @@ export class CreateEventComponent implements OnInit {
   }
 
   ngOnInit() {
+    let start_time = new Date();
+    start_time.setDate(start_time.getDate() + 1);
+    this.minDate = formatDate(start_time, 'yyyy-MM-ddTHH:mm', 'en');
     this.listSteppers = [
       { id: 1, name: 'Evento', completed: false, actived: true },
       { id: 2, name: 'Premios', completed: false, actived: false },
