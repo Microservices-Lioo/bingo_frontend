@@ -5,11 +5,13 @@ import { RouterLink } from '@angular/router';
   selector: 'app-primary-button',
   imports: [RouterLink],
   template: `
-    <button class="bg-btn text-white w-full px-5 py-2 rounded-xl shadow-md hover:opacity-90"
-    [type]="type"
-    [disabled]="disabled"
-    [routerLink]="url"
-    (click)="this.btnCliked.emit()" >
+    <button
+      class="text-white w-full px-5 py-2 rounded-xl shadow-md hover:opacity-90"
+      [class]="bg ? bg.toString() : 'bg-btn'"
+      [type]="type"
+      [disabled]="disabled"
+      [routerLink]="url"
+      (click)="this.btnCliked.emit()" >
       @if (loading) {
         <svg aria-hidden="true" role="status" class="inline w-4 h-4 me-3 text-white animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="#E5E7EB"/>
@@ -20,7 +22,7 @@ import { RouterLink } from '@angular/router';
       {{ label }}
     </button>
   `,
-  styles: `
+  styles:  `
   .bg-btn {
       background: var(--bg-secundary-color);
     }
@@ -33,5 +35,6 @@ export class PrimaryButtonComponent {
   @Output() btnCliked = new EventEmitter<String>();
   @Input() disabled: boolean = false;
   @Input() loading: boolean = false;
+  @Input() bg: string = '';
 
 }
