@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { EventModel } from '../models';
 import { environment } from '../../../../environments/environment';
 import { catchError, Observable } from 'rxjs';
-import { CreateEvent, EventAwardPagination, EventAwardsInterface, EventInterface } from '../interfaces';
+import { CreateEvent, EventAwardPagination, EventAwardsInterface, EventInterface, UpdateEvent } from '../interfaces';
 import { HttpClient } from '@angular/common/http';
 import { handleError } from '../../../core/errors';
 
@@ -285,6 +285,15 @@ export class EventService {
   createEvent(createEvent: CreateEvent): Observable<EventInterface> {
     return this.http.post<EventInterface>(this.url, createEvent )
       .pipe(catchError(handleError));
+  }
+
+  updateEvent(id: number, updateEven: UpdateEvent): Observable<EventInterface> {
+    return this.http.patch<EventInterface>(this.url + `/${id}`, updateEven )
+      .pipe(catchError(handleError));
+  }
+
+  deleteEvent(id: number): Observable<any> {
+    return this.http.delete(this.url + `/${id}`).pipe(catchError(handleError));
   }
 
   getEventsByUserWithAwards(limit?: number, page?: number): Observable<EventAwardPagination> {

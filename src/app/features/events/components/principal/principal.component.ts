@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { EventService } from '../../services/event.service';
-import { EventAwardPagination } from '../../interfaces';
+import { EventAwardPagination, EventAwardsInterface, EventInterface } from '../../interfaces';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
+import { Router } from '@angular/router';
+import { ModalService } from '../../../../shared/services/modal.service';
+import { ModalInterface } from 'flowbite';
 
 @Component({
   selector: 'app-principal',
-  imports: [PrimaryButtonComponent],
+  imports: [PrimaryButtonComponent, IconComponent],
   templateUrl: './principal.component.html',
   styles: `
   `
@@ -15,15 +19,24 @@ export class PrincipalComponent implements OnInit {
 listEvents: EventAwardPagination | null = null;
 limit = 5;
 maxIndexPag = 5;
+modal: ModalInterface | null = null;
+eventDeleteId: number = 0;
 
 constructor(
   private eventServ: EventService,
-  private toastServ: ToastService
+  private toastServ: ToastService,
+  private router: Router,
+  private modalServ: ModalService
 ) {}
 
 ngOnInit() {
-  this.eventServ.getEventsByUserWithAwards(this.limit, 1).subscribe({
+  this.getEventsByUserAwards(1);
+}
+
+getEventsByUserAwards(page: number) {
+  this.eventServ.getEventsByUserWithAwards(this.limit, page).subscribe({
     next: (events) => {
+      this.listEvents = null;
       this.listEvents =  events;
     },
     error: (error) => {
@@ -42,15 +55,7 @@ prevOrNextPage(event: Event, tipo: 'next' | 'prev') {
   if (!this.listEvents) return;
 
   const page = tipo == 'next' ? this.listEvents?.meta.page + 1 : this.listEvents?.meta.page - 1
-  this.eventServ.getEventsByUserWithAwards(this.limit, page).subscribe({
-    next: (events) => {
-      this.listEvents = null;
-      this.listEvents =  events;
-    },
-    error: (error) => {
-      this.toastServ.openToast('get-event', 'danger', 'Error al obtener los eventos');
-    }
-  });
+  this.getEventsByUserAwards(page);
 }
 
 selectPage(event: Event, page: number) {
@@ -93,6 +98,39 @@ calculateRagePagination() {
   }
 
   return paginas;
+}
+
+editEvent(eventAward: EventAwardsInterface) {
+  const { award, ...event } = eventAward;
+  this.router.navigate(['events', 'edit'], { state: { event } })
+}
+
+deleteEvent(id: number) {
+  const modal = this.modalServ.createModal('delete-event-modal');
+  this.modalServ.openModal(modal);
+  this.modal = modal;
+  this.eventDeleteId = id;
+}
+
+modalClose() {
+  if (!this.modal) return;
+  this.modalServ.closeModal(this.modal);
+}
+
+modalAccept() {
+  if (!this.modal) return;
+  this.eventServ.deleteEvent(this.eventDeleteId).subscribe({
+    next: (_) => {
+      this.getEventsByUserAwards(1);
+      this.toastServ.openToast('delete-event', 'success', `Evento con id #${this.eventDeleteId} eliminado`);
+      this.eventDeleteId = 0;
+      this.modalServ.closeModal(this.modal!);
+    },
+    error: (error) => {
+      this.toastServ.openToast('delete-event', 'danger', `${error.message}`)
+      this.modalServ.closeModal(this.modal!);
+    }
+  })
 }
 
 
