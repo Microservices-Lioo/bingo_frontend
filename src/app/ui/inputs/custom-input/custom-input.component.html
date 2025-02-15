@@ -4,7 +4,7 @@
         [id]="id()" 
         [attr.type]="type()" 
         [attr.placeholder]="placeholder()" 
-        [attr.min]="type() === 'number' ? 0 : null" 
+        [attr.min]="type() === 'number' ? 0 : type() === 'datetime-local' ? minDate() : null" 
         [disabled]="disabled()"
         autocomplete="on"
         [formControl]="control()" 
