@@ -187,6 +187,12 @@ export class CreateEventComponent implements OnInit {
       return;
     }
 
+    if (this.createAwardForm.invalid) {
+      this.toastServ.openToast('creating-award', 'danger', 'Se debe completar todos los campos');
+      this.loadingConfirmation = false;
+      return;
+    }
+
     const dataAwards = this.createAwardForm.getRawValue().items.map(({name, description_award}) => ({ name: name, description: description_award, eventId: dataEvent.id }));
 
     this.awardServ.createAwards(dataAwards).subscribe({
