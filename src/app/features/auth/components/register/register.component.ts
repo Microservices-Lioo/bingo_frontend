@@ -21,7 +21,7 @@ export interface ItemForm {
     styles: `
     .bg-container {
       width: 100%;
-      height: calc(100vh - 56px); ;
+      height: calc(100vh - 4rem); ;
       background-color: #dce2f6;
       background-image: radial-gradient(#859bfb 10%, transparent 10%),
                           radial-gradient(#859bfb 10%, transparent 10%);
