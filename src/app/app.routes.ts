@@ -5,6 +5,7 @@ export const routes: Routes = [
     { path: 'auth', loadChildren: () => import('./features/auth/routes').then(m => m.authRoutes) },
     { path: 'profile', loadChildren: () => import('./features/profile/routes').then(m => m.profileRoutes),  },
     { path: 'events', loadChildren: () => import('./features/events/routes').then(m => m.eventsRoutes),  },
+    { path: 'award', loadChildren: () => import('./features/award/routes').then(m => m.awardRoutes),  },
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: '**', redirectTo: '/home' },
 ];
