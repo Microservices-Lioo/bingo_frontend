@@ -27,8 +27,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return authServ.refreshToken().pipe(
           switchMap(newToken => {
             if (!newToken) return throwError(() => new Error('No se puede actualizar el token'));
-
-            localStorage.setItem('access_token', newToken);
             const updateHeaders = req.headers.set('Authorization', `Bearer ${newToken}`);
             const newRequest = req.clone({ headers: updateHeaders });
 

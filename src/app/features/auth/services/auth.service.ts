@@ -72,9 +72,9 @@ export class AuthService {
       return throwError(() => handleError);
     }
 
-    return this.http.post<{ refresh_token: string }>(`${this.url}/refresh-token`, { refresh_token })
+    return this.http.post<{ access_token: string }>(`${this.url}/refresh-token`, { refresh_token })
     .pipe(
-      map(response => response.refresh_token ),
+      map(response => response.access_token ),
       tap((newAccessToken: string) => {
         localStorage.setItem('access_token', newAccessToken);
       }),
