@@ -1,17 +1,18 @@
 import { RouterLink } from '@angular/router';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { EventService } from '../../../../shared/services/event.service';
+import { EventServiceShared } from '../../../../shared/services/event.service';
 import { EventInterface } from '../../../../core/interfaces';
 import { initFlowbite, TooltipInterface } from 'flowbite';
 import { TooltipComponent } from '../../../../shared/components/tooltip/tooltip.component';
 import { TooltipsService } from '../../../../shared/services/tooltips.service';
 import { AuthService } from '../../../auth/services';
 import { StatusEvent } from '../../../../shared/enums';
+import { HrComponent } from '../../../../shared/components/hr/hr.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, TooltipComponent],
+  imports: [RouterLink, TooltipComponent, HrComponent],
   templateUrl: './sidebar.component.html',
   styles: `
     .bg-sidebar {
@@ -34,7 +35,7 @@ export class SidebarComponent implements AfterViewInit, OnInit {
 
   constructor(
     private authServ: AuthService,
-    private eventServ: EventService,
+    private eventServ: EventServiceShared,
     private toolTipServ: TooltipsService
   ) {}
 

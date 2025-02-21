@@ -15,12 +15,8 @@
   <div class="h-full px-3 py-5  bg-sidebar overflow-x-hidden overflow-y-auto dark:bg-gray-800">
     <ul class="space-y-2 font-medium">
       <span class="self-center text-xl font-semibold whitespace-nowrap text-white">Para tí</span><br>
-      <div class="relative">
-        <div class="inline-flex items-center justify-center w-full">
-          <hr class="w-64 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
-          <span class="absolute px-3 font-medium text-gray-200 -translate-x-1/2 bg-[#14294a] left-1/2">Ahora</span>
-        </div>
-      </div>
+      <app-hr text="Ahora" color="white"></app-hr>
+
       @for (ev of eventListNow; track ev.id; let i = $index) {
       <li>
         <a href="#" routerLink="/" (mouseover)="viewToolTip(ev.id)" 
@@ -65,13 +61,8 @@
           }
         </li>
       }
+      <app-hr text="Hoy" color="white"></app-hr>
 
-      <div class="relative">
-        <div class="inline-flex items-center justify-center w-full">
-          <hr class="w-64 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
-          <span class="absolute px-3 font-medium text-gray-200 -translate-x-1/2 bg-[#14294a] left-1/2">Hoy</span>
-        </div>
-      </div>
       @for (ev of eventListToday; track ev.id; let i = $index) {
       <li>
         <a href="#" routerLink="/" (mouseover)="viewToolTip(ev.id)" 
