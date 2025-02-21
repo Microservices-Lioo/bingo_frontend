@@ -75,7 +75,7 @@ export class CreateEventComponent implements OnInit {
 
   ngOnInit() {
     let start_time = new Date();
-    start_time.setDate(start_time.getDate() + 1);
+    start_time.setDate(start_time.getDate() + 2);
     this.minDate = formatDate(start_time, 'yyyy-MM-ddTHH:mm', 'en');
     this.listSteppers = [
       { id: 1, name: 'Evento', completed: false, actived: true },
