@@ -9,3 +9,29 @@
     --bg-four-color: #859bfb;
     --bg-five-color: #dce2f6;
 }
+
+* {
+    --sb-track-color: #232E33;
+    --sb-thumb-color: #9e9e9e;
+    --sb-size: 4px;
+}
+
+*::-webkit-scrollbar {
+    width: var(--sb-size);
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 3px;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
+}
