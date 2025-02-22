@@ -1,8 +1,5 @@
-<!-- Sidebar -->
-<app-sidebar />
-<div class="p-4 sm:ml-64">
-
-    <section
+@if (!isSession) {
+    <section 
         class="bg-center bg-no-repeat bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/conference.jpg')] bg-gray-700 bg-blend-multiply rounded-xl">
         <div class="px-4 mx-auto max-w-screen-xl text-center py-24 lg:py-26">
             <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-white md:text-5xl lg:text-6xl">
@@ -10,7 +7,7 @@
             <p class="mb-8 text-lg font-normal text-gray-300 lg:text-xl sm:px-16 lg:px-48">Se parte de nuestra comunidad
                 de jugadores en linea ganando o premiando a tus jugadores, inicia ya!</p>
             <div class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
-                <a routerLink="/auth"
+                <a routerLink="/auth/login"
                     class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
                     Empezar
                     <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -22,6 +19,70 @@
             </div>
         </div>
     </section>
-
-    <app-events-list />
-</div>
+}
+@for (item of itemsSection; track $index) {
+    <section class="mt-2 p-2">
+        <h1 class="font-bold pb-2">{{ item.title }}</h1>
+        
+            @if (item.name === 'NOW') {
+                @if (eventListNow && eventListNow.data.length > 0) {
+                    <div class="flex gap-3 justify-start flex-wrap">
+                        @for (event of eventListNow.data; track $index) {
+                            <app-events-card
+                                [event]="event"
+                            ></app-events-card>
+                        }
+                    </div>
+                    @if (eventListNow.meta.total > (limit * 2)) {
+                        <app-hr type="a" text="Ver todo" bgText="white" (clicked)="allEventStatus(item.title, item.name)"></app-hr>
+                    } @else if (eventListNow.meta.page < eventListNow.meta.lastPage) {
+                        <app-hr type="a" text="Mostrar más" bgText="white" (click)="moreEventStatus(item.name)"></app-hr>
+                    }
+                } @else {
+                    <div class="flex justify-center items-center">
+                        <p class="ms-3 text-xs text-gray-500 truncate ...">Sin eventos</p>
+                    </div>
+                }
+                
+            } @else if (item.name === 'TODAY') {
+                @if (eventListToday && eventListToday.data.length > 0) {
+                    <div class="flex gap-3 justify-start flex-wrap">
+                        @for (event of eventListToday.data; track $index) {
+                            <app-events-card
+                                [event]="event"
+                            ></app-events-card>
+                        }
+                    </div>
+                    @if (eventListToday.meta.total > (limit * 2)) {
+                        <app-hr type="a" text="Ver todo" bgText="white" (clicked)="allEventStatus(item.title, item.name)"></app-hr>
+                    } @else if (eventListToday.meta.page < eventListToday.meta.lastPage) {
+                        <app-hr type="a" text="Mostrar más" bgText="white" (clicked)="moreEventStatus(item.name)"></app-hr>
+                    }
+                } @else {
+                    <div class="flex justify-center items-center">
+                        <p class="ms-3 text-xs text-gray-500 truncate ...">Sin eventos</p>
+                    </div>
+                }
+            } @else {
+                @if (eventListProgrammed && eventListProgrammed.data.length > 0) {
+                    <div class="flex gap-3 justify-start flex-wrap">
+                        @for (event of eventListProgrammed.data; track $index) {
+                            <app-events-card
+                                [event]="event"
+                            ></app-events-card>
+                        }
+                    </div>
+                    @if (eventListProgrammed.meta.total > (limit * 2)) {
+                        <app-hr type="a" text="Ver todo" bgText="white" (clicked)="allEventStatus(item.title, item.name)"></app-hr>
+                    } @else if (eventListProgrammed.meta.page < eventListProgrammed.meta.lastPage) {
+                        <app-hr type="a" text="Mostrar más" bgText="white" (clicked)="moreEventStatus(item.name)"></app-hr>
+                    }
+                } @else {
+                    <div class="flex justify-center items-center">
+                        <p class="ms-3 text-xs text-gray-500 truncate ...">Sin eventos</p>
+                    </div>
+                }
+            }
+        
+    </section>
+}
