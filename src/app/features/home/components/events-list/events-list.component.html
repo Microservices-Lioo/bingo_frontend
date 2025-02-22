@@ -1,0 +1,19 @@
+<section class="mt-2 p-2">
+    <h1 class="font-bold pb-2">{{  title }}</h1>
+        @if (eventList && eventList.data.length > 0) {
+            <div class="flex gap-3 justify-start flex-wrap">
+                @for (event of eventList.data; track $index) {
+                    <app-events-card
+                        [event]="event"
+                    ></app-events-card>
+                }
+            </div>
+            @if (eventList.meta.page < eventList.meta.lastPage) {
+                <app-hr type="a" text="Mostrar más" bgText="white" (click)="moreEventStatus()"></app-hr>
+            }
+        } @else {
+            <div class="flex justify-center items-center">
+                <p class="ms-3 text-xs text-gray-500 truncate ...">Sin eventos</p>
+            </div>
+        }
+</section>
