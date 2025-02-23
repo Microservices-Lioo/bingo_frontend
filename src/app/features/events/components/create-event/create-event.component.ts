@@ -5,9 +5,11 @@ import { FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveForm
 import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { Router } from '@angular/router';
-import { CreateEvent, EventInterface } from '../../interfaces';
+import { CreateEvent, EventAwardsInterface, EventInterface } from '../../interfaces';
 import { AwardService } from '../../../award/services/award.service';
 import { formatDate } from '@angular/common';
+import { ViewEventComponent } from '../view-event/view-event.component';
+import { StatusEvent } from '../../../../shared/enums';
 
 export interface ItemEventForm {
   name: FormControl<string>,
@@ -33,7 +35,7 @@ export interface ItemStepper {
 
 @Component({
   selector: 'app-create-event',
-  imports: [CustomInputComponent, PrimaryButtonComponent, ReactiveFormsModule],
+  imports: [CustomInputComponent, PrimaryButtonComponent, ReactiveFormsModule, ViewEventComponent],
   templateUrl: './create-event.component.html',
   styles: ``,
   standalone: true
@@ -44,6 +46,7 @@ export class CreateEventComponent implements OnInit {
   listSteppers: ItemStepper[] = [];
   dataEvent: CreateEvent | null = null;
   minDate: string = '';
+  eventAward!: EventAwardsInterface;
 
   fb = inject(NonNullableFormBuilder);
 
@@ -132,10 +135,35 @@ export class CreateEventComponent implements OnInit {
       return;
     }
 
-    this.listSteppers[1].completed = true;
-    this.stepStatus(3);
-
-    this.toastServ.openToast('create-event', 'success', 'Premios almacenados');
+    if (this.dataEvent) {
+      const { name, description, start_time, price } = this.dataEvent;
+      const awards = this.createAwardForm.controls.items.controls
+        .map( (award) => ({ 
+          id: award.controls.id.value, 
+          name: award.controls.name.value, 
+          description: award.controls.description_award.value, 
+          num_award: undefined, 
+          winner_user: 0, 
+          gameId: 0, 
+          eventId: 0 
+        }));
+      this.eventAward = { 
+        id: 0, 
+        userId:0, 
+        name: name, 
+        description: description, 
+        start_time: start_time, 
+        price: price , 
+        status: StatusEvent.PROGRAMMED, 
+        award: awards
+      }
+      this.listSteppers[1].completed = true;
+      this.stepStatus(3);
+      this.toastServ.openToast('create-event', 'success', 'Premios almacenados');
+    } else {
+      this.router.navigate(['/events/principal']);
+      this.toastServ.openToast('create-event', 'danger', 'No completaste toda la información necesaria para los eventos');
+    }
   }
 
   addAward() {

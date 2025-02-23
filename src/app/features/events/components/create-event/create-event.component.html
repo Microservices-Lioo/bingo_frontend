@@ -134,44 +134,9 @@
 
         <div [class]="this.listSteppers[2].actived ? 'visible' : 'hidden'" id="Confirmacion">
             <h3 class="mb-4 text-lg font-bold leading-none text-gray-900 dark:text-white">Verifica la información antes de crear el evento</h3>
-            <div class="flex gap-2 text-sm font-medium">
-                <div class="font-bold">Nombre:</div>
-                <div class="font-normal">{{ dataEvent?.name }}</div>
-            </div>
-            <div class="flex gap-2 text-sm font-medium">
-                <div class="font-bold">Descripción:</div>
-                <div class="font-normal">{{ dataEvent?.description }}</div>
-            </div>
-            <div class="flex gap-2 text-sm font-medium">
-                <div class="font-bold">Fecha y Hora:</div>
-                <div class="font-normal">{{ dataEvent?.start_time }}</div>
-            </div>
-            <div class="flex gap-2 text-sm font-medium">
-                <div class="font-bold">Precio de cada tabla:</div>
-                <div class="font-normal ">{{ dataEvent?.price }}</div>
-            </div>            
-
-            <h2 class="my-2 text-xl font-medium leading-none text-gray-900 dark:text-white">Lista de premios</h2>
-            
-            <div class="flow-root">
-                    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @for (award of createAwardForm.controls.items.controls; track $index) {
-                        <li class="py-1 sm:py-2">
-                            <div class="flex items-center">
-                                <div class="flex-1 min-w-0 ms-4">
-                                    <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                        {{ award.controls.name.value }}
-                                    </p>
-                                    <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                                        {{ award.controls.description_award.value }}
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-                    }
-                    </ul>
-            </div>
-
+            @if(eventAward) {
+                <app-view-event [eventWithAward]="eventAward"/>
+            }
             <app-primary-button class="mt-2" label="Crear Evento" type="button" [loading]="loadingConfirmation" (btnCliked)="createEvent()" />
 
         </div>
