@@ -1,0 +1,123 @@
+<div class="w-full h-full p-4">
+    <div class="w-full p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
+       <div class="grid md:grid-cols-4 grid-row-1 gap-4 mb-4">
+          <div class="flex items-center justify-center h-auto w-full rounded-sm bg-sky-900 dark:bg-gray-800">
+            <app-icon [name]="'table-bingo'" [width]="200" [height]="200"/>
+          </div>
+          <div class="flex flex-col items-center justify-center h-auto rounded-sm md:col-span-3 row-span-1 p-2 bg-gray-50 dark:bg-gray-800">
+            <h1 class="font-bold text-center text-xl p-1">{{ eventWithAward.name }}</h1>
+            <div class="flex justify-start p-1">
+                <p class="text-sm text-gray-500 dark:text-gray-500">
+                    {{eventWithAward.description}}
+                </p>
+            </div>
+            <h5 class="text-xl w-full justify-start font-bold py-3 px-1">Detalles:</h5>
+            <div class="flex w-full items-center justify-start gap-2">
+                <div class="rounded-sm p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <g fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="13" r="9" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v4l2.5 2.5m-11-11l4-2.5m13 2.5l-4-2.5" />
+                        </g>
+                    </svg>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-500">
+                    {{eventWithAward.start_time | date: 'dd-MM-yyyy HH:mm'}}
+                </p>
+            </div>
+            <div class="flex w-full items-center justify-start gap-2">
+                <div class="rounded-sm p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <g fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <path stroke-linecap="round"
+                                d="M12 6v12m3-8.5C15 8.12 13.657 7 12 7S9 8.12 9 9.5s1.343 2.5 3 2.5s3 1.12 3 2.5s-1.343 2.5-3 2.5s-3-1.12-3-2.5" />
+                        </g>
+                    </svg>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-500">
+                    {{eventWithAward.price}}
+                </p>
+            </div>
+            <div class="flex w-full items-center justify-start gap-2">
+                <p class="text-sm text-gray-500 p-1 dark:text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 26 26"><g fill="#000" stroke-width="0.5" stroke="#000"><path d="M26 14c0 6.627-5.373 12-12 12S2 20.627 2 14S7.373 2 14 2s12 5.373 12 12" opacity="0"/><g fill-rule="evenodd" clip-rule="evenodd"><path d="m9.804 5.632l-.637.264A3.51 3.51 0 0 0 7 9.137v4.386a1.46 1.46 0 0 0 2.167 1.276l.227-.126a4 4 0 0 1 3.88 0l.453.251a4 4 0 0 0 3.88 0l.733-.407A3.22 3.22 0 0 0 20 11.7V7.638a1.605 1.605 0 0 0-2.07-1.534l-.893.272a4 4 0 0 1-2.693-.13l-1.482-.614a4 4 0 0 0-3.058 0M8 9.137c0-1.014.611-1.929 1.549-2.317l.638-.264a3 3 0 0 1 2.293 0l1.481.613a5 5 0 0 0 3.367.163l.893-.271a.604.604 0 0 1 .779.577V11.7c0 .807-.438 1.551-1.144 1.943l-.735.407a3 3 0 0 1-2.91 0l-.453-.252a5 5 0 0 0-4.85 0l-.226.126A.46.46 0 0 1 8 13.523z"/><path d="M8 5a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V6a1 1 0 0 1 1-1"/></g><path fill-rule="evenodd" d="M13 24.5c6.351 0 11.5-5.149 11.5-11.5S19.351 1.5 13 1.5S1.5 6.649 1.5 13S6.649 24.5 13 24.5m0 1c6.904 0 12.5-5.596 12.5-12.5S19.904.5 13 .5S.5 6.096.5 13S6.096 25.5 13 25.5" clip-rule="evenodd"/></g></svg>
+                </p>
+                <div>
+                    @if ( eventWithAward.status == 'NOW') {
+                    <span
+                        class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Ahora</span>
+                    }
+                    @if ( eventWithAward.status == 'TODAY') {
+                    <span
+                        class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Hoy</span>
+                    }
+                    @if ( eventWithAward.status == 'PROGRAMMED' ) {
+                    <span
+                        class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Programada</span>
+                    }
+                    @if ( eventWithAward.status == 'CULMINATED' ) {
+                    <span
+                        class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Culminada</span>
+                    }
+                </div>
+            </div>            
+            @if(owner !== 'Desconocido') {
+                <div class="flex w-full my-1 items-center justify-start">
+                    <div class="flex items-center gap-4">
+                        <div class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-sky-800 rounded-full dark:bg-gray-600">
+                            <span class="font-medium text-gray-100 dark:text-gray-300">{{ getLetter() }}</span>
+                        </div>
+                        <a [routerLink]="''">
+                            <div class="font-medium dark:text-white">
+                                <div>{{ owner }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Propietario</div>
+                            </div>
+                        </a>
+                    </div>                
+                </div>
+            }
+          </div>
+       </div>
+       <div class="flex items-center justify-center rounded-sm bg-gray-50 dark:bg-gray-800">
+            <div class="w-full p-4 rounded-lg shadow-sm dark:bg-gray-800">
+                <div class="flex items-center justify-start mb-4">
+                    <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white">Premios</h5>
+                </div>
+                <div>
+                    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for(award of eventWithAward.award; track award.id) {
+                            <li class="py-3 sm:py-4">
+                                <div class="flex items-center">
+                                    <div>
+                                        {{ award.num_award }}
+                                    </div>
+                                    <div class="flex-1 min-w-0 ms-4">
+                                        <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                            {{ award.name }}
+                                        </p>
+                                        <p [id]="'award-'+award.id" (click)="toggleText($event, 'award-'+award.id)" class="text-sm cursor-pointer truncate text-gray-500 dark:text-gray-400">
+                                            {{ award.description }}
+                                        </p>
+                                    </div>
+                                    @if( award.winner_user != null && this.winners.length > 0 &&  getWinnerName(award.winner_user) != 'Desconocido') {
+                                        <div class="ms-4">
+                                            <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                                Ganador
+                                            </p>
+                                            <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                                                {{ getWinnerName(award.winner_user) }}
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+       </div>
+    </div>
+ </div>
+ 
