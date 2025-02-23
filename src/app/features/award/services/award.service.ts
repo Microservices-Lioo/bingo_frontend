@@ -11,7 +11,7 @@ import { handleError } from '../../../core/errors';
 })
 export class AwardService {
 
-  url: string = environment.apiUrl + 'award';
+  url: string = environment.apiUrl + environment.apiMSAwardUrl;
 
   constructor(
     private http: HttpClient
