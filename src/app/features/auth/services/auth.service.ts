@@ -11,7 +11,7 @@ import { handleError } from '../../../core/errors';
   providedIn: 'root'
 })
 export class AuthService {
-  url: string = environment.apiUrl + 'auth';
+  url: string = environment.apiUrl + environment.apiMSAuthUrl;
   private loggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private currentUserSubject: BehaviorSubject<UserInterface> = new BehaviorSubject({} as UserInterface);
   
