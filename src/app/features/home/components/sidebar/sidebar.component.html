@@ -25,7 +25,7 @@
       } @else {
         @for (ev of eventListNow.data; track ev.id; let i = $index) {
           <li>
-            <a [routerLink]="'/events/'+ev.id" (mouseover)="viewToolTip(ev.id)" [id]="'tooltip-'+ev.id"
+            <a [routerLink]="['/home/event-detail', {id: ev.id}]" (mouseover)="viewToolTip(ev.id)" [id]="'tooltip-'+ev.id"
               data-tooltip-placement="right"
               class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-700 dark:hover:bg-gray-700 group">
               <svg
@@ -68,7 +68,7 @@
       } @else {
         @for (ev of eventListToday.data; track ev.id; let i = $index) {
           <li>
-            <a [routerLink]="'/events/'+ev.id" (mouseover)="viewToolTip(ev.id)" [id]="'tooltip-'+ev.id"
+            <a [routerLink]="['/home/event-detail', {id: ev.id}]" (mouseover)="viewToolTip(ev.id)" [id]="'tooltip-'+ev.id"
               data-tooltip-placement="right"
               class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-700 dark:hover:bg-gray-700 group">
               <svg

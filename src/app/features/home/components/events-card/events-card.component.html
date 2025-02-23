@@ -27,7 +27,7 @@
         </div>        
         <div class="flex flex-col mt-2">
             <div class="w-60">
-                <a [routerLink]="'/events/'+event().id"><span class="text-md font-bold">{{ event().name }}</span></a> <br>
+                <a [routerLink]="['/home/event-detail', { id: event().id}]"><span class="text-md font-bold">{{ event().name }}</span></a> <br>
                 <p class="text-sm truncate ...">{{ event().description }}</p>
             </div>
             
