@@ -12,18 +12,19 @@ import { AuthService } from '../../auth/services';
   providedIn: 'root'
 })
 export class UserService {
-  url: string = environment.apiUrl + 'auth';
+  url: string = environment.apiUrl + environment.apiMSAuthUrl;
 
   constructor(
     private http: HttpClient,
     private router: Router,
     private authServ: AuthService
   ) {
-    const token = localStorage.getItem('access_token');
-    const current_user = localStorage.getItem('user');
   }
 
-
+  getUser(id: number): Observable<UserInterface> {
+    return this.http.get<UserInterface>(this.url+'/'+id )
+      .pipe(catchError(handleError));
+  }
 
   updateUser(user: UpdateUserInterface): Observable<UserInterface> {
     const currentUser = this.authServ.currentUser;
