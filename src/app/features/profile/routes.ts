@@ -4,6 +4,7 @@ import { ProfileComponent } from "./components/view-profile/profile.component";
 import { authGuard } from "../../core/guards";
 
 export const profileRoutes: Routes = [
-    { path: '', component: ProfileComponent, canActivate: [authGuard]},
-    { path: 'edit-profile', component: EditProfileComponent, canActivate: [authGuard]},
+    { path: '', title: 'Perfil', component: ProfileComponent, canActivate: [authGuard]},
+    { path: 'edit-profile', title:'Editar Perfil', component: EditProfileComponent, canActivate: [authGuard]},
+    { path: '**', component: ProfileComponent }
 ];
