@@ -2,15 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { initFlowbite } from 'flowbite';
+import { LoadingIndicatorComponent } from './shared/components/loading-indicator/loading-indicator.component';
 
 @Component({
   selector: 'app-root',
-  imports: [HeaderComponent, RouterOutlet],
+  imports: [HeaderComponent, RouterOutlet, LoadingIndicatorComponent],
   template:  `
     <app-header /> 
     <div class="content">
       <router-outlet />
     </div>
+    <app-loading-indicator />
+
   `,
   styles: [`
     .content {
