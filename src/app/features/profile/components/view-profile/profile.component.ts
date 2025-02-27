@@ -14,7 +14,7 @@ import { AuthService } from '../../../auth/services';
   styles: ``
 })
 export class ProfileComponent implements OnInit {
-  user: UserInterface | any = null;
+  user: UserInterface | null = null;
   isLogged: boolean = false;
 
   constructor(
@@ -30,10 +30,16 @@ export class ProfileComponent implements OnInit {
     this.loadingServ.loadingOn();
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {      
-      this.user = this.authServ.currentUser;
-      this.authServ.isLoggedIn$.subscribe( (logged) => {
-        this.isLogged = logged;
-      });
+      const user = this.authServ.currentUser;
+      if (Object.keys(user).length > 0) {
+        this.user = user;;
+        this.authServ.isLoggedIn$.subscribe( (logged) => {
+          this.isLogged = logged;
+        });
+      } else {
+        this.router.navigate(['/home/principal']);
+        this.toastServ.openToast('user', 'danger', 'No se encontro los datos del usuario');
+      }
       this.loadingServ.loadingOff();
     } else {
       this.getUserOne(+id);
@@ -61,9 +67,13 @@ export class ProfileComponent implements OnInit {
   }
 
   getLetter(): string {
-    const arrayLetterName = this.user.name.split('');
-    const arrayLetterLastname = this.user.lastname.split('');
-    return arrayLetterName[0] + arrayLetterLastname[0];
+    if (this.user && Object.keys(this.user).length > 0) {
+      const arrayLetterName = this.user.name.split('');
+      const arrayLetterLastname = this.user.lastname.split('');
+      return arrayLetterName[0] + arrayLetterLastname[0];
+    } else {
+      return '';
+    }
   }
 
 
