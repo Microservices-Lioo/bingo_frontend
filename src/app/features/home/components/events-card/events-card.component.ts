@@ -18,7 +18,7 @@ import { RouterLink } from '@angular/router';
     }
   `
 })
-export class EventsCardComponent implements OnInit {
+export class EventsCardComponent {
   isSession: boolean = false;
   currentUser: UserInterface | undefined;
   event = input.required<EventWithBuyerInterface>();
@@ -34,19 +34,6 @@ export class EventsCardComponent implements OnInit {
         this.currentUser = undefined;
       }
     });
-  }
-
-  ngOnInit() {
-  }
-
-  compareToDate(date: Date): boolean {
-    const now = new Date();
-    return date <= now; 
-  }
-
-  isToday(date: Date): boolean {
-    const now = new Date();
-    return date > now;
   }
 
 }

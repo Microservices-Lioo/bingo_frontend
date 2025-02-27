@@ -1,11 +1,8 @@
-<div class="bg-card w-72 min-w-60  shadow-md border rounded-xl p-6 flex flex-grow flex-col gap-6 relative">
+<div class="bg-card w-72 min-w-60  shadow-md border rounded-xl p-6 flex flex-grow flex-col gap-6">
     <div class="mx-auto">
-        <!-- <img src="favicon.ico" alt="" class="w-[200px] h-[100px] object-contain"> -->
         <div class="w-full flex justify-between items-start ">
             <app-icon name="table-bingo" [width]="50" [height]="100"/>
             <div class="text-sm font-bold">
-                <!-- now:  && compareToDate(event().start_time)
-                today: && isToday(event().start_time) -->
                 @if ( event().status == 'NOW') {
                 <span
                     class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Ahora</span>
