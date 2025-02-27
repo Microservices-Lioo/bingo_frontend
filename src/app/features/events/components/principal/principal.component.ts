@@ -9,6 +9,7 @@ import { ModalService } from '../../../../shared/services/modal.service';
 import { ModalInterface } from 'flowbite';
 import { AwardInterface } from '../../../award/interfaces';
 import { ListViewComponent } from '../../../award/components/list-view/list-view.component';
+import { LoadingService } from '../../../../shared/services';
 
 @Component({
   selector: 'app-principal',
@@ -29,10 +30,12 @@ export class PrincipalComponent implements OnInit {
     private eventServ: EventService,
     private toastServ: ToastService,
     private router: Router,
-    private modalServ: ModalService
+    private modalServ: ModalService,
+    private loadingServ: LoadingService
   ) {}
 
   ngOnInit() {
+    this.loadingServ.loadingOn();
     this.getEventsByUserAwards(1);
   }
 
@@ -41,9 +44,11 @@ export class PrincipalComponent implements OnInit {
       next: (events) => {
         this.listEvents = null;
         this.listEvents =  events;
+        this.loadingServ.loadingOff();
       },
       error: (error) => {
         this.toastServ.openToast('get-event', 'danger', 'Error al obtener los eventos');
+        this.loadingServ.loadingOff();
       }
     });
   }
