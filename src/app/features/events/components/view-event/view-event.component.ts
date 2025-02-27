@@ -1,3 +1,4 @@
+import { LoadingService } from './../../../../shared/services/loading.service';
 import { Component, Input, OnInit } from '@angular/core';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { EventAwardsInterface } from '../../interfaces';
@@ -16,54 +17,6 @@ import { CommonModule } from '@angular/common';
 })
 export class ViewEventComponent implements OnInit {
   @Input() eventWithAward!: EventAwardsInterface;
-  eventData: EventAwardsInterface = {
-    id: 1,
-    name: 'Torneo de Estrategia 2025',
-    description:
-      '¡Prepárate para el desafío definitivo! En el Torneo de Estrategia 2025, los mejores jugadores se enfrentarán en un emocionante duelo de habilidad, táctica y velocidad. Participa, demuestra tu talento y compite por increíbles premios.',
-    price: 10,
-    userId: 8,
-    status: 'NOW',
-    start_time: new Date(),
-    award: [
-      {
-        id: 1,
-        name: 'Primer lugar',
-        description: 'Premio de $500 en efectivo y un trofeo exclusivo para el campeón del torneo.',
-        eventId: 1,
-        num_award: 1,
-        gameId: 1,
-        winner_user: 0, // Aún por determinar
-      },
-      {
-        id: 2,
-        name: 'Segundo lugar',
-        description: 'Premio de $250 en efectivo y una medalla de plata para el subcampeón.',
-        eventId: 1,
-        num_award: 2,
-        gameId: 1,
-        winner_user: 0,
-      },
-      {
-        id: 3,
-        name: 'Tercer lugar',
-        description: 'Premio de $100 en efectivo y una medalla de bronce para el tercer puesto.',
-        eventId: 1,
-        num_award: 3,
-        gameId: 1,
-        winner_user: 0,
-      },
-      {
-        id: 4,
-        name: 'Bonus especial',
-        description: 'Acceso VIP al próximo evento con beneficios exclusivos para los finalistas.',
-        eventId: 1,
-        num_award: 4,
-        gameId: 1,
-        winner_user: 0,
-      },
-    ],
-  };
   owner = 'Desconocido';
   winners: { id: number, name: string}[] = [];
   
@@ -72,10 +25,12 @@ export class ViewEventComponent implements OnInit {
     private route: ActivatedRoute,
     private eventServ: EventService,
     private toastServ: ToastService,
-    private userServ: UserService
+    private userServ: UserService,
+    private loadingServ: LoadingService
   ) {}
 
   ngOnInit() {
+    this.loadingServ.loadingOn();
     if (!this.eventWithAward) {
       this.route.paramMap.subscribe(value => {
         const eventId = value.get('id');
@@ -83,15 +38,21 @@ export class ViewEventComponent implements OnInit {
           this.getEventAward(+eventId);
         } else {
           this.router.navigate(['/', '/home/principal']);
+          this.loadingServ.loadingOff();
         }
       });
+    } else {
+      this.loadingServ.loadingOff();
     }
   }
+
+  
 
   getEventAward(eventId: number) {
     this.eventServ.getEventWithAwards(eventId).subscribe({
       next: (event) => {
         if (!event) {
+          this.loadingServ.loadingOff();
           return;
         }
         this.eventWithAward = event;
@@ -100,10 +61,12 @@ export class ViewEventComponent implements OnInit {
           if (award.winner_user === null) return;
           this.getWinner(award.winner_user);
         });
+        this.loadingServ.loadingOff();
       },
       error: (error) => {
         this.router.navigate(['/', '/home/principal']);
         this.toastServ.openToast('event-awards', 'danger', error.message);
+        this.loadingServ.loadingOff();
       }
     })
   }
