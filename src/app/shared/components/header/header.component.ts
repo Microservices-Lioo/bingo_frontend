@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../features/auth/services';
 import { PrimaryButtonComponent } from '../../../ui/buttons/primary-button/primary-button.component';
@@ -17,7 +17,7 @@ import { UserInterface } from '../../../core/interfaces';
 })
 export class HeaderComponent implements OnInit {
   sesion = false;
-  user: UserInterface | any = null;
+  user: UserInterface = { id: 0, name: '', lastname: '', email: '', password: null };
 
   constructor(  
     private authServ: AuthService,
@@ -25,14 +25,17 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {
     this.authServ.isLoggedIn$.subscribe(value => {
+      if (value) {
+        this.user = this.authServ.currentUser;
+      } else {
+        this.user = { id: 0, name: '', lastname: '', email: '', password: null };
+      }
       this.sesion = value;
-      this.user = this.authServ.currentUser;
     });
   }
 
   logOut() {
     this.authServ.logOut();
-    this.user = null;
   }
 
 }
