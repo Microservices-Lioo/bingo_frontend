@@ -1,5 +1,5 @@
-import { RouterLink } from '@angular/router';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import {  RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { EventServiceShared } from '../../../../shared/services/event.service';
 import { EventInterface, PaginationInterface, PaginationQueryInterface } from '../../../../core/interfaces';
 import { initFlowbite, TooltipInterface } from 'flowbite';
@@ -20,7 +20,7 @@ import { HrComponent } from '../../../../shared/components/hr/hr.component';
     }
   `
 })
-export class SidebarComponent implements AfterViewInit, OnInit {
+export class SidebarComponent implements OnInit {
   isSession: boolean = false;
   eventListNow: PaginationInterface<EventInterface> | undefined;
   eventListToday: PaginationInterface<EventInterface> | undefined;
@@ -30,7 +30,7 @@ export class SidebarComponent implements AfterViewInit, OnInit {
   constructor(
     private authServ: AuthService,
     private eventServ: EventServiceShared,
-    private toolTipServ: TooltipsService
+    private toolTipServ: TooltipsService,
   ) { }
 
   ngOnInit() {
@@ -49,9 +49,6 @@ export class SidebarComponent implements AfterViewInit, OnInit {
         }
       },
     });
-  }
-
-  ngAfterViewInit() {
     initFlowbite();
   }
 
