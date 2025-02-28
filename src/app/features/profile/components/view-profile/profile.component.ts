@@ -31,16 +31,18 @@ export class ProfileComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {      
       const user = this.authServ.currentUser;
+      this.loadingServ.loadingOff();
       if (Object.keys(user).length > 0) {
         this.user = user;;
         this.authServ.isLoggedIn$.subscribe( (logged) => {
           this.isLogged = logged;
         });
       } else {
-        this.router.navigate(['/home/principal']);
-        this.toastServ.openToast('user', 'danger', 'No se encontro los datos del usuario');
+        this.toastServ.openToast('user', 'danger', 'Usuario no encontrado, redireccionando...');
+        setTimeout
+        setTimeout(() =>this.toastServ.removeToast('user'), 1000);
+        setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
       }
-      this.loadingServ.loadingOff();
     } else {
       this.getUserOne(+id);
     }
@@ -49,19 +51,20 @@ export class ProfileComponent implements OnInit {
   getUserOne(id: number) {
     this.userServ.getUser(id).subscribe({
       next: (user) => {
+        this.loadingServ.loadingOff();
         if (user) {
           this.user = user;
-          this.loadingServ.loadingOff();
         } else {
-          this.router.navigate(['/home/principal']);
           this.toastServ.openToast('user', 'danger', 'El usuario no existe');
-          this.loadingServ.loadingOff();
+          setTimeout(() =>this.toastServ.removeToast('user'), 1000);
+          setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
         }
       },
       error: (error) => {
-        this.router.navigate(['/home/principal']);
-        this.toastServ.openToast('user', 'danger', 'No se encontro los datos del usuario');
         this.loadingServ.loadingOff();
+        this.toastServ.openToast('user', 'danger', 'No se encontro los datos del usuario');
+        setTimeout(() =>this.toastServ.removeToast('user'), 1000);
+        setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
       }
     })
   }
