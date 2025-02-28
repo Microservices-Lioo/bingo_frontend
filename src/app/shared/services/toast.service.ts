@@ -68,7 +68,7 @@ export class ToastService {
     `;
   }
 
-  private removeToast(id: string) {
+  removeToast(id: string) {
     const toastOpened = document.getElementById(id);
     if ( !toastOpened ) return;
     toastOpened.classList.add('opacity-0');
