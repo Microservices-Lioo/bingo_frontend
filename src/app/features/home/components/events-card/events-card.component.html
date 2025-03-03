@@ -49,16 +49,24 @@
                 <span class="text-sm px-2">{{ event().start_time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
             </div>
             @if ( !isSession ) {
-                <app-primary-button label="Comprar Cartón"  class="mt-3" />
-            } @else if ( currentUser && currentUser.id === event().userId ) {
-                <app-primary-button label="Administrar" class="mt-3" />
-            } @else if ( event().status == 'NOW') {
-                <app-primary-button label="Jugar" class="mt-3" />
-            } @else if ( event().status == 'TODAY' ) {
-                <app-primary-button label="Comprar Cartón" class="mt-3" />
-            } @else {
-                <app-primary-button label="Comprar Cartón" class="mt-3" />
-            }            
+                <app-primary-button label="Comprar Cartón" url="/auth/login" class="mt-3" />
+            } @if(currentUser) { 
+                @if ( currentUser.id === event().userId ) {
+                    <app-primary-button label="Administrar" class="mt-3" /> 
+                } @else if(event().buyer) {  
+                    @if ( event().status == 'NOW' ) {
+                        <app-primary-button label="Jugar" class="mt-3" />
+                    } @else if ( event().status == 'TODAY' ) {
+                        <app-primary-button label="No iniciado" class="mt-3" />
+                    } @else if ( event().status == 'PROGRAMMED' ) {
+                        <app-primary-button label="Próximamente" class="mt-3" />
+                    }  @else {
+                        <app-primary-button label="Comprar Cartón" class="mt-3" />
+                    } 
+                }  @else {
+                    <app-primary-button label="Comprar Cartón" [url]="['/order', { id: event().id }]" class="mt-3" />
+                } 
+            }           
         </div>
     </div>
 </div>
