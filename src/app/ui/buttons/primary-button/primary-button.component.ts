@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, UrlTree } from '@angular/router';
 
 @Component({
   selector: 'app-primary-button',
@@ -31,7 +31,7 @@ import { RouterLink } from '@angular/router';
 export class PrimaryButtonComponent {
   @Input() label: string = '';
   @Input() type: 'button' | 'submit' = 'button';
-  @Input() url: string | undefined;
+  @Input() url: string | any[] | undefined;
   @Output() btnCliked = new EventEmitter<String>();
   @Input() disabled: boolean = false;
   @Input() loading: boolean = false;
