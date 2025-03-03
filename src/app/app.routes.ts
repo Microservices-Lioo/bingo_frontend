@@ -6,6 +6,7 @@ export const routes: Routes = [
     { path: 'profile', title: 'Perfil', loadChildren: () => import('./features/profile/routes').then(m => m.profileRoutes),  },
     { path: 'events', title: 'Eventos', loadChildren: () => import('./features/events/routes').then(m => m.eventsRoutes),  },
     { path: 'award', title: 'Premios', loadChildren: () => import('./features/award/routes').then(m => m.awardRoutes),  },
+    { path: 'order', title: 'Orden', loadChildren: () => import('./features/orders/routes').then(m => m.orderRoutes),  },
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: '**', loadChildren: () => import('./features/home/routes').then(m => m.homeRoutes) },
 ];
