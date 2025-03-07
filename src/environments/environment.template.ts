@@ -4,5 +4,6 @@ export const environment = {
     apiMSAuthUrl: '',
     apiMSEventUrl: '',
     apiMSAwardUrl: '',
+    apiMSCardUrl: '',
     apiMSPaymentUrl: ''
 };

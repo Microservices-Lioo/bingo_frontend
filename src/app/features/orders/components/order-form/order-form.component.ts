@@ -4,7 +4,7 @@ import { IconComponent } from '../../../../shared/components/icon/icon.component
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from '../../../events/services/event.service';
-import { LoadingService, ToastService } from '../../../../shared/services';
+import { CardsServiceShared, LoadingService, ToastService } from '../../../../shared/services';
 import { UserService } from '../../../profile/services';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -40,7 +40,8 @@ export class OrderFormComponent {
     private toastServ: ToastService,
     private userServ: UserService,
     private loadingServ: LoadingService,
-    private orderServ: OrderService
+    private orderServ: OrderService,
+    private cardsServ: CardsServiceShared
   ) {
     effect(() => {
       const query = new URLSearchParams(window.location.search);
@@ -70,6 +71,8 @@ export class OrderFormComponent {
         const eventId = value.get('id');
         if (eventId) {
           this.getEventAward(+eventId);
+          this.getCountCards(+eventId);
+          
         } else {
           this.router.navigate(['/', '/home/principal']);
           this.loadingServ.loadingOff();
@@ -195,5 +198,16 @@ export class OrderFormComponent {
         }
       }      
     }
+  }
+
+  getCountCards(eventId: number) {
+    this.cardsServ.getCardCountForUserAndEvent(eventId).subscribe({
+      next: (value) => {
+        this.cantCard = value;
+      },
+      error: (error) => {
+        this.toastServ.openToast('get-count-cards', 'danger', 'Error al obtener la cantidad de cards compradas');
+      }
+    })
   }
 }
