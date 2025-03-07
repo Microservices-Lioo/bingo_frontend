@@ -44,6 +44,7 @@ export class OrderFormComponent {
       const query = new URLSearchParams(window.location.search);
       if (query.get("success")) {
         this.toastServ.openToast('order-success', 'success', "Pedido realizado - Recibirá una confirmación por correo electrónico.");
+        this.loadingServ.loadingOff();
       }
   
       if (query.get("canceled")) {
@@ -51,6 +52,7 @@ export class OrderFormComponent {
           'order-danger', 'danger', 
           "Petido cancelado"
         );
+        this.loadingServ.loadingOff();
       }
     })
   }
@@ -144,29 +146,38 @@ export class OrderFormComponent {
   }
 
   buy() {
+    this.loadingServ.loadingOn();
+
     if (!this.cuid) {
       this.cuid = uuidv4();
     }
 
     if (this.createCard.invalid) {
-      this.toastServ.openToast('invalid-form', 'danger', 'Formulario invalido.')
+      this.toastServ.openToast('invalid-form', 'danger', 'Formulario invalido.');
+      this.loadingServ.loadingOff();
     } else {
       if (this.infoEventAward === null) {
         this.toastServ.openToast('event-data', 'danger', 'No se encontró la información del evento.')
+        this.loadingServ.loadingOff();
       } else {
         const quantity = this.createCard.value.quantity;
         if (!quantity) {
           this.toastServ.openToast('quantity-data', 'danger', 'No se especificó la cantidad de elemntos a comprar para este evento.')
-        } else {
+          this.loadingServ.loadingOff();
+      } else {
           const orderEvent: OrderEventInterface = (({id, name, description, userId, price}) => ({id, name, description, userId, price}))(this.infoEventAward) ;
           this.orderServ.createEvent(orderEvent, this.cuid, quantity).subscribe({
             next: (data) => {
               if (!data.url) return;
               window.location.href = data.url;
-              this.cuid = null;
+              this.cuid = null;              
             },
             error: (error) => {
               this.toastServ.openToast('res-error', 'danger', error.message)
+              this.loadingServ.loadingOff();
+            },
+            complete: () => {
+              this.loadingServ.loadingOff();
             }
           })
         }
