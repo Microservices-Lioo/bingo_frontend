@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, inject, OnInit } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { AuthService } from '../../services';
@@ -28,8 +28,9 @@ export interface ItemForm {
     }
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loading: boolean = false;
+  returnUrl: string = '/';
 
   fb = inject(NonNullableFormBuilder);
 
@@ -39,12 +40,16 @@ export class LoginComponent {
     private authServ: AuthService,
     private toastServ: ToastService,
     private router: Router,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group<ItemForm>({
       email: this.fb.control('', { validators: [Validators.required, Validators.email] }),
       password: this.fb.control('', { validators: [Validators.required, Validators.minLength(8)] }),
     });
+  }
 
+  ngOnInit() {
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
   OnSubmit() {
@@ -68,7 +73,7 @@ export class LoginComponent {
           this.authServ.setCurrentUser(user);
           this.authServ.setLoggedIn(true);
           this.loading = false;
-          this.router.navigate(['/', 'home']);
+          this.router.navigateByUrl(this.returnUrl);
 
         }
       },

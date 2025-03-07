@@ -7,19 +7,18 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authServ = inject(AuthService);
   const router = inject(Router);
 
-  const token = localStorage.getItem('access_token');
-
-  if (!token) return router.navigate(['/auth/login']).then(() => false);
-
-  // Validar token
-  authServ.verifyToken(token).pipe(
-    map((result) => {
-      return result ? true : router.navigate(['/auth/login']).then(() => false);
-    }),
-    catchError((error) => {
-      return router.navigate(['/auth/login']).then(() => false);
-    })
-  );
+  authServ.isLoggedIn$.subscribe({
+    next: (value) => {
+      if (value) {
+        return true;
+      } else {
+        return router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url }}).then(() => false);
+      }
+    },
+    error: (error) => {
+      return router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url }}).then(() => false);
+    }
+  });
 
   return true;
 
