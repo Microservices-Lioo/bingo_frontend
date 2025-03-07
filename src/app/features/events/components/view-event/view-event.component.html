@@ -68,11 +68,11 @@
                         }
                     </div>
                 </div>            
-                @if(owner !== 'Desconocido') {
-                    <div class="flex w-full my-1 items-center justify-start">
+                <div class="flex w-full my-1 flex-col items-center md:flex-row justify-between">
+                    @if(owner !== 'Desconocido') {
                         <div class="flex items-center gap-4">
                             <div class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-sky-800 rounded-full dark:bg-gray-600">
-                                <span class="font-medium text-gray-100 dark:text-gray-300">{{ getLetter() }}</span>
+                                <span class="font-medium text-gray-100 dark:text-gray-300">{{ letterOwner }}</span>
                             </div>
                             <a [routerLink]="['/profile', { id: eventWithAward.userId }]">
                                 <div class="font-medium dark:text-white">
@@ -80,9 +80,10 @@
                                     <div class="text-sm text-gray-500 dark:text-gray-400">Propietario</div>
                                 </div>
                             </a>
-                        </div>                
+                        </div>
+                    }
+                        <app-primary-button label="Comprar Cartón" [url]="['/order', { id: eventWithAward.id }]"  class="mt-3" />              
                     </div>
-                }
                 </div>
             </div>
             <div class="flex items-center justify-center rounded-sm  mb-4 bg-gray-50 dark:bg-gray-800">

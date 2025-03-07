@@ -7,10 +7,11 @@ import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services';
 import { UserService } from '../../../profile/services';
 import { CommonModule } from '@angular/common';
+import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 
 @Component({
   selector: 'app-view-event',
-  imports: [CommonModule, IconComponent, RouterLink],
+  imports: [CommonModule, IconComponent, RouterLink, PrimaryButtonComponent],
   templateUrl: './view-event.component.html',
   styles: ``,
   standalone: true
@@ -18,6 +19,7 @@ import { CommonModule } from '@angular/common';
 export class ViewEventComponent implements OnInit {
   @Input() eventWithAward!: EventAwardsInterface;
   owner = 'Desconocido';
+  letterOwner = '';
   winners: { id: number, name: string}[] = [];
   
   constructor(
@@ -44,9 +46,7 @@ export class ViewEventComponent implements OnInit {
     } else {
       this.loadingServ.loadingOff();
     }
-  }
-
-  
+  }  
 
   getEventAward(eventId: number) {
     this.eventServ.getEventWithAwards(eventId).subscribe({
@@ -75,7 +75,7 @@ export class ViewEventComponent implements OnInit {
     return this.userServ.getUser(userId);
   }
 
-  getOwner(userId: number): string {
+  getOwner(userId: number) {
     let ownerName = 'Desconocido';
     this.getUser(userId).subscribe({
       next: (user) => {
@@ -84,13 +84,13 @@ export class ViewEventComponent implements OnInit {
           const username = name + ' ' + lastname;
           this.owner = username != this.owner ? username : this.owner;
           ownerName = this.owner;
+          this.getLetter();
         }
       },
       error: (error) => {
-        return ownerName;
+        this.toastServ.openToast('get-owner', 'danger', 'Error al obtener el owner del evento');
       }
     });
-    return ownerName;
   }
 
   getWinner(userId: number) {
@@ -103,7 +103,7 @@ export class ViewEventComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.log(error);
+        this.toastServ.openToast('get-winner', 'danger', 'Error al cargar los ganadores');
       }
     });
   }
@@ -113,14 +113,23 @@ export class ViewEventComponent implements OnInit {
     return winner ? winner.name : 'Desconocido';
   }
 
-  getLetter(): string {
+  getLetter() {
     let letter = '';
     const arrayOwner = this.owner.split(' ');
-    arrayOwner.forEach(name => {
-      const arrayLetter = name.split('');
-      letter = letter + arrayLetter[0];
-    });
-    return letter;
+    if (arrayOwner.length > 2 ) {
+      arrayOwner.forEach((name, index) => {
+        if (index === 0 || index === 2 ) {
+          const arrayLetter = name.split('');
+          letter = letter + arrayLetter[0];
+        }
+      });
+    } else {
+      arrayOwner.forEach(name => {
+        const arrayLetter = name.split('');
+        letter = letter + arrayLetter[0];
+      });
+    }
+    this.letterOwner = letter;
   }
 
   toggleText(event: Event, id: string) {

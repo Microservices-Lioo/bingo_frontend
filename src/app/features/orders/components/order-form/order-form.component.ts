@@ -27,7 +27,9 @@ export interface ItemForm {
 export class OrderFormComponent {
   infoEventAward: EventAwardsInterface | null = null;
   owner = 'Desconocido';
+  letterOwner = '';
   cuid: string | null = null;
+  cantCard = 0;
 
   fb = inject(NonNullableFormBuilder);
 
@@ -109,6 +111,7 @@ export class OrderFormComponent {
           const username = name + ' ' + lastname;
           this.owner = username != this.owner ? username : this.owner;
           ownerName = this.owner;
+          this.getLetter();
         }
       },
       error: (error) => {
@@ -118,14 +121,23 @@ export class OrderFormComponent {
     return ownerName;
   }
 
-  getLetter(): string {
+  getLetter() {
     let letter = '';
     const arrayOwner = this.owner.split(' ');
-    arrayOwner.forEach(name => {
-      const arrayLetter = name.split('');
-      letter = letter + arrayLetter[0];
-    });
-    return letter;
+    if (arrayOwner.length > 2 ) {
+      arrayOwner.forEach((name, index) => {
+        if (index === 0 || index === 2 ) {
+          const arrayLetter = name.split('');
+          letter = letter + arrayLetter[0];
+        }
+      });
+    } else {
+      arrayOwner.forEach(name => {
+        const arrayLetter = name.split('');
+        letter = letter + arrayLetter[0];
+      });
+    }
+    this.letterOwner = letter;
   }
 
   toggleText(event: Event, id: string) {
