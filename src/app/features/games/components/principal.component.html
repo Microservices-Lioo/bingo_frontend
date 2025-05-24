@@ -24,7 +24,33 @@
             </div>
             <app-ball-status />
         </div>
-        <div class="row-span-4 col-start-1 row-start-2">2</div>
+        <div class="row-span-4 col-start-1 row-start-2">
+            <h3 class="text-sm font-bold">Premios</h3>
+
+            <div class="flow-root">
+                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @for (award of awardsList; track $index) {
+                    <li class="py-1 sm:py-2">
+                        <div class="flex items-center flex-wrap">
+                            <div class="flex-1 mt-2">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ award.num + '.'}} {{ award.name }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Ganador: {{ award.winner_status ? award.winner : '-' }}
+                                </p>
+                            </div>
+                            <div class="inline-flex text-xs p-1 items-center font-semibold text-gray-900 dark:text-white rounded"
+                            [class]="award.status === true ? 'bg-green-400' : award.winner_status ? 'bg-red-500' : 'bg-yellow-300'">
+                                {{ award.status === true ? 'Ahora' : award.winner_status ? 'Fin' : 'Prox.' }}
+                            </div>
+                        </div>
+                    </li>
+                    }
+                </ul>
+            </div>
+
+        </div>
         <div class="col-start-2 row-start-2">
             3
         </div>
