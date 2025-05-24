@@ -1,0 +1,100 @@
+<div class="w-full h-full justify-center items-center">
+    <div class="grid grid-cols-5 grid-rows-6 gap-5">
+        <div class="col-span-3 col-start-2 row-start-1">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold">Números cantados</h3>
+                <button data-popover-target="popover-info-nums" data-popover-placement="bottom-end" type="button">
+                    <svg class="shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                    </svg>
+                </button>
+                <div data-popover id="popover-info-nums" role="tooltip"
+                    class="absolute z-10 invisible inline-block text-xs text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
+                    <div class="p-2 space-y-2">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Números cantados</h3>
+                        <p>Aquí se muestrán los números cantados en el actual modo de juego.</p>
+                        <li><span class="text-green-500">Color vérde </span>representa un número que se ha jugado.</li>
+                        <li><span>Color blanco </span>representa un número que aún no se ha jugado.</li>
+
+                    </div>
+                    <div data-popper-arrow></div>
+                </div>
+            </div>
+            <app-ball-status />
+        </div>
+        <div class="row-span-4 col-start-1 row-start-2">2</div>
+        <div class="col-start-2 row-start-2">
+            3
+        </div>
+        <div class="col-start-3 row-start-2">
+
+        </div>
+        <div class="col-start-4 row-start-2">
+        </div>
+        <div class="row-span-4 col-start-5 row-start-2">6</div>
+        <div class="col-span-3 row-span-3 col-start-2 row-start-3 items-center justify-center text-center">
+
+        </div>
+        <div class="col-start-2 row-start-6">8</div>
+        <div class="col-start-3 row-start-6">9</div>
+        <div class="col-start-4 row-start-6">10</div>
+        <div class="col-start-1 row-start-1">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold">Modo de juego</h3>
+                <div data-popover id="popover-info-mode-game" role="tooltip"
+                    class="absolute z-10 invisible inline-block text-xs text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
+                    <div class="p-2 space-y-2">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Modo de juego</h3>
+                        <p>Detalles del modo de juego.</p>
+
+                    </div>
+                    <div data-popper-arrow></div>
+                </div>
+            </div>
+            <div
+                class="w-2/4 min-w-20 max-w-24 grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
+                <div class="cell text-center bg-sky-800 text-white border border-slate-400">B</div>
+                <div class="cell text-center bg-sky-800 text-white border border-slate-400">I</div>
+                <div class="cell text-center bg-sky-800 text-white border border-slate-400">N</div>
+                <div class="cell text-center bg-sky-800 text-white border border-slate-400">G</div>
+                <div class="cell text-center bg-sky-800 text-white border border-slate-400">O</div>
+                @for (row of matrixMode; track $index) {
+                @for (col of row; track $index) {
+                <div [class]="col ? 'bg-green-500' : ''" class="cell border"></div>
+                }
+                }
+            </div>
+        </div>
+        <div class="col-start-5 row-start-1">
+            <a class="text-sm cursor-pointer p-0" data-popover-target="popover-info-rule"
+                data-popover-placement="bottom-end">
+                <div class="flex gap-1">
+                    <div>Reglas</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#42a5f5" d="M39 45H9s-3-.1-3-8h36c0 7.9-3 8-3 8" />
+                        <path fill="#90caf9" d="M8 3h32v34H8z" />
+                        <path fill="#1976d2"
+                            d="M18 15h16v2H18zm0 4h16v2H18zm0 4h16v2H18zm0 4h16v2H18zm0 4h16v2H18zm-4-16h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2z" />
+                    </svg>
+                </div>
+            </a>
+            <div data-popover id="popover-info-rule" role="tooltip"
+                class="absolute z-10 invisible inline-block text-xs text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
+                <div class="p-2 space-y-2">
+                    <h3 class="font-semibold text-gray-900 dark:text-white">Reglas</h3>
+                    <li>Reglas 1: Detalles de la reglas</li>
+                    <li>Reglas 2: Detalles de la reglas</li>
+                    <li>Reglas 3: Detalles de la reglas</li>
+                    <li>Reglas 4: Detalles de la reglas</li>
+
+                </div>
+                <div data-popper-arrow></div>
+            </div>
+        </div>
+        <div class="col-start-1 row-start-6">13</div>
+        <div class="row-start-6">14</div>
+    </div>
+
+</div>
