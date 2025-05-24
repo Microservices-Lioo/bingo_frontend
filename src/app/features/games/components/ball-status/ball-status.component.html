@@ -1,0 +1,15 @@
+<div class="grid [grid-template-columns:repeat(auto-fit,minmax(30px,1fr))] gap-1 w-full max-w-6xl">
+    <div class="loader-status bg-sky-800 font-bold text-3xl flex justify-center items-center text-center col-span-2 row-span-2 flex-none ...">
+        {{ num_cantado }}    
+    </div>
+        @for (item of items; track $index; let i = $index) {
+            <div 
+                class="loader font-bold flex justify-center items-center text-center"
+                [class]="item.state ? 'bg-green-300' : ''"
+            >
+                {{ item.value || '' }}
+            </div>
+        }
+</div>
+
+  
