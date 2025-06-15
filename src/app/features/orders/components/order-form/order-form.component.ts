@@ -10,7 +10,7 @@ import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/pr
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { OrderService } from '../../services/order.service';
-import { OrderEventInterface } from '../../interfaces';
+import { CreateOrderInterface } from '../../interfaces';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ItemForm {
@@ -28,7 +28,6 @@ export class OrderFormComponent {
   infoEventAward: EventAwardsInterface | null = null;
   owner = 'Desconocido';
   letterOwner = '';
-  cuid: string | null = null;
   cantCard = 0;
 
   fb = inject(NonNullableFormBuilder);
@@ -163,10 +162,6 @@ export class OrderFormComponent {
   buy() {
     this.loadingServ.loadingOn();
 
-    if (!this.cuid) {
-      this.cuid = uuidv4();
-    }
-
     if (this.createCard.invalid) {
       this.toastServ.openToast('invalid-form', 'danger', 'Formulario invalido.');
       this.loadingServ.loadingOff();
@@ -180,12 +175,11 @@ export class OrderFormComponent {
           this.toastServ.openToast('quantity-data', 'danger', 'No se especificó la cantidad de elemntos a comprar para este evento.')
           this.loadingServ.loadingOff();
       } else {
-          const orderEvent: OrderEventInterface = (({id, name, description, userId, price}) => ({id, name, description, userId, price}))(this.infoEventAward) ;
-          this.orderServ.createEvent(orderEvent, this.cuid, quantity).subscribe({
+          const orderEvent: CreateOrderInterface = { totalItems: quantity, eventId: this.infoEventAward.id, nameEvent: this.infoEventAward.name, unitAmount: this.infoEventAward.price};
+          this.orderServ.createOrder(orderEvent).subscribe({
             next: (data) => {
               if (!data.url) return;
               window.location.href = data.url;
-              this.cuid = null;              
             },
             error: (error) => {
               this.toastServ.openToast('res-error', 'danger', error.message)

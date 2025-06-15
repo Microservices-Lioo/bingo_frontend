@@ -1,20 +1,20 @@
-import { OrderEventInterface } from './../interfaces/order-event.interface';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import { handleError } from '../../../core/errors';
+import { CreateOrderInterface } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  url: string = environment.apiUrl + environment.apiMSPaymentUrl;
+  url: string = environment.apiUrl + environment.apiMSOrderUrl;
 
   constructor(private http: HttpClient) { }
 
-  createEvent(event: OrderEventInterface, cuid: string, quantity: number): Observable<{url: string}> {
-    return this.http.post<{url: string}>(`${this.url}/create-checkout-session`, { event, cuid, quantity } )
+  createOrder(order: CreateOrderInterface): Observable<{url: string}> {
+    return this.http.post<{url: string}>(`${this.url}/create-checkout-session`, order )
       .pipe(catchError(handleError));
   }
 }
