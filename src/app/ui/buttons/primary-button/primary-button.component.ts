@@ -7,7 +7,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
   imports: [RouterLink, IconComponent],
   template: `
     <button
-      class="text-white w-full px-5 py-2 rounded-xl shadow-md hover:opacity-90"
+      class="text-white w-full px-2 py-2 rounded-xl shadow-md hover:opacity-90"
       [class]="bg ? bg.toString() : 'bg-btn'"
       [type]="type"
       [disabled]="disabled"

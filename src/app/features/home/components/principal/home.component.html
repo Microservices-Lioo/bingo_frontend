@@ -26,7 +26,7 @@
         
             @if (item.name === 'NOW') {
                 @if (eventListNow && eventListNow.data.length > 0) {
-                    <div class="flex gap-3 justify-start flex-wrap">
+                    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-start flex-wrap">
                         @for (event of eventListNow.data; track $index) {
                             <app-events-card
                                 [event]="event"
@@ -46,7 +46,7 @@
                 
             } @else if (item.name === 'TODAY') {
                 @if (eventListToday && eventListToday.data.length > 0) {
-                    <div class="flex gap-3 justify-start flex-wrap">
+                    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-start flex-wrap">
                         @for (event of eventListToday.data; track $index) {
                             <app-events-card
                                 [event]="event"
@@ -65,7 +65,7 @@
                 }
             } @else {
                 @if (eventListProgrammed && eventListProgrammed.data.length > 0) {
-                    <div class="flex gap-3 justify-start flex-wrap">
+                    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-start flex-wrap">
                         @for (event of eventListProgrammed.data; track $index) {
                             <app-events-card
                                 [event]="event"
