@@ -67,7 +67,6 @@ export class BallStatusComponent {
     if (!this.items[index].state) {
       this.items[index].state = true;
     };
-    console.log(this.items)
   }
 
   cleanBalls(val: boolean) {

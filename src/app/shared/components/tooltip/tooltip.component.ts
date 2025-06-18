@@ -15,6 +15,6 @@ import { Component, Input } from '@angular/core';
   styles: ``
 })
 export class TooltipComponent {
-  @Input() id!: number;
+  @Input() id!: number | string;
   @Input() description: string = '';
 }

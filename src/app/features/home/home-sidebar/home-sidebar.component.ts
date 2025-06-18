@@ -9,7 +9,7 @@ import { LoadingIndicatorComponent } from '../../../shared/components/loading-in
   template: `
     <!-- Sidebar -->
     <app-sidebar />
-    <div class="p-4 sm:ml-64">
+    <div class="p-4 sm:ml-64 h-full">
       <router-outlet />
       <app-loading-indicator />
     </div>
