@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { AuthService } from '../../features/auth/services';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -11,10 +10,10 @@ import { BehaviorSubject } from 'rxjs';
 export class WebsocketServiceShared {
   private socket!: Socket;
   private urlWS = environment.apiUrlWS;
-  private statusConnection$ = new BehaviorSubject<'connected' | 'disconnected' | 'reconnecting' | 'failed'>('disconnected');
+  private statusConnection$ = 
+    new BehaviorSubject<'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby'>('disconnected');
 
   constructor(
-    private authServ: AuthService,
     private router: Router
   ) { this.initWS(); }
 
@@ -35,7 +34,7 @@ export class WebsocketServiceShared {
 
     //* Eventos de conexión
     this.socket.on("connect", () => {
-      this.statusConnection$.next('connected');
+      console.log('connected')
     });
 
     this.socket.on("disconnect", () => {
@@ -49,7 +48,6 @@ export class WebsocketServiceShared {
     });
 
     this.socket.io.on("reconnect", (count) => {
-      this.statusConnection$.next('connected');
       console.log('Reconexión: ' + count);
     });
 
@@ -85,13 +83,23 @@ export class WebsocketServiceShared {
     this.socket.emit('joinGame', room);
   }
 
+  joinWaitingRoom(room: number): void {
+    this.statusConnection$.next('on-standby');
+    const joinRoom = `Waiting room #${room}`;
+    this.socket.emit('waitingGame', room);
+    this.socket.off(joinRoom);
+    this.socket.on(joinRoom, (value) => {
+      console.log(value);
+    });
+  }
+
   disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();
     }
   }
 
-  public getConnectionStatus() {
+  getConnectionStatus() {
     return this.statusConnection$.asObservable();
   }
 

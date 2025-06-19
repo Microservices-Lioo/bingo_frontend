@@ -1,14 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { EventServiceShared, ModalService, WebsocketServiceShared } from '../../../shared/services';
+import { 
+  EventServiceShared, 
+  ModalService, 
+  WebsocketServiceShared 
+} from '../../../shared/services';
 import { EventAwardsInterface } from '../../../core/interfaces';
 import { BallStatusComponent } from './ball-status/ball-status.component';
 import { initFlowbite, ModalInterface } from 'flowbite';
 import { GamesService } from '../services/games.service';
-import { CardPagination, CardTypeShared } from '../../../shared/interfaces/card-shared.interface';
+import { CardPagination } from '../../../shared/interfaces/card-shared.interface';
 import { CardTest } from '../data-test/card-test';
-import { GameMode } from '../interfaces';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { 
+  AwardGameInterface, 
+  GameMode, 
+  StatusAward
+} from '../interfaces';
+import { 
+  FormBuilder, 
+  FormGroup, 
+  ReactiveFormsModule, 
+  Validators 
+} from '@angular/forms';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
@@ -17,16 +30,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
 import { AwardSharedInterface } from '../../../shared/interfaces';
-import { AwardServiceShared } from '../../../shared/services/award.service';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
-
-type AwardType = {
-  num: number;
-  name: string;
-  winner: string;
-  winner_status: boolean;
-  status: boolean;
-};
+import { AuthService } from '../../auth/services';
 
 @Component({
   selector: 'app-principal',
@@ -76,7 +81,7 @@ export class PrincipalComponent implements OnInit {
     [true, false, false, false, true],
   ];
   numCalled: number | null = null;
-  awardsList: AwardType[];
+  awardsList!: AwardGameInterface[];
   cardsList: CardPagination;
   modalGameMode: ModalInterface | null = null;
   
@@ -99,40 +104,34 @@ export class PrincipalComponent implements OnInit {
   gameModeSelected: boolean = false;
   awardGameModeSelected: boolean  = false;
   gameModeList: GameMode[] = [];
-  awardList: AwardSharedInterface[] = [];
-  statusConnection: 'connected' | 'disconnected' | 'reconnecting' | 'failed' = 'disconnected';
+  statusConnection: 'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby' = 'disconnected';
   titleMsgConnection: string = '';
   textMsgConnection: string = '';
 
   constructor(
     private route: ActivatedRoute,
     private eventSharedServ: EventServiceShared,
-    private awardSheredServ: AwardServiceShared,
     private gameServ: GamesService,
     private cardTest: CardTest,
     private modalSev: ModalService,
     private _formBuilder: FormBuilder,
-    private socketServ: WebsocketServiceShared
+    private socketServ: WebsocketServiceShared,
+    private authServ: AuthService
   ) {
-    // TODO: TEST
-    this.awardsList = this.getAwardsList();
-    this.cardsList = this.getCardsList();
-    
-    this.IsAdmin = true;
+    this.cardsList = this.getCardsList();    
   }
   
-  ngOnInit() {
+  async ngOnInit() {
     const eventId = this.route.snapshot.paramMap.get('id');
     const userId = this.route.snapshot.paramMap.get('userId');
-    this.getEvent(+eventId!, +userId!);
+    
+    await this.getEvent(+eventId!, +userId!);
     
     this.calledBall(5);
     this.cleanBalls(true);
     initFlowbite();
     
-    this.isAdmin(+eventId!);
     this.getGameMode();
-    this.getAwards();
     
     this.firstFormGroup = this._formBuilder.group({
       awardCtrl: ['', Validators.required]
@@ -150,8 +149,6 @@ export class PrincipalComponent implements OnInit {
     }
 
     //* Web Socket
-    this.socketServ.joinRoom(parseInt(eventId!));
-
     this.socketServ.getConnectionStatus().subscribe({
       next: (status) => {
         if (status === 'disconnected') {
@@ -163,62 +160,43 @@ export class PrincipalComponent implements OnInit {
         } else if (status === 'failed') {
           this.titleMsgConnection = 'Error de conexión';
           this.textMsgConnection = 'No se pudo conectar. Por favor, recarga la página o intenta más tarde.';
+        } else if (status === 'on-standby') {
+          this.titleMsgConnection = 'Sala de espera';
+          this.textMsgConnection = 'Sala no iniciada. Por favor, espera a que el anfitrión inicie la sala.';
         }
         this.statusConnection =  status;
-      }
-    })
-  }
-
-  isAdmin(eventId: number) {
-    this.eventSharedServ.getUserRoleEvent(eventId).subscribe({
-      next: (result) => {
-        this.IsAdmin = result;
-      },
-      error: (error) => {
-        console.log('error new: ' + error)
       }
     });
   }
   
-  getAwardsList(): AwardType[] {
-    let awards = [
-      { num: 1, name: 'Premio 1', winner: 'Kevin', winner_status: true, status: false },
-      { num: 2, name: 'Premio 2', winner: '', winner_status: false, status: true },
-      { num: 3, name: 'Premio 3', winner: '', winner_status: false, status: false },
-      { num: 4, name: 'Premio 4', winner: '', winner_status: false, status: false },
-      { num: 5, name: 'Premio 5', winner: '', winner_status: false, status: false},
-      { num: 6, name: 'Premio 6', winner: '', winner_status: false, status: false },
-    ];
+  async getAwardsList(awards: AwardSharedInterface[]) {
+    let awardsList = awards.map(award => ({
+      ...award,
+      status: StatusAward.PROX
+    }));
     
-    return this.orderAwards(awards);
+    this.awardsList = awardsList;
   }
   
   getCardsList(): CardPagination {
     return { data: this.cardTest.generateBingoCards(5), meta: { lastPage: 5, page: 1, total: 5 } };
   }
   
-  orderAwards(awards: AwardType[]) {    
-    let auxActualxList: AwardType;
-    let auxFinList: AwardType[] = [];
-    let auxProxList: AwardType[] = [];
-    
-    awards.forEach(element => {
-      if (element.status) {
-        auxActualxList = element;
-      } else if (element.winner_status) {
-        auxFinList.push(element);
-      } else {
-        auxProxList.push(element);
-      }
-    });
-    let awardsResult = [auxActualxList!, ...auxProxList.concat(...auxFinList)];
-    return awardsResult;
-  }
-  
-  getEvent(eventId: number, userId: number) {
+  async getEvent(eventId: number, userId: number) {
     this.eventSharedServ.getEventWithAwards(+eventId, userId).subscribe({
-      next: (event) => {
+      next: async (event) => {
+        const currentUserId = this.authServ.currentUser.id;
+        if (currentUserId === userId && event.userId === userId) {
+          this.IsAdmin = true;
+        }
+        if ((currentUserId === userId && event.userId === userId) && (event.status == 'NOW' || event.status == 'TODAY')) {
+          this.socketServ.joinRoom(event.id);
+        } else if (event.status == 'TODAY') {
+          this.socketServ.joinWaitingRoom(event.id);
+        }
         this.eventData = event;
+
+        await this.getAwardsList(event.award as AwardSharedInterface[]);
       },
       error: (error) => {
         console.log(error);
@@ -230,18 +208,6 @@ export class PrincipalComponent implements OnInit {
     this.gameServ.getGameMode().subscribe({
       next: (gamesMode) => {
         this.gameModeList = gamesMode;
-      },
-      error: (error) => {
-        console.log(error);
-      }
-    })
-  }
-
-  getAwards() {
-    const eventId = this.route.snapshot.paramMap.get('id');
-    this.awardSheredServ.getAwards(+eventId!).subscribe({
-      next: (awards) => {
-        this.awardList = awards;
       },
       error: (error) => {
         console.log(error);
