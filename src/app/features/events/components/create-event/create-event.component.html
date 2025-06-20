@@ -43,9 +43,9 @@
                     <app-custom-input class="col-start-1 col-end-3" [id]="'name'" [label]="'Título'" [type]="'text'"
                         [placeholder]="'Título del evento'" [control]="createEventForm.controls.name"
                         formControlName="name" />
-                    <app-custom-input [id]="'start_time'" [label]="'Inicio'" [type]="'datetime-local'"
+                    <app-custom-input [id]="'time'" [label]="'Inicio'" [type]="'datetime-local'"
                         [placeholder]="'Selecciona la fecha y hora que iniciará el evento'"
-                        [control]="createEventForm.controls.start_time" formControlName="start_time"
+                        [control]="createEventForm.controls.time" formControlName="time"
                         [minDate]="minDate" />
                     <app-custom-input [id]="'price'" [label]="'Precio'" [type]="'number'"
                         [placeholder]="'Ingresa el valor de una tabla de bingo individual'"

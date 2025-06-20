@@ -5,6 +5,7 @@ import { EventAwardsInterface, EventInterface, PaginationInterface } from '../..
 import { environment } from '../../../environments/environment';
 import { handleError } from '../../core/errors';
 import { StatusEvent } from '../enums';
+import { EventUpdateSharedInterface } from '../interfaces';
 
 export interface EventWithBuyerInterface extends EventInterface {
   buyer?: boolean;
@@ -19,6 +20,11 @@ export class EventServiceShared {
   constructor(
     private http: HttpClient
   ) { }
+
+  updateStatusEvent(eventId: number, updateEven: EventUpdateSharedInterface): Observable<EventInterface> {
+    return this.http.patch<EventInterface>(this.url + `/status/${eventId}`, updateEven)
+      .pipe(catchError(handleError));
+  }
 
   eventListStatus(status: StatusEvent, pagination: { limit?: number, page?: number }): Observable<PaginationInterface<EventWithBuyerInterface>> {
     return this.http.get<PaginationInterface<EventWithBuyerInterface>>(`${this.url}/status/${status}`, { params: pagination })

@@ -12,7 +12,7 @@ import { pipe } from 'rxjs';
 export interface ItemEventForm {
   name: FormControl<string>,
   description: FormControl<string>,
-  start_time: FormControl<string>,
+  time: FormControl<string>,
   price: FormControl<number>
 }
 @Component({
@@ -45,7 +45,7 @@ export class EditEventComponent {
     this.editEventForm = this.fb.group<ItemEventForm>({
       name: this.fb.control(event.name, { validators: [Validators.required]}),
       description: this.fb.control(event.description, { validators: [Validators.required]}),
-      start_time: this.fb.control(formatDate(event.start_time, 'yyyy-MM-ddTHH:mm', 'en'), { validators: [Validators.required]}),
+      time: this.fb.control(formatDate(event.time, 'yyyy-MM-ddTHH:mm', 'en'), { validators: [Validators.required]}),
       price: this.fb.control(event.price, { validators: [Validators.required, Validators.min(1)]}),
     });
   }
@@ -55,11 +55,11 @@ export class EditEventComponent {
       this.toastServ.openToast('editing-event', 'danger', 'Se debe completar todos los campos requeridos');
       return;
     }
-    const { start_time, ...data } = this.editEventForm.value;
+    const { time, ...data } = this.editEventForm.value;
     this.loading = true;
 
     let dataEvent: UpdateEvent = data as UpdateEvent;
-    dataEvent.start_time = new Date(start_time!);
+    dataEvent.time = new Date(time!);
 
     this.eventServ.updateEvent(this.event.id, dataEvent).subscribe({
       next: (_) => {

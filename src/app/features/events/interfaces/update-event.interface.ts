@@ -1,7 +1,7 @@
 
 export interface UpdateEvent {
-    name: string;
-    description: string;
-    start_time: Date;
-    price: number;
+    name?: string;
+    description?: string;
+    time?: Date;
+    price?: number;
 }

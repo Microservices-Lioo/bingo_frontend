@@ -29,9 +29,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon'; 
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
-import { AwardSharedInterface } from '../../../shared/interfaces';
+import { AwardSharedInterface, EventUpdateSharedInterface } from '../../../shared/interfaces';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
+import { StatusEvent } from '../../../shared/enums';
 
 @Component({
   selector: 'app-principal',
@@ -299,10 +300,18 @@ export class PrincipalComponent implements OnInit {
     }, intervalTime);
   }
   
-  startGame() {
-    this.modalStartGameMode();
-    this.initGame = true;
-    this.startTimeGameGlobal();
+  async startEvent() {
+    if (!this.eventData) {
+      return;
+    }
+    const { id: eventId } = this.eventData;
+
+    const updateData: EventUpdateSharedInterface = { status: StatusEvent.NOW };
+    
+    await this.updateStatusEvent(eventId, updateData);
+    // this.modalStartGameMode();
+    // this.initGame = true;
+    // this.startTimeGameGlobal();
   }
 
   startTimeGameGlobal() {
@@ -316,5 +325,18 @@ export class PrincipalComponent implements OnInit {
     const modal = this.modalSev.createModal('modal-start-game-mode');
     this.modalGameMode = modal;
     this.modalSev.openModal(modal);
+  }
+
+  //* Event
+  async updateStatusEvent(eventId: number, data: EventUpdateSharedInterface) {
+    this.eventSharedServ.updateStatusEvent(eventId, data)
+      .subscribe({
+        next: (event) => {
+          console.log(event);
+        },
+        error: (error) => {
+          console.log(error.message);
+        }
+      });
   }
 }

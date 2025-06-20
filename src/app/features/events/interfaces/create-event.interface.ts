@@ -2,6 +2,6 @@
 export interface CreateEvent {
     name: string;
     description: string;
-    start_time: Date;
+    time: Date;
     price: number;
 }

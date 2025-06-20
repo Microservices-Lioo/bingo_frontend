@@ -14,13 +14,13 @@
                 formControlName="name" />
 
             <app-custom-input 
-                [id]="'start_time'" 
+                [id]="'time'" 
                 [label]="'Inicio *'" 
                 [type]="'datetime-local'"
                 [placeholder]="'Selecciona la fecha y hora que iniciará el evento'"
                 [minDate]="minDate"
-                [control]="editEventForm.controls.start_time" 
-                formControlName="start_time" />
+                [control]="editEventForm.controls.time" 
+                formControlName="time" />
 
             <app-custom-input 
                 [id]="'price'" 

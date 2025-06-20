@@ -1,7 +1,14 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
-import { FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { 
+  FormArray, 
+  FormControl, 
+  FormGroup, 
+  NonNullableFormBuilder, 
+  ReactiveFormsModule, 
+  Validators 
+} from '@angular/forms';
 import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { Router } from '@angular/router';
@@ -14,7 +21,7 @@ import { StatusEvent } from '../../../../shared/enums';
 export interface ItemEventForm {
   name: FormControl<string>,
   description: FormControl<string>,
-  start_time: FormControl<Date>,
+  time: FormControl<Date>,
   price: FormControl<number>
 }
 
@@ -35,7 +42,12 @@ export interface ItemStepper {
 
 @Component({
   selector: 'app-create-event',
-  imports: [CustomInputComponent, PrimaryButtonComponent, ReactiveFormsModule, ViewEventComponent],
+  imports: [
+    CustomInputComponent, 
+    PrimaryButtonComponent, 
+    ReactiveFormsModule, 
+    ViewEventComponent
+  ],
   templateUrl: './create-event.component.html',
   styles: ``,
   standalone: true
@@ -53,7 +65,7 @@ export class CreateEventComponent implements OnInit {
   createEventForm: FormGroup<ItemEventForm> = this.fb.group<ItemEventForm>({
     name: this.fb.control('', { validators: [Validators.required] }),
     description: this.fb.control('', { validators: [Validators.required] }),
-    start_time: this.fb.control(new Date(), { validators: [Validators.required] }),
+    time: this.fb.control(new Date(), { validators: [Validators.required] }),
     price: this.fb.control(0, { validators: [Validators.required, Validators.min(1)]})
   });
 
@@ -77,9 +89,9 @@ export class CreateEventComponent implements OnInit {
   }
 
   ngOnInit() {
-    let start_time = new Date();
-    start_time.setDate(start_time.getDate() + 2);
-    this.minDate = formatDate(start_time, 'yyyy-MM-ddTHH:mm', 'en');
+    let time = new Date();
+    time.setDate(time.getDate() + 2);
+    this.minDate = formatDate(time, 'yyyy-MM-ddTHH:mm', 'en');
     this.listSteppers = [
       { id: 1, name: 'Evento', completed: false, actived: true },
       { id: 2, name: 'Premios', completed: false, actived: false },
@@ -110,7 +122,6 @@ export class CreateEventComponent implements OnInit {
 
   OnSubmitEventNextAward() {
     if(this.createEventForm.invalid) {
-      console.log('Form is invalid:', this.createEventForm.errors);
       this.toastServ.openToast('create-event', 'danger', 'Se debe completar todos los campos requeridos');
       return;
     }
@@ -125,7 +136,6 @@ export class CreateEventComponent implements OnInit {
 
   OnSubmitAwardsNextConf() {
     if(this.createAwardForm.invalid) {
-      console.log('Form is invalid:', this.createAwardForm.errors);
       this.toastServ.openToast('create-event', 'danger', 'Se debe agregar un premio como mínimo');
       return;
     }
@@ -136,7 +146,7 @@ export class CreateEventComponent implements OnInit {
     }
 
     if (this.dataEvent) {
-      const { name, description, start_time, price } = this.dataEvent;
+      const { name, description, time, price } = this.dataEvent;
       const awards = this.createAwardForm.controls.items.controls
         .map( (award) => ({ 
           id: award.controls.id.value, 
@@ -152,8 +162,8 @@ export class CreateEventComponent implements OnInit {
         userId:0, 
         name: name, 
         description: description, 
-        start_time: start_time, 
-        price: price , 
+        time: time,
+        price: price, 
         status: StatusEvent.PROGRAMMED, 
         award: awards
       }

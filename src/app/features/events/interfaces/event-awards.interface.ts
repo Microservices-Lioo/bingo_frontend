@@ -6,7 +6,7 @@ export interface EventAwardsInterface {
     description: string;
     userId: number;
     status: string;
-    start_time: Date;
+    time: Date;
     price: number;
     award: AwardInterface[]
 }
