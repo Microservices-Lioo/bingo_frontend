@@ -99,7 +99,7 @@ export class PrincipalComponent implements OnInit {
   // Iniciar sala
   initGame = false;
   initDateGameGlobal: string = '';
-  initTimeGameGlobal: string = 'HH:MM:SS';
+  connectedPlayers: number = 0;
 
   // Iniciar modo de juego
   gameModeSelected: boolean = false;
@@ -166,6 +166,12 @@ export class PrincipalComponent implements OnInit {
           this.textMsgConnection = 'Sala no iniciada. Por favor, espera a que el anfitrión inicie la sala.';
         }
         this.statusConnection =  status;
+      }
+    });
+
+    this.socketServ.getConnectedPlayers().subscribe({
+      next: (players) => {
+        this.connectedPlayers = players;
       }
     });
   }
@@ -316,8 +322,7 @@ export class PrincipalComponent implements OnInit {
 
   startTimeGameGlobal() {
     if (this.initGame) {
-      this.initDateGameGlobal = new Date().getTime().toString();
-      this.initTimeGameGlobal = '00:00:00';      
+      this.initDateGameGlobal = new Date().getTime().toString();    
     }
   }
 

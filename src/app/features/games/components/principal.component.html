@@ -1,312 +1,312 @@
-@if(IsAdmin || (eventData && eventData.status === 'NOW')) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<div class="w-full h-full">
+    <!-- Jugadores conectados -->
+    <span class="absolute flex gap-x-2 bg-sky-300 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-sky-400 border border-sky-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 19v-1.25c0-2.071-1.919-3.75-4.286-3.75h-3.428C7.919 14 6 15.679 6 17.75V19m9-11a3 3 0 1 1-6 0a3 3 0 0 1 6 0"/>
+        </svg>
+        {{ connectedPlayers }}
+    </span>
+    @if(IsAdmin || (eventData && eventData.status === 'NOW')) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
-        <!-- Números cantados -->
-        <div class="order-1 sm:col-span-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="flex justify-between items-center p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm font-medium text-white">Números cantados</h3>
-                <button class="text-white" data-popover-target="popover-info-nums" data-popover-placement="bottom-end" type="button">
-                    <svg class="shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                    </svg>
-                </button>
-                <div data-popover id="popover-info-nums" role="tooltip"
-                    class="absolute z-10 invisible inline-block text-xs text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
-                    <div class="p-2 space-y-2">
-                        <h3 class="font-semibold text-gray-900 dark:text-white">Números cantados</h3>
-                        <p>Aquí se muestrán los números cantados en el actual modo de juego.</p>
-                        <li><span class="text-green-500">Color vérde </span>representa un número que se ha jugado.</li>
-                        <li><span>Color blanco </span>representa un número que aún no se ha jugado.</li>
+            <!-- Números cantados -->
+            <div class="order-1 sm:col-span-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="flex justify-between items-center p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm font-medium text-white">Números cantados</h3>
+                    <button class="text-white" data-popover-target="popover-info-nums" data-popover-placement="bottom-end" type="button">
+                        <svg class="shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                        </svg>
+                    </button>
+                    <div data-popover id="popover-info-nums" role="tooltip"
+                        class="absolute z-10 invisible inline-block text-xs text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
+                        <div class="p-2 space-y-2">
+                            <h3 class="font-semibold text-gray-900 dark:text-white">Números cantados</h3>
+                            <p>Aquí se muestrán los números cantados en el actual modo de juego.</p>
+                            <li><span class="text-green-500">Color vérde </span>representa un número que se ha jugado.</li>
+                            <li><span>Color blanco </span>representa un número que aún no se ha jugado.</li>
 
+                        </div>
+                        <div data-popper-arrow></div>
                     </div>
-                    <div data-popper-arrow></div>
                 </div>
+                <app-ball-status />
             </div>
-            <app-ball-status />
-        </div>
-        
-        <!-- Reglas y Modo de juego -->
-        <div class="order-3 sm:col-span-2 sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
             
-            <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" data-tabs-active-classes="text-sky-900 hover:text-sky-900 dark:text-sky-800 dark:hover:text-sky-800 border-sky-900 dark:border-sky-800" data-tabs-inactive-classes="dark:border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300" role="tablist">
-                    <li class="me-0" role="presentation">
-                        <button class="inline-block p-4 border-b-2 rounded-t-lg" id="modo-tab" data-tabs-target="#modo" type="button" role="tab" aria-controls="modo" aria-selected="false">Modo de juego</button>
-                    </li>
-                    <li class="me-2" role="presentation">
-                        <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="reglas-tab" data-tabs-target="#reglas" type="button" role="tab" aria-controls="reglas" aria-selected="false">Reglas</button>
-                    </li>
-                </ul>
-            </div>
-
-            <div id="default-tab-content">
-                <!-- Modo de juego -->
-                <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800" id="modo" role="tabpanel" aria-labelledby="modo-tab">
-                    @if(gameModeSelected) {
-                        <div
-                            class="w-2/4 min-w-20 max-w-24 grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
-                            <div class="cell text-center bg-sky-800 text-white border border-slate-400">B</div>
-                            <div class="cell text-center bg-sky-800 text-white border border-slate-400">I</div>
-                            <div class="cell text-center bg-sky-800 text-white border border-slate-400">N</div>
-                            <div class="cell text-center bg-sky-800 text-white border border-slate-400">G</div>
-                            <div class="cell text-center bg-sky-800 text-white border border-slate-400">O</div>
-                            @for (row of matrixMode; track $index) {
-                                @for (col of row; track $index) {
-                                    <div [class]="col ? 'bg-green-500' : ''" class="cell border"></div>
-                                }
-                            }
-                        </div>
-                    } @else {
-                        <span>Aun no se ha seleccionado el modo de juego.</span>
-                    }
+            <!-- Reglas y Modo de juego -->
+            <div class="order-3 sm:col-span-2 sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                
+                <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" data-tabs-active-classes="text-sky-900 hover:text-sky-900 dark:text-sky-800 dark:hover:text-sky-800 border-sky-900 dark:border-sky-800" data-tabs-inactive-classes="dark:border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300" role="tablist">
+                        <li class="me-0" role="presentation">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg" id="modo-tab" data-tabs-target="#modo" type="button" role="tab" aria-controls="modo" aria-selected="false">Modo de juego</button>
+                        </li>
+                        <li class="me-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="reglas-tab" data-tabs-target="#reglas" type="button" role="tab" aria-controls="reglas" aria-selected="false">Reglas</button>
+                        </li>
+                    </ul>
                 </div>
 
-                <!-- Reglas -->
-                <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800" id="reglas" role="tabpanel" aria-labelledby="reglas-tab">
-                    @if(gameModeSelected) {
-                        <div class="text-sm">
-                            <li>Reglas 1: Detalles de la reglas</li>
-                            <li>Reglas 2: Detalles de la reglas</li>
-                            <li>Reglas 3: Detalles de la reglas</li>
-                            <li>Reglas 4: Detalles de la reglas</li>
-                        </div>
-                    } @else {
-                        <span>Aun no se ha seleccionado las reglas del juego actual.</span>
-                    }
-                </div>
-            </div>        
-
-        </div>
-
-        <!-- Premios -->
-        <div class="order-4 sm:row-span-1 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm  text-center font-medium text-white">Premios</h3>
-            </div>
-
-            <div class="flow-root">
-                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @for (award of awardsList; track $index) {
-                    <li class="py-1 sm:py-2">
-                        <div class="flex items-center flex-wrap">
-                            <div class="flex-1 mt-2">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ award.name }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    Ganador: {{ award.winner_user != null ? 'usuario #' + award.winner_user : ' - ' }}
-                                </p>
-                            </div>
-                            <div class="inline-flex text-xs p-1 items-center font-semibold text-gray-900 dark:text-white rounded"
-                            [class]="award.status === 'NOW' ? 'bg-green-400' : award.winner_user != null ? 'bg-red-500' : 'bg-yellow-300'">
-                                {{ award.status === 'NOW' ? 'Ahora' : award.winner_user != null ? 'Fin' : 'Prox.' }}
-                            </div>
-                        </div>
-                    </li>
-                    }
-                </ul>
-            </div>
-
-        </div>
-
-        <!-- Cantos de Bingo por jugadores -->
-        <div class="order-5 lg:col-start-4 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm text-center font-medium text-white">Cantos</h3>
-            </div>
-            <div class="relative overflow-x-auto sm:rounded-lg">
-                <table class="w-full h-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th scope="col" class="px-2 py-3">
-                                Jugador / Tiempo
-                            </th>
-                            <th scope="col" class="px-2 py-3">
-                                Acciones
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                            <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                Silver
-                                <br>
-                                <span class="text-gray-400">
-                                    14:30
-                                </span>
-                            </th>
-                            <td class="px-2 py-4">
-                                <div class="flex flex-col">
-                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
-                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                            <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                Kevin
-                                <br>
-                                <span class="text-gray-400">
-                                    14:32
-                                </span>
-                            </th>
-                            <td class="px-2 py-4">
-                                <div class="flex flex-col">
-                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
-                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="bg-white dark:bg-gray-800">
-                            <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                Lio
-                                <br>
-                                <span class="text-gray-400">
-                                    14:34
-                                </span>
-                            </th>
-                            <td class="px-2 py-4">
-                                <div class="flex flex-col">
-                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
-                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Tablas / Sorteo -->
-        <div class="order-2 sm:col-span-2 lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:row-span-2 items-center justify-center text-center border border-opacity-40 border-sky-700 rounded-lg p-3">
-            @if (!IsAdmin) {
-                <!-- Jugador -->
-                <ng-container>
-                    <div class="flex items-center flex-col gap-1">
-                        <!-- Tiempo y AutoJugar -->
-                        <div class="flex w-full justify-between gap-1 mb-2">
-                            <div class="w-full rounded-md p-2 bg-amber-200">
-                                <h3 class="text-sm font-medium">Tiempo de espera</h3>
-                                <span>00:30</span>
-                            </div>
-                            <div class="w-full rounded-md p-2 border border-sky-900">
-                                <h3 class="text-sm font-medium">Modo</h3>
-                                <div class="inline-flex rounded-md shadow-xs" role="group">
-                                <button type="button" class="px-4 py-2 text-xs font-medium text-sky-900 bg-transparent border border-sky-900 rounded-s-lg hover:bg-sky-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-sky-500 focus:bg-sky-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
-                                    Manual
-                                </button>
-                                <button type="button" class="px-4 py-2 text-xs font-medium text-sky-900 bg-transparent border border-sky-900 rounded-e-lg hover:bg-sky-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-sky-500 focus:bg-sky-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
-                                    Automático
-                                </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tablas -->
-                        <div class="w-full flex justify-between items-center">
-                            <div class="w-full p-1 mb-2 bg-sky-800 rounded-md">
-                                <h3 class="text-sm font-medium text-white">Mis tablas</h3>
-                            </div>
-                        </div>
-                        <!-- Pagination Cards -->
-                        <div class="flex items-center justify-center col-span-2">
-                            <div class="flex items-center justify-between w-full text-gray-600 dark:text-gray-400 bg-gray-100 rounded-lg dark:bg-gray-600 max-w-[128px] mx-2">
-                                <button 
-                                    type="button" 
-                                    class="inline-flex items-center justify-center h-8 px-1 w-6 bg-gray-100 rounded-s-lg dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-800"
-                                    [disabled]="cardsList.meta.page == 1 ? true : false"
-                                    (click)="btnPrevCard()"
-                                    >
-                                    <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/>
-                                    </svg>
-                                    <span class="sr-only">Previous page</span>
-                                </button>
-                                <span id="pagination-card" class="shrink-0 mx-1 text-sm font-medium space-x-0.5 rtl:space-x-reverse"></span>
-                                <button 
-                                    type="button" 
-                                    class="inline-flex items-center justify-center h-8 px-1 w-6 bg-gray-100 rounded-e-lg dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-800"
-                                    [disabled]="cardsList.meta.page == cardsList.meta.lastPage ? true : false"
-                                    (click)="btnNextCard()"
-                                    >
-                                    <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                                    </svg>
-                                    <span class="sr-only">Next page</span>
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Cards -->
-                        <div
-                            class="w-full h-full grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
-                            <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>B</span></div>
-                            <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>I</span></div>
-                            <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>N</span></div>
-                            <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>G</span></div>
-                            <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>O</span></div>
-                            
-                            @for (row of cardsList.data[cardsList.meta.page - 1]; track $index; let idrow = $index) {
-                                @for (col of row; track $index; let idcol = $index) {
-                                    <button [class]="col.market || (idrow == 2 && idcol == 2 ) ? 'bg-green-500' : ''" class="cell border py-3" (click)="btnCellSelected(idcol, idrow)">
-                                        @if (idrow == 2 &&  idcol == 2) {
-                                            <span class="text-xl text-white">X</span>
-                                        } @else {
-                                            <span class="text-xl">{{ col.num }}</span>
-                                        }
-                                    </button>
-                                }
-                            }
-                        </div>
-                    </div>
-                </ng-container>
-            } @else {
-                <!-- Adminstrador -->
-                <ng-container>
-                    @if (initGame === false) {
-                        <button 
-                            class="group relative text-center bg-slate-900 h-full w-full border-2 border-teal-600 text-white text-xl uppercase font-bold rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:border-emerald-400 hover:text-emerald-300 p-3 before:absolute before:w-10 before:h-10 before:content[''] before:right-2 before:top-2 before:z-10 before:bg-indigo-500 before:rounded-full before:blur-lg before:transition-all before:duration-500 after:absolute after:z-10 after:w-16 after:h-16 after:content[''] after:bg-teal-400 after:right-6 after:top-4 after:rounded-full after:blur-lg after:transition-all after:duration-500 hover:before:right-10 hover:before:-bottom-4 hover:before:blur hover:after:-right-6 hover:after:scale-110"
-                            (click)="startEvent()"
-                            >
-                        Iniciar evento
-                        </button>
-                    } @else {
-                        <div
-                            class="w-full h-full flex items-center justify-center">
+                <div id="default-tab-content">
+                    <!-- Modo de juego -->
+                    <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800" id="modo" role="tabpanel" aria-labelledby="modo-tab">
+                        @if(gameModeSelected) {
                             <div
-                                class="relative">
-                                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-4 rounded-full blur-md bg-black/90"></div>
-                                <button
-                                (click)="btnNumberRandom()"
-                                    style="box-shadow: inset 0 0 9px 1px #fff, 0 5px 5px rgba(0, 0, 0, 0.15);"
-                                    class=" w-52 h-52 rounded-full bg-sky-900 text-white text-8x1 font-bold shadow-md transform transition duration-300 hover:scale-105">
-                                    <span class="text-[1.5rem] md:text-[2.5rem]" [class.slide-up]="isAnimating"> {{ numberRandom }}</span>
-                                </button>
+                                class="w-2/4 min-w-20 max-w-24 grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
+                                <div class="cell text-center bg-sky-800 text-white border border-slate-400">B</div>
+                                <div class="cell text-center bg-sky-800 text-white border border-slate-400">I</div>
+                                <div class="cell text-center bg-sky-800 text-white border border-slate-400">N</div>
+                                <div class="cell text-center bg-sky-800 text-white border border-slate-400">G</div>
+                                <div class="cell text-center bg-sky-800 text-white border border-slate-400">O</div>
+                                @for (row of matrixMode; track $index) {
+                                    @for (col of row; track $index) {
+                                        <div [class]="col ? 'bg-green-500' : ''" class="cell border"></div>
+                                    }
+                                }
+                            </div>
+                        } @else {
+                            <span>Aun no se ha seleccionado el modo de juego.</span>
+                        }
+                    </div>
+
+                    <!-- Reglas -->
+                    <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800" id="reglas" role="tabpanel" aria-labelledby="reglas-tab">
+                        @if(gameModeSelected) {
+                            <div class="text-sm">
+                                <li>Reglas 1: Detalles de la reglas</li>
+                                <li>Reglas 2: Detalles de la reglas</li>
+                                <li>Reglas 3: Detalles de la reglas</li>
+                                <li>Reglas 4: Detalles de la reglas</li>
+                            </div>
+                        } @else {
+                            <span>Aun no se ha seleccionado las reglas del juego actual.</span>
+                        }
+                    </div>
+                </div>        
+
+            </div>
+
+            <!-- Premios -->
+            <div class="order-4 sm:row-span-1 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm  text-center font-medium text-white">Premios</h3>
+                </div>
+
+                <div class="flow-root">
+                    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (award of awardsList; track $index) {
+                        <li class="py-1 sm:py-2">
+                            <div class="flex items-center flex-wrap">
+                                <div class="flex-1 mt-2">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ award.name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Ganador: {{ award.winner_user != null ? 'usuario #' + award.winner_user : ' - ' }}
+                                    </p>
+                                </div>
+                                <div class="inline-flex text-xs p-1 items-center font-semibold text-gray-900 dark:text-white rounded"
+                                [class]="award.status === 'NOW' ? 'bg-green-400' : award.winner_user != null ? 'bg-red-500' : 'bg-yellow-300'">
+                                    {{ award.status === 'NOW' ? 'Ahora' : award.winner_user != null ? 'Fin' : 'Prox.' }}
+                                </div>
+                            </div>
+                        </li>
+                        }
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Cantos de Bingo por jugadores -->
+            <div class="order-5 lg:col-start-4 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm text-center font-medium text-white">Cantos</h3>
+                </div>
+                <div class="relative overflow-x-auto sm:rounded-lg">
+                    <table class="w-full h-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="px-2 py-3">
+                                    Jugador / Tiempo
+                                </th>
+                                <th scope="col" class="px-2 py-3">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    Silver
+                                    <br>
+                                    <span class="text-gray-400">
+                                        14:30
+                                    </span>
+                                </th>
+                                <td class="px-2 py-4">
+                                    <div class="flex flex-col">
+                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
+                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    Kevin
+                                    <br>
+                                    <span class="text-gray-400">
+                                        14:32
+                                    </span>
+                                </th>
+                                <td class="px-2 py-4">
+                                    <div class="flex flex-col">
+                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
+                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="bg-white dark:bg-gray-800">
+                                <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    Lio
+                                    <br>
+                                    <span class="text-gray-400">
+                                        14:34
+                                    </span>
+                                </th>
+                                <td class="px-2 py-4">
+                                    <div class="flex flex-col">
+                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
+                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tablas / Sorteo -->
+            <div class="order-2 sm:col-span-2 lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:row-span-2 items-center justify-center text-center border border-opacity-40 border-sky-700 rounded-lg p-3">
+                @if (!IsAdmin) {
+                    <!-- Jugador -->
+                    <ng-container>
+                        <div class="flex items-center flex-col gap-1">
+                            <!-- Tiempo y AutoJugar -->
+                            <div class="flex w-full justify-between gap-1 mb-2">
+                                <div class="w-full rounded-md p-2 bg-amber-200">
+                                    <h3 class="text-sm font-medium">Tiempo de espera</h3>
+                                    <span>00:30</span>
+                                </div>
+                                <div class="w-full rounded-md p-2 border border-sky-900">
+                                    <h3 class="text-sm font-medium">Modo</h3>
+                                    <div class="inline-flex rounded-md shadow-xs" role="group">
+                                    <button type="button" class="px-4 py-2 text-xs font-medium text-sky-900 bg-transparent border border-sky-900 rounded-s-lg hover:bg-sky-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-sky-500 focus:bg-sky-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                                        Manual
+                                    </button>
+                                    <button type="button" class="px-4 py-2 text-xs font-medium text-sky-900 bg-transparent border border-sky-900 rounded-e-lg hover:bg-sky-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-sky-500 focus:bg-sky-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                                        Automático
+                                    </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tablas -->
+                            <div class="w-full flex justify-between items-center">
+                                <div class="w-full p-1 mb-2 bg-sky-800 rounded-md">
+                                    <h3 class="text-sm font-medium text-white">Mis tablas</h3>
+                                </div>
+                            </div>
+                            <!-- Pagination Cards -->
+                            <div class="flex items-center justify-center col-span-2">
+                                <div class="flex items-center justify-between w-full text-gray-600 dark:text-gray-400 bg-gray-100 rounded-lg dark:bg-gray-600 max-w-[128px] mx-2">
+                                    <button 
+                                        type="button" 
+                                        class="inline-flex items-center justify-center h-8 px-1 w-6 bg-gray-100 rounded-s-lg dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-800"
+                                        [disabled]="cardsList.meta.page == 1 ? true : false"
+                                        (click)="btnPrevCard()"
+                                        >
+                                        <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/>
+                                        </svg>
+                                        <span class="sr-only">Previous page</span>
+                                    </button>
+                                    <span id="pagination-card" class="shrink-0 mx-1 text-sm font-medium space-x-0.5 rtl:space-x-reverse"></span>
+                                    <button 
+                                        type="button" 
+                                        class="inline-flex items-center justify-center h-8 px-1 w-6 bg-gray-100 rounded-e-lg dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-800"
+                                        [disabled]="cardsList.meta.page == cardsList.meta.lastPage ? true : false"
+                                        (click)="btnNextCard()"
+                                        >
+                                        <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                                        </svg>
+                                        <span class="sr-only">Next page</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Cards -->
+                            <div
+                                class="w-full h-full grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
+                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>B</span></div>
+                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>I</span></div>
+                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>N</span></div>
+                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>G</span></div>
+                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>O</span></div>
+                                
+                                @for (row of cardsList.data[cardsList.meta.page - 1]; track $index; let idrow = $index) {
+                                    @for (col of row; track $index; let idcol = $index) {
+                                        <button [class]="col.market || (idrow == 2 && idcol == 2 ) ? 'bg-green-500' : ''" class="cell border py-3" (click)="btnCellSelected(idcol, idrow)">
+                                            @if (idrow == 2 &&  idcol == 2) {
+                                                <span class="text-xl text-white">X</span>
+                                            } @else {
+                                                <span class="text-xl">{{ col.num }}</span>
+                                            }
+                                        </button>
+                                    }
+                                }
                             </div>
                         </div>
-                    }
-                </ng-container>
-                
-            }
+                    </ng-container>
+                } @else {
+                    <!-- Adminstrador -->
+                    <ng-container>
+                        @if (initGame === false) {
+                            <button 
+                                class="group relative text-center bg-slate-900 h-full w-full border-2 border-teal-600 text-white text-xl uppercase font-bold rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:border-emerald-400 hover:text-emerald-300 p-3 before:absolute before:w-10 before:h-10 before:content[''] before:right-2 before:top-2 before:z-10 before:bg-indigo-500 before:rounded-full before:blur-lg before:transition-all before:duration-500 after:absolute after:z-10 after:w-16 after:h-16 after:content[''] after:bg-teal-400 after:right-6 after:top-4 after:rounded-full after:blur-lg after:transition-all after:duration-500 hover:before:right-10 hover:before:-bottom-4 hover:before:blur hover:after:-right-6 hover:after:scale-110"
+                                (click)="startEvent()"
+                                >
+                            Iniciar evento
+                            </button>
+                        } @else {
+                            <div
+                                class="w-full h-full flex items-center justify-center">
+                                <div
+                                    class="relative">
+                                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-4 rounded-full blur-md bg-black/90"></div>
+                                    <button
+                                    (click)="btnNumberRandom()"
+                                        style="box-shadow: inset 0 0 9px 1px #fff, 0 5px 5px rgba(0, 0, 0, 0.15);"
+                                        class=" w-52 h-52 rounded-full bg-sky-900 text-white text-8x1 font-bold shadow-md transform transition duration-300 hover:scale-105">
+                                        <span class="text-[1.5rem] md:text-[2.5rem]" [class.slide-up]="isAnimating"> {{ numberRandom }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </ng-container>
+                    
+                }
+            </div>                
         </div>
-
-        <!-- Tiempo de juego -->
-        @if (initGame) {
-            <span class="absolute bg-red-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400">
-                {{ initTimeGameGlobal }}
-            </span>
-        }
-                
-    </div>
-} @else {
-    <app-status-connection
-        class="w-full h-full" 
-        [title]="titleMsgConnection" 
-        [message]="textMsgConnection" 
-        [type]="statusConnection"/>
-}
-
+    } @else {
+        <app-status-connection
+            class="w-full h-full" 
+            [title]="titleMsgConnection" 
+            [message]="textMsgConnection" 
+            [type]="statusConnection"/>
+    }
+</div>
 <!-- Modal de inicio -->
 <div 
     id="modal-start-game-mode" 

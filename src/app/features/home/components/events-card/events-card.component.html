@@ -46,7 +46,7 @@
                             d="M12 9v4l2.5 2.5m-11-11l4-2.5m13 2.5l-4-2.5" />
                     </g>
                 </svg>
-                <span class="text-sm px-2">{{ event().start_time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
+                <span class="text-sm px-2">{{ event().time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
             </div>
             @if ( !isSession ) {
                 <app-primary-button label="Comprar Cartón" [url]="['/order', { id: event().id }]"  class="mp-3" />
