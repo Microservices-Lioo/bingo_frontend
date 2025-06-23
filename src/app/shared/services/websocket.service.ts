@@ -24,7 +24,7 @@ export class WebsocketServiceShared {
 
   private initWS() {
     const access_token = localStorage.getItem('access_token');
-    const reconnectionAttempts = 3;
+    const reconnectionAttempts = 10;
     this.socket = io(`${this.urlWS}events-games`, {
       reconnection: true,
       reconnectionAttempts,
@@ -140,6 +140,18 @@ export class WebsocketServiceShared {
         this.connectedPlayers$.next(value);
       });
     }   
+  }
+
+  offListenRoom(name: string, eventId: number) {
+    // waiting
+    this.socket.off(`${name}:waiting`);
+    // count users waiting
+    this.socket.off(`${name}:waiting:countUsers`);
+    this.socket.off(name);
+    // count users
+    this.socket.off(`${name}:countUsers`);
+
+    this.socket.emit(`disconnectRoom`, eventId);
   }
 
   disconnect(): void {

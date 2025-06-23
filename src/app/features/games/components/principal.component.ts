@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { 
   EventServiceShared, 
@@ -71,7 +71,7 @@ import { StatusEvent } from '../../../shared/enums';
   }
   `
 })
-export class PrincipalComponent implements OnInit {
+export class PrincipalComponent implements OnInit, OnDestroy {
   loadingBtnAnimated = false;
   eventData!: EventAwardsInterface;
   matrixMode: boolean[][] = [
@@ -174,6 +174,12 @@ export class PrincipalComponent implements OnInit {
         this.connectedPlayers = players;
       }
     });
+  }
+
+  ngOnDestroy() {
+    if (this.eventData) {
+      this.socketServ.offListenRoom(`room:${this.eventData.id}`, this.eventData.id);
+    }
   }
   
   async getAwardsList(awards: AwardSharedInterface[]) {
