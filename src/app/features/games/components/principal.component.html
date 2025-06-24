@@ -6,7 +6,7 @@
         </svg>
         {{ connectedPlayers }}
     </span>
-    @if(IsAdmin || (eventData && eventData.status === 'NOW')) {
+    @if(IsAdmin || (eventData && eventData.status === 'NOW') || statusConnection === 'connected') {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
             <!-- Números cantados -->

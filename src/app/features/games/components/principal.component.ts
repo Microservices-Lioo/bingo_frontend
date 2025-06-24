@@ -152,7 +152,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     //* Web Socket
     this.socketServ.getConnectionStatus().subscribe({
       next: (status) => {
-        if (status === 'disconnected') {
+        if (status === 'connected') {
+          this.titleMsgConnection = 'Conectado';
+          this.textMsgConnection = 'Estas conectado a la sala';
+          this.getEvent(+eventId!, +userId!);
+        } else if (status === 'disconnected') {
           this.titleMsgConnection = 'Has sido desconectado';
           this.textMsgConnection = 'No tienes acceso a esta sala';
         } else if (status === 'reconnecting') {
@@ -202,7 +206,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         if (currentUserId === userId && event.userId === userId) {
           this.IsAdmin = true;
         }
-        if ((currentUserId === userId && event.userId === userId) && (event.status == 'NOW' || event.status == 'TODAY')) {
+        if ((currentUserId === userId && event.userId === userId) || 
+          event.status == 'NOW') {
           this.socketServ.joinRoom(event.id);
         } else if (event.status == 'TODAY') {
           this.socketServ.joinWaitingRoom(event.id);
@@ -342,9 +347,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   async updateStatusEvent(eventId: number, data: EventUpdateSharedInterface) {
     this.eventSharedServ.updateStatusEvent(eventId, data)
       .subscribe({
-        next: (event) => {
-          console.log(event);
-        },
+        complete: () => console.log('Evento actualizado'),
         error: (error) => {
           console.log(error.message);
         }

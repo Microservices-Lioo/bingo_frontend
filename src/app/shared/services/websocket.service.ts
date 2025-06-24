@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
+import { StatusEvent } from '../enums';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class WebsocketServiceShared {
     new BehaviorSubject<'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby'>('disconnected');
   private connectedPlayers$ =
     new BehaviorSubject<number>(0);
+  joinKeyRoom = 'room';
 
   constructor(
     private router: Router,
@@ -104,52 +106,58 @@ export class WebsocketServiceShared {
 
   }
 
-  joinRoom(room: number): void {
-    this.socket.emit('joinGame', room);
-    this.listenRoom(`room:${room}`, false);
+  joinRoom(roomId: number): void {
+    this.socket.emit('joinGame', roomId);
+    this.listenRoom(`${this.joinKeyRoom}:${roomId}`);
   }
 
-  joinWaitingRoom(room: number): void {
+  joinWaitingRoom(roomId: number): void {
     this.statusConnection$.next('on-standby');
-    this.socket.emit('waitingGame', room);
-    this.listenRoom(`room:${room}`, true);
+    this.socket.emit('waitingGame', roomId);
+    this.listenRoomWaiting(`${this.joinKeyRoom}:${roomId}`);
   }
 
-  listenRoom(name: string, isWaiting: boolean) {
-    if (isWaiting) {
-      // waiting
-      this.socket.off(`${name}:waiting`);
-      this.socket.on(`${name}:waiting`, (value) => {
-        console.log(value);
-      });
-      
-      // count users waiting
-      this.socket.off(`${name}:waiting:countUsers`);
-      this.socket.on(`${name}:waiting:countUsers`, (value) => {
-        this.connectedPlayers$.next(value);
-      });
-    } else {
-      this.socket.off(`${name}`);
-      this.socket.on(`${name}`, (value) => {
-        console.log(value);
-      });    
+  listenRoom(room: string) {
+    this.socket.off(room);
+    this.socket.on(room, (value) => {
+      console.log(value);
+    });    
 
-      // count users
-      this.socket.off(`${name}:countUsers`);
-      this.socket.on(`${name}:countUsers`, (value: number) => {
-        this.connectedPlayers$.next(value);
-      });
-    }   
-  }
-
-  offListenRoom(name: string, eventId: number) {
-    // waiting
-    this.socket.off(`${name}:waiting`);
-    // count users waiting
-    this.socket.off(`${name}:waiting:countUsers`);
-    this.socket.off(name);
     // count users
-    this.socket.off(`${name}:countUsers`);
+    this.socket.off(`${room}:countUsers`);
+    this.socket.on(`${room}:countUsers`, (value: number) => {
+      this.connectedPlayers$.next(value);
+    });  
+  }
+
+  listenRoomWaiting(room: string) {
+    // waiting
+    this.socket.off(`${room}:waiting`);
+    this.socket.on(`${room}:waiting`, (value) => {
+      if (value && value === StatusEvent.NOW) {
+        this.statusConnection$.next('connected');
+        this.statusConnectionBefore = 'connected';
+        this.socket.off(`${room}:waiting`);
+        this.socket.off(`${room}:waiting:countUsers`);
+        this.listenRoom(room);
+      }
+    });
+    
+    // count users waiting
+    this.socket.off(`${room}:waiting:countUsers`);
+    this.socket.on(`${room}:waiting:countUsers`, (value) => {
+      this.connectedPlayers$.next(value);
+    });  
+  }
+
+  offListenRoom(room: string, eventId: number) {
+    // waiting
+    this.socket.off(`${room}:waiting`);
+    // count users waiting
+    this.socket.off(`${room}:waiting:countUsers`);
+    this.socket.off(room);
+    // count users
+    this.socket.off(`${room}:countUsers`);
 
     this.socket.emit(`disconnectRoom`, eventId);
   }
