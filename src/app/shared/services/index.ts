@@ -6,3 +6,4 @@ export * from './modal.service';
 export * from './toast.service';
 export * from './tooltips.service';
 export * from './websocket.service';
+export * from './games-shared.service';

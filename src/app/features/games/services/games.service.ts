@@ -4,13 +4,14 @@ import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { handleError } from '../../../core/errors';
 import { GameMode } from '../interfaces';
-import { AwardSharedInterface } from '../../../shared/interfaces';
+import { AwardSharedInterface, DataGameSharedI } from '../../../shared/interfaces';
 
 @Injectable({
     providedIn: 'root'
 })
 export class GamesService {
-    private url = environment.apiUrl + environment.apiMSGameModeUrl;
+    private urlGame = environment.apiUrl + environment.apiMSGameUrl;
+    private urlGameMode = environment.apiUrl + environment.apiMSGameModeUrl;
 
     private _calledBall = new Subject<number>();
     private _cleanBoardBalls = new Subject<boolean>();
@@ -30,8 +31,14 @@ export class GamesService {
     }
 
     getGameMode(): Observable<GameMode[]> {
-        return this.http.get<GameMode[]>(`${this.url}`)
+        return this.http.get<GameMode[]>(`${this.urlGameMode}`)
             .pipe(catchError(handleError));
+    }
+
+    createGameWithMode(eventId: number, awardId: number, gameModeId: number): Observable<DataGameSharedI> {
+        return this.http.post<DataGameSharedI>(`${this.urlGame}/with/mode`, { eventId, awardId, gameModeId })
+            .pipe(catchError(handleError));
+
     }
 
 }
