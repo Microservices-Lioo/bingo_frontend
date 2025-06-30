@@ -1,20 +1,23 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { 
+  CardsServiceShared,
   EventServiceShared, 
   GamesSharedService, 
   ModalService, 
+  ToastService, 
   WebsocketServiceShared 
 } from '../../../shared/services';
 import { EventAwardsInterface } from '../../../core/interfaces';
 import { BallStatusComponent } from './ball-status/ball-status.component';
 import { initFlowbite, ModalInterface } from 'flowbite';
 import { GamesService } from '../services/games.service';
-import { CardPagination } from '../../../shared/interfaces/card-shared.interface';
-import { CardTest } from '../data-test/card-test';
 import { 
   AwardGameInterface, 
-  GameMode, 
+  GameI, 
+  GameModeI, 
+  GameOnModeI, 
+  GameRuleI,
   StatusAward
 } from '../interfaces';
 import { 
@@ -30,7 +33,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon'; 
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
-import { AwardSharedInterface, EventUpdateSharedInterface } from '../../../shared/interfaces';
+import { AwardSharedInterface, CardSharedI, EventUpdateSharedInterface, GameModeSharedI, GameRuleSharedI } from '../../../shared/interfaces';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
 import { StatusEvent } from '../../../shared/enums';
@@ -76,21 +79,16 @@ import { initTabs } from 'flowbite';
 export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   loadingBtnAnimated = false;
   eventData!: EventAwardsInterface;
-  matrixMode: boolean[][] = [
-    [true, false, false, false, true],
-    [true, true, false, false, true],
-    [true, false, true, false, true],
-    [true, false, false, true, true],
-    [true, false, false, false, true],
-  ];
+  matrixMode: boolean[][] = [];
   numCalled: number | null = null;
   awardsList!: AwardGameInterface[];
-  cardsList: CardPagination;
+  cardsList: CardSharedI[] | null = null;
   modalGameMode: ModalInterface | null = null;
   
+  // Formul
   firstFormGroup!: FormGroup;
   secondFormGroup!: FormGroup;
-  
+
   IsAdmin: boolean = false;
   
   // Buton de sorteo de numero random
@@ -107,25 +105,39 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Iniciar modo de juego
   gameModeSelected: boolean = false;
+  gameRuleSelected: boolean = false;
   awardGameModeSelected: boolean  = false;
-  gameModeList: GameMode[] = [];
   statusConnection: 'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby' = 'disconnected';
   titleMsgConnection: string = '';
   textMsgConnection: string = '';
+
+  // data
+  gameModeList: GameModeI[] = [];
+  gameMode: GameModeI | null = null;
+  gameRule: GameRuleI | null = null;
+
+  // estados
+  cardPosition: number = 0;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private eventSharedServ: EventServiceShared,
     private gameServ: GamesService,
-    private cardTest: CardTest,
     private modalSev: ModalService,
     private _formBuilder: FormBuilder,
     private socketServ: WebsocketServiceShared,
     private authServ: AuthService,
-    private gameSharedServ: GamesSharedService
-  ) {
-    this.cardsList = this.getCardsList();    
+    private gameSharedServ: GamesSharedService,
+    private toastServ: ToastService,
+    private cardsServiceShared: CardsServiceShared
+  ) { 
+    this.firstFormGroup = this._formBuilder.group({
+      awardCtrl: ['', Validators.required]
+    });
+    this.secondFormGroup = this._formBuilder.group({
+      modeCtrl: ['', Validators.required]
+    });
   }
   
   async ngOnInit() {
@@ -143,21 +155,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cleanBalls(true);
     
     this.getGameMode();
-    
-    this.firstFormGroup = this._formBuilder.group({
-      awardCtrl: ['', Validators.required]
-    });
-    this.secondFormGroup = this._formBuilder.group({
-      modeCtrl: ['', Validators.required]
-    });
-
-    // TODO: TEST
-    let page = this.cardsList.meta.page;
-    let lastPage = this.cardsList.meta.lastPage;
-    let paginationElem = document.getElementById('pagination-card');
-    if (paginationElem) {
-      paginationElem.innerHTML = `T${page} de T${lastPage}`;
-    }
 
     //* Web Socket
     this.socketServ.getConnectionStatus().subscribe({
@@ -209,8 +206,21 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.awardsList = awardsList;
   }
   
-  getCardsList(): CardPagination {
-    return { data: this.cardTest.generateBingoCards(5), meta: { lastPage: 5, page: 1, total: 5 } };
+  async getCardsList(eventId: number) {
+    this.cardsServiceShared.findToEventByBuyer(eventId)
+      .subscribe({
+        next: (card) => {
+          if (card.length === 0) {
+            this.router.navigate(['home']);
+          } else {
+            this.cardsList = card;
+          }
+        },
+        error: (error) => {
+          this.toastServ.openToast('card', 'danger', 'No perteneces a este evento');
+          this.router.navigate(['home']);
+        }
+      });
   }
   
   async getEvent(eventId: number, userId: number) {
@@ -219,6 +229,8 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         const currentUserId = this.authServ.currentUser.id;
         if (currentUserId === userId && event.userId === userId) {
           this.IsAdmin = true;
+        } else {
+          await this.getCardsList(eventId);    
         }
         if ((currentUserId === userId && event.userId === userId) || 
           event.status == 'NOW') {
@@ -239,10 +251,14 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async getDataGame(eventId: number) {
     this.gameSharedServ.getDataGame(eventId).subscribe({
-      next: (game) => {
-        if (game) {
+      next: (data) => {
+        if (data) {
+          this.initGame = true;
+          const { game, gameMode, gameOnMode, gameRule } = data;
+          this.initData(gameMode, gameRule);
 
         } else {
+          this.initGame = false;
           console.log('game no existe');
         }
       },
@@ -250,6 +266,24 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log(err);
       },
     })
+  }
+
+  private initData(gameMode: GameModeSharedI, gameRule: GameRuleSharedI) {
+    this.initGame = true;
+    this.gameModeSelected = true;
+    this.gameRuleSelected = true;
+    this.awardGameModeSelected = true;
+    this.gameMode = gameMode;
+    this.gameRule = gameRule;
+
+    for (let i = 0; i < 5; ++i) {
+      const row: boolean[] = [];
+      for (let j = 0; j < 5; ++j) {
+        const key = `${i}:${j}`;
+        row.push(gameRule.rule.includes(key));
+      }
+      this.matrixMode.push(row);
+    }
   }
 
   getGameMode() {
@@ -276,29 +310,18 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   btnNextCard() {
-    let page = this.cardsList.meta.page;
-    let lastPage = this.cardsList.meta.lastPage;
-    let paginationElem = document.getElementById('pagination-card');
-    
-    if ( page < lastPage ) {
-      page++;
-      this.cardsList.meta.page = page;
-      if (paginationElem) {
-        paginationElem.innerHTML = `T${page} de T${lastPage}`;
+    if ( this.cardsList ) {
+      const page = this.cardsList.length;
+      if (this.cardPosition != page) {
+        this.cardPosition = this.cardPosition + 1;
       }
     }
   }
   
   btnPrevCard() {
-    let page = this.cardsList.meta.page;
-    let lastPage = this.cardsList.meta.lastPage;
-    let paginationElem = document.getElementById('pagination-card');
-    
-    if ( page > 1 ) {
-      page--;
-      this.cardsList.meta.page = page;
-      if (paginationElem) {
-        paginationElem.innerHTML = `T${page} de T${lastPage}`;
+    if ( this.cardsList ) {
+      if (this.cardPosition != 0) {
+        this.cardPosition = this.cardPosition - 1;
       }
     }
   }
@@ -356,32 +379,42 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     const updateData: EventUpdateSharedInterface = { status: StatusEvent.NOW };
     
     await this.updateStatusEvent(eventId, updateData);
+    
+    this.toastServ.openToast('game', 'success', 'Evento iniciado');
   }
 
   async startGame() {
-    // this.initGame = true;
+    this.clearForm();
     this.modalStartGameMode();
   }
 
   createGame() {
     if (!this.initGame) {
-      if (this.firstFormGroup.valid) {
+      if (this.firstFormGroup.valid && this.secondFormGroup.valid) {
         this.textMsgForm = "";
-        // if (!this.eventData) {
-        //   return;
-        // }
-        // const { id: eventId } = this.eventData;
-        // const awardId = this.firstFormGroup.value.awardCtrl;
-        // const modeId = this.secondFormGroup.value.modeCtrl;
-        // this.gameServ.createGameWithMode(eventId, awardId, modeId).subscribe({
-        //   next: (value) => {
-        //     console.log(value);
-        //   },
-        //   error: (err) => {
-        //     console.log(err);
-        //     this.closeModal();
-        //   },
-        // })
+        if (!this.eventData) {
+          return;
+        }
+        const { id: eventId } = this.eventData;
+        const awardId = this.firstFormGroup.value.awardCtrl;
+        const modeId = this.secondFormGroup.value.modeCtrl;
+        this.gameServ.createGameWithMode(eventId, awardId, modeId).subscribe({
+          next: (value) => {
+            if (value) {
+              const { game, gameMode, gameOnMode, gameRule } = value;
+
+              this.initGame = true;
+              this.initData(gameMode, gameRule);
+            }
+            this.toastServ.openToast('game', 'success', 'Juego iniciado');
+            this.closeModal();
+          },
+          error: (err) => {
+            console.log(err);
+            this.closeModal();
+          },
+        })
+        
       } else {
         this.textMsgForm = "El formulario no es válido";
       }
@@ -392,6 +425,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.modalGameMode) {
       this.textMsgForm = "";
       this.modalSev.closeModal(this.modalGameMode);
+      this.clearForm();
     }
   }
 
@@ -418,13 +452,18 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  clearForm() {
+    this.firstFormGroup.reset();
+    this.secondFormGroup.reset();
+  }
+
   //* Event
   async updateStatusEvent(eventId: number, data: EventUpdateSharedInterface) {
     this.eventSharedServ.updateStatusEvent(eventId, data)
       .subscribe({
         complete: () => console.log('Evento actualizado'),
         error: (error) => {
-          console.log(error.message);
+          this.toastServ.openToast('event', 'danger', error.message);
         }
       });
   }

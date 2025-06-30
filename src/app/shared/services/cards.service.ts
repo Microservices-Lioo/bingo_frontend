@@ -3,6 +3,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import { handleError } from '../../core/errors';
+import { CardSharedI } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,11 @@ export class CardsServiceShared {
 
   getCardCountForUserAndEvent(eventId: number): Observable<number> {
     return this.http.get<number>(`${this.url}/count/user/${eventId}`)
+      .pipe(catchError(handleError));
+  }
+
+  findToEventByBuyer(eventId: number): Observable<CardSharedI[]> {
+    return this.http.get<CardSharedI[]>(`${this.url}/buyer/event/${eventId}`)
       .pipe(catchError(handleError));
   }
 }

@@ -39,7 +39,7 @@
             <div class="order-3 sm:col-span-2 sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
                 
                 <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" data-tabs-active-classes="text-sky-900 hover:text-sky-900 dark:text-sky-800 dark:hover:text-sky-800 border-sky-900 dark:border-sky-800" data-tabs-inactive-classes="dark:border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300" role="tablist">
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" role="tablist">
                         <li class="me-0" role="presentation">
                             <button (click)="tabModeSelected('modo')" class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="modo-tab" data-tabs-target="#modo" type="button" role="tab" aria-controls="modo" aria-selected="true">Modo de juego</button>
                         </li>
@@ -52,7 +52,11 @@
                 <div id="default-tab-content">
                     <!-- Modo de juego -->
                     <div class="p-2 rounded-lg bg-gray-50 dark:bg-gray-800" id="modo" role="tabpanel" aria-labelledby="modo-tab">
-                        @if(initGame) {
+                        @if(initGame && gameModeSelected && gameMode) {
+                            <div>
+                                <h2 class="text-green-500 font-bold">{{gameMode.name}}</h2>
+                                <p class="text-sm text-gray-500">{{gameMode.description}}</p>
+                            </div>
                             <div
                                 class="w-2/4 min-w-20 max-w-24 grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
                                 <div class="cell text-center bg-sky-800 text-white border border-slate-400">B</div>
@@ -67,21 +71,18 @@
                                 }
                             </div>
                         } @else {
-                            <span class="text-sm">Aun no se ha seleccionado el modo de juego.</span>
+                            <span class="text-sm text-gray-500">Aun no se ha seleccionado el modo de juego.</span>
                         }
                     </div>
 
                     <!-- Reglas -->
                     <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800" id="reglas" role="tabpanel" aria-labelledby="reglas-tab">
-                        @if(initGame) {
+                        @if(initGame && gameRuleSelected && gameRule) {
                             <div class="text-sm">
-                                <li>Reglas 1: Detalles de la reglas</li>
-                                <li>Reglas 2: Detalles de la reglas</li>
-                                <li>Reglas 3: Detalles de la reglas</li>
-                                <li>Reglas 4: Detalles de la reglas</li>
+                                <p class="text-gray-500">{{gameRule.description}}</p>
                             </div>
                         } @else {
-                            <span class="text-sm">Aun no se ha seleccionado las reglas del juego actual.</span>
+                            <span class="text-sm text-gray-500">Aun no se ha seleccionado las reglas del juego actual.</span>
                         }
                     </div>
                 </div>        
@@ -224,7 +225,7 @@
                                     <button 
                                         type="button" 
                                         class="inline-flex items-center justify-center h-8 px-1 w-6 bg-gray-100 rounded-s-lg dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-800"
-                                        [disabled]="cardsList.meta.page == 1 ? true : false"
+                                        [disabled]="cardsList && cardPosition == 0 ? true : false"
                                         (click)="btnPrevCard()"
                                         >
                                         <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
@@ -232,11 +233,13 @@
                                         </svg>
                                         <span class="sr-only">Previous page</span>
                                     </button>
-                                    <span id="pagination-card" class="shrink-0 mx-1 text-sm font-medium space-x-0.5 rtl:space-x-reverse"></span>
+                                    @if(cardsList) {
+                                        <span id="pagination-card" class="shrink-0 mx-1 text-sm font-medium space-x-0.5 rtl:space-x-reverse">Tabla {{cardPosition + 1}} - Tabla {{cardsList.length}}  </span>
+                                    }
                                     <button 
                                         type="button" 
                                         class="inline-flex items-center justify-center h-8 px-1 w-6 bg-gray-100 rounded-e-lg dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-800"
-                                        [disabled]="cardsList.meta.page == cardsList.meta.lastPage ? true : false"
+                                        [disabled]="cardsList && (cardPosition + 1) == cardsList.length ? true : false"
                                         (click)="btnNextCard()"
                                         >
                                         <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
@@ -248,22 +251,24 @@
                             </div>
                             <!-- Cards -->
                             <div
-                                class="w-full h-full grid grid-cols-5 grid-rows-6 gap-0 justify-stretch items-stretch p-3 m-0">
-                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>B</span></div>
-                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>I</span></div>
-                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>N</span></div>
-                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>G</span></div>
-                                <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>O</span></div>
-                                
-                                @for (row of cardsList.data[cardsList.meta.page - 1]; track $index; let idrow = $index) {
-                                    @for (col of row; track $index; let idcol = $index) {
-                                        <button [class]="col.market || (idrow == 2 && idcol == 2 ) ? 'bg-green-500' : ''" class="cell border py-3" (click)="btnCellSelected(idcol, idrow)">
-                                            @if (idrow == 2 &&  idcol == 2) {
-                                                <span class="text-xl text-white">X</span>
-                                            } @else {
-                                                <span class="text-xl">{{ col.num }}</span>
-                                            }
-                                        </button>
+                                class="w-full h-full grid grid-cols-5 grid-rows-6 grid-flow-row gap-0 justify-stretch items-stretch p-3 m-0">
+                                @if (cardsList) {
+                                    <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>B</span></div>
+                                    <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>I</span></div>
+                                    <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>N</span></div>
+                                    <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>G</span></div>
+                                    <div class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400"><span>O</span></div>
+                                    @for (row of cardsList[cardPosition].nums; track $index; let idrow = $index) {
+                                       
+                                        @for (col of row; track $index; let idcol = $index) {
+                                            <button [class]="col.market || (idrow == 2 && idcol == 2 ) ? 'bg-green-500' : ''" class="cell border py-3" (click)="btnCellSelected(idcol, idrow)">
+                                                @if (idrow == 2 &&  idcol == 2) {
+                                                    <span class="text-xl text-white">X</span>
+                                                } @else {
+                                                    <span class="text-xl">{{ col.number }}</span>
+                                                }
+                                            </button>
+                                        }
                                     }
                                 }
                             </div>
@@ -326,7 +331,7 @@
             <!-- Modal header -->
             <div class="flex items-center justify-around p-1 border-b rounded-t dark:border-gray-600 border-gray-200">
                 <h3 class="text-sm px-2 text-center font-medium text-black">Iniciar juego</h3>
-                <button type="button" (click)="closeModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="medium-modal">
+                <button type="button" (click)="closeModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="modal-start-game-mode">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
@@ -441,7 +446,8 @@
                         <div>
                         <button mat-button matStepperPrevious type="button" class="!rounded-lg !text-red-600">
                             Anterior
-                        </button><button mat-button (click)="stepper.reset()" type="button" class="!text-blue-600 !rounded-lg">
+                        </button>
+                        <button mat-button (click)="stepper.reset()" type="button" class="!text-blue-600 !rounded-lg">
                             Limpiar formulario
                         </button>
                         </div>
@@ -451,8 +457,8 @@
             </div>
             <!-- Modal footer -->
             <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-                <button (click)="closeModal()" data-modal-hide="medium-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancelar</button>
-                <button (click)="createGame()" data-modal-hide="medium-modal" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Iniciar</button>
+                <button (click)="closeModal()" data-modal-hide="modal-start-game-mode" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancelar</button>
+                <button (click)="createGame()" data-modal-hide="modal-start-game-mode" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Iniciar</button>
             </div>
         </div>
     </div>

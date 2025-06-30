@@ -7,5 +7,5 @@ export interface DataGameSharedI {
     game: GameSharedInterface,
     gameMode: GameModeSharedI,
     gameOnMode: GameOnModeSharedI,
-    rule: GameRuleSharedI
+    gameRule: GameRuleSharedI
 }

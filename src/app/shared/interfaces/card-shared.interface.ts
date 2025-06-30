@@ -1,5 +1,12 @@
-export interface CellInterfaceShared { market: boolean, num: number };
-
-export type CardTypeShared = CellInterfaceShared[][];
-
-export interface CardPagination { data: CardTypeShared[], meta: {lastPage: number, page: number, total: number} }
+export interface CardNumsSharedI {
+    market: boolean;
+    number: number;
+}
+export interface CardSharedI {
+    id: number;
+    num: number;
+    buyer: number;
+    eventId: number;
+    available: boolean;
+    nums: CardNumsSharedI[][]
+}

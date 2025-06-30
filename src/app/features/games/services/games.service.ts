@@ -3,7 +3,7 @@ import { BehaviorSubject, catchError, Observable, Subject } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { handleError } from '../../../core/errors';
-import { GameMode } from '../interfaces';
+import { GameModeI } from '../interfaces';
 import { AwardSharedInterface, DataGameSharedI } from '../../../shared/interfaces';
 
 @Injectable({
@@ -30,15 +30,14 @@ export class GamesService {
         this._cleanBoardBalls.next(val);
     }
 
-    getGameMode(): Observable<GameMode[]> {
-        return this.http.get<GameMode[]>(`${this.urlGameMode}`)
+    getGameMode(): Observable<GameModeI[]> {
+        return this.http.get<GameModeI[]>(`${this.urlGameMode}`)
             .pipe(catchError(handleError));
     }
 
     createGameWithMode(eventId: number, awardId: number, gameModeId: number): Observable<DataGameSharedI> {
         return this.http.post<DataGameSharedI>(`${this.urlGame}/with/mode`, { eventId, awardId, gameModeId })
             .pipe(catchError(handleError));
-
     }
 
 }
