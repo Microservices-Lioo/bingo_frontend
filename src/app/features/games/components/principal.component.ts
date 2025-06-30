@@ -1,7 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { 
   EventServiceShared, 
+  GamesSharedService, 
   ModalService, 
   WebsocketServiceShared 
 } from '../../../shared/services';
@@ -33,6 +34,7 @@ import { AwardSharedInterface, EventUpdateSharedInterface } from '../../../share
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
 import { StatusEvent } from '../../../shared/enums';
+import { initTabs } from 'flowbite';
 
 @Component({
   selector: 'app-principal',
@@ -71,7 +73,7 @@ import { StatusEvent } from '../../../shared/enums';
   }
   `
 })
-export class PrincipalComponent implements OnInit, OnDestroy {
+export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   loadingBtnAnimated = false;
   eventData!: EventAwardsInterface;
   matrixMode: boolean[][] = [
@@ -97,9 +99,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   arrNumbers: number[] = [];
   
   // Iniciar sala
+  initEvent = false;
   initGame = false;
   initDateGameGlobal: string = '';
   connectedPlayers: number = 0;
+  textMsgForm = "";
 
   // Iniciar modo de juego
   gameModeSelected: boolean = false;
@@ -111,13 +115,15 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private eventSharedServ: EventServiceShared,
     private gameServ: GamesService,
     private cardTest: CardTest,
     private modalSev: ModalService,
     private _formBuilder: FormBuilder,
     private socketServ: WebsocketServiceShared,
-    private authServ: AuthService
+    private authServ: AuthService,
+    private gameSharedServ: GamesSharedService
   ) {
     this.cardsList = this.getCardsList();    
   }
@@ -125,12 +131,16 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     const eventId = this.route.snapshot.paramMap.get('id');
     const userId = this.route.snapshot.paramMap.get('userId');
-    
+    if (!eventId && !userId) {
+      this.router.navigate(['/home']);
+      return;
+    }
+
     await this.getEvent(+eventId!, +userId!);
-    
+    await this.getDataGame(+eventId!);
+
     this.calledBall(5);
     this.cleanBalls(true);
-    initFlowbite();
     
     this.getGameMode();
     
@@ -180,6 +190,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit() {
+    initFlowbite();
+    initTabs();
+  }
   ngOnDestroy() {
     if (this.eventData) {
       this.socketServ.offListenRoom(`room:${this.eventData.id}`, this.eventData.id);
@@ -209,6 +223,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         if ((currentUserId === userId && event.userId === userId) || 
           event.status == 'NOW') {
           this.socketServ.joinRoom(event.id);
+          this.initEvent = true;
         } else if (event.status == 'TODAY') {
           this.socketServ.joinWaitingRoom(event.id);
         }
@@ -220,6 +235,21 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         console.log(error);
       }
     });
+  }
+
+  async getDataGame(eventId: number) {
+    this.gameSharedServ.getDataGame(eventId).subscribe({
+      next: (game) => {
+        if (game) {
+
+        } else {
+          console.log('game no existe');
+        }
+      },
+      error(err) {
+        console.log(err);
+      },
+    })
   }
 
   getGameMode() {
@@ -326,21 +356,66 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     const updateData: EventUpdateSharedInterface = { status: StatusEvent.NOW };
     
     await this.updateStatusEvent(eventId, updateData);
-    // this.modalStartGameMode();
-    // this.initGame = true;
-    // this.startTimeGameGlobal();
   }
 
-  startTimeGameGlobal() {
-    if (this.initGame) {
-      this.initDateGameGlobal = new Date().getTime().toString();    
+  async startGame() {
+    // this.initGame = true;
+    this.modalStartGameMode();
+  }
+
+  createGame() {
+    if (!this.initGame) {
+      if (this.firstFormGroup.valid) {
+        this.textMsgForm = "";
+        // if (!this.eventData) {
+        //   return;
+        // }
+        // const { id: eventId } = this.eventData;
+        // const awardId = this.firstFormGroup.value.awardCtrl;
+        // const modeId = this.secondFormGroup.value.modeCtrl;
+        // this.gameServ.createGameWithMode(eventId, awardId, modeId).subscribe({
+        //   next: (value) => {
+        //     console.log(value);
+        //   },
+        //   error: (err) => {
+        //     console.log(err);
+        //     this.closeModal();
+        //   },
+        // })
+      } else {
+        this.textMsgForm = "El formulario no es válido";
+      }
+    }
+  }
+
+  closeModal() {
+    if (this.modalGameMode) {
+      this.textMsgForm = "";
+      this.modalSev.closeModal(this.modalGameMode);
     }
   }
 
   modalStartGameMode() {
     const modal = this.modalSev.createModal('modal-start-game-mode');
+    this.textMsgForm = "";
     this.modalGameMode = modal;
     this.modalSev.openModal(modal);
+  }
+
+  tabModeSelected(tab: string) {
+    const divModo = document.getElementById('modo');
+    const divReglas = document.getElementById('reglas');
+    if (tab === 'modo') {
+      if (divModo && divReglas) {
+        divModo.className = 'block';
+        divReglas.className = 'hidden';
+      }
+    } else {
+      if (divModo && divReglas) {
+        divReglas.className = 'block';
+        divModo.className = 'hidden';
+      }
+    }
   }
 
   //* Event
