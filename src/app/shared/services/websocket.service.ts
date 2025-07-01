@@ -21,10 +21,9 @@ export class WebsocketServiceShared {
   constructor(
     private router: Router,
   ) {
-    this.initWS(); 
   }
 
-  private initWS() {
+  public initWS() {
     const access_token = localStorage.getItem('access_token');
     const reconnectionAttempts = 10;
     this.socket = io(`${this.urlWS}events-games`, {
@@ -47,6 +46,7 @@ export class WebsocketServiceShared {
       ) {
         this.statusConnection$.next(this.statusConnectionBefore);
       }
+      this.statusConnection$.next('connected');
     });
 
     this.socket.on("disconnect", () => {
@@ -71,6 +71,7 @@ export class WebsocketServiceShared {
       if (reconnectionAttempts === count) {
         this.statusConnection$.next('failed');
       } else {
+        console.log('reconecting')
         this.statusConnection$.next('reconnecting');
       }
     });

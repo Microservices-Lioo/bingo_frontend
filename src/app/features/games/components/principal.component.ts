@@ -148,17 +148,18 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.socketServ.initWS();
+
     await this.getEvent(+eventId!, +userId!);
     await this.getDataGame(+eventId!);
 
     this.calledBall(5);
     this.cleanBalls(true);
     
-    this.getGameMode();
-
     //* Web Socket
     this.socketServ.getConnectionStatus().subscribe({
       next: (status) => {
+        console.log('status: ' + status)
         if (status === 'connected') {
           this.titleMsgConnection = 'Conectado';
           this.textMsgConnection = 'Estas conectado a la sala';
@@ -236,9 +237,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
           event.status == 'NOW') {
           this.socketServ.joinRoom(event.id);
           this.initEvent = true;
+          this.getGameMode();
         } else if (event.status == 'TODAY') {
           this.socketServ.joinWaitingRoom(event.id);
         }
+
         this.eventData = event;
 
         await this.getAwardsList(event.award as AwardSharedInterface[]);
