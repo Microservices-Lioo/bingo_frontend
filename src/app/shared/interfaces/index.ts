@@ -1,4 +1,5 @@
 export * from './award-shared.interface';
+export * from './called-ball.interface';
 export * from './card-shared.interface';
 export * from './data-game.interface';
 export * from './event-update-shared.interface';

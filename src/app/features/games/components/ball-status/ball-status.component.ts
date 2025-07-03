@@ -33,8 +33,10 @@ export interface Item {
 export class BallStatusComponent {
   items: { value: number; state: boolean; }[];
   num_cantado: number = 0;
+  colName: string = '';
   
   private destroyCalledBall$ = new Subject<void>();
+  private destroyLastCalledBall$ = new Subject<void>();
   private destroyCleanBall$ = new Subject<void>();
 
   constructor(
@@ -56,6 +58,13 @@ export class BallStatusComponent {
     .pipe(takeUntil(this.destroyCleanBall$))
     .subscribe(val => {
       this.cleanBalls(val)
+    });
+
+    this.gamesServ.lastCalledBall$
+    .pipe(takeUntil(this.destroyLastCalledBall$))
+    .subscribe(({num, col}) => {
+      this.num_cantado = num;
+      this.colName = col;
     });
   }
 

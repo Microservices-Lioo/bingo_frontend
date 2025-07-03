@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
 import { StatusEvent } from '../enums';
+import { CalledBallI } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class WebsocketServiceShared {
   private connectedPlayers$ =
     new BehaviorSubject<number>(0);
   joinKeyRoom = 'room';
+  private calledBallSubject$ = new BehaviorSubject<CalledBallI | null>(null);
 
   constructor(
     private router: Router,
@@ -129,6 +131,12 @@ export class WebsocketServiceShared {
     this.socket.on(`${room}:countUsers`, (value: number) => {
       this.connectedPlayers$.next(value);
     });  
+
+    // called ball
+    this.socket.off(`${room}:calledBall`);
+    this.socket.on(`${room}:calledBall`, (calledBall: CalledBallI) => {
+      this.calledBallSubject$.next(calledBall);
+    });
   }
 
   listenRoomWaiting(room: string) {
@@ -159,6 +167,7 @@ export class WebsocketServiceShared {
     this.socket.off(room);
     // count users
     this.socket.off(`${room}:countUsers`);
+    this.socket.off(`${room}:calledBall`);
 
     this.socket.emit(`disconnectRoom`, eventId);
   }
@@ -175,6 +184,10 @@ export class WebsocketServiceShared {
 
   getConnectedPlayers() {
     return this.connectedPlayers$.asObservable();
+  }
+
+  getCalledBallSubject() {
+    return this.calledBallSubject$.asObservable();
   }
 
 }

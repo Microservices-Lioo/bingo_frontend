@@ -1,36 +1,37 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { 
+import {
   CardsServiceShared,
-  EventServiceShared, 
-  GamesSharedService, 
-  ModalService, 
-  ToastService, 
-  WebsocketServiceShared 
+  EventServiceShared,
+  GamesSharedService,
+  ModalService,
+  ToastService,
+  WebsocketServiceShared
 } from '../../../shared/services';
 import { EventAwardsInterface } from '../../../core/interfaces';
 import { BallStatusComponent } from './ball-status/ball-status.component';
 import { initFlowbite, ModalInterface } from 'flowbite';
 import { GamesService } from '../services/games.service';
-import { 
-  AwardGameInterface, 
-  GameI, 
-  GameModeI, 
-  GameOnModeI, 
+import {
+  AwardGameInterface,
+  CalledBallI,
+  GameI,
+  GameModeI,
+  GameOnModeI,
   GameRuleI,
   StatusAward
 } from '../interfaces';
-import { 
-  FormBuilder, 
-  FormGroup, 
-  ReactiveFormsModule, 
-  Validators 
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
 } from '@angular/forms';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon'; 
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
 import { AwardSharedInterface, CardSharedI, EventUpdateSharedInterface, GameModeSharedI, GameRuleSharedI } from '../../../shared/interfaces';
@@ -38,6 +39,7 @@ import { StatusConnectionComponent } from '../../../shared/components/status-con
 import { AuthService } from '../../auth/services';
 import { StatusEvent } from '../../../shared/enums';
 import { initTabs } from 'flowbite';
+import { CalledBallsService } from '../services/called-balls.service';
 
 @Component({
   selector: 'app-principal',
@@ -84,18 +86,19 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   awardsList!: AwardGameInterface[];
   cardsList: CardSharedI[] | null = null;
   modalGameMode: ModalInterface | null = null;
-  
+
   // Formul
   firstFormGroup!: FormGroup;
   secondFormGroup!: FormGroup;
 
   IsAdmin: boolean = false;
-  
+
   // Buton de sorteo de numero random
-  numberRandom: number | string = 'INICIAR';
+  numberRandom: number = 0;
+  nameCol: string = '';
+  statusGameRaffle: 'INICIAR' | 'INICIADO' | 'CONCLUIDO' | 'ERROR' = 'INICIAR';
   isAnimating = false;
-  arrNumbers: number[] = [];
-  
+
   // Iniciar sala
   initEvent = false;
   initGame = false;
@@ -106,7 +109,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   // Iniciar modo de juego
   gameModeSelected: boolean = false;
   gameRuleSelected: boolean = false;
-  awardGameModeSelected: boolean  = false;
+  awardGameModeSelected: boolean = false;
   statusConnection: 'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby' = 'disconnected';
   titleMsgConnection: string = '';
   textMsgConnection: string = '';
@@ -115,6 +118,9 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   gameModeList: GameModeI[] = [];
   gameMode: GameModeI | null = null;
   gameRule: GameRuleI | null = null;
+  game: GameI | null = null;
+  calledBallList: { num: number}[] = [];
+
 
   // estados
   cardPosition: number = 0;
@@ -122,16 +128,17 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private eventSharedServ: EventServiceShared,
+    private authServ: AuthService,
     private gameServ: GamesService,
+    private calledBallServ: CalledBallsService,
     private modalSev: ModalService,
     private _formBuilder: FormBuilder,
-    private socketServ: WebsocketServiceShared,
-    private authServ: AuthService,
-    private gameSharedServ: GamesSharedService,
     private toastServ: ToastService,
-    private cardsServiceShared: CardsServiceShared
-  ) { 
+    private eventSharedServ: EventServiceShared,
+    private socketServ: WebsocketServiceShared,
+    private gameSharedServ: GamesSharedService,
+    private cardsServiceShared: CardsServiceShared,
+  ) {
     this.firstFormGroup = this._formBuilder.group({
       awardCtrl: ['', Validators.required]
     });
@@ -139,7 +146,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       modeCtrl: ['', Validators.required]
     });
   }
-  
+
   async ngOnInit() {
     const eventId = this.route.snapshot.paramMap.get('id');
     const userId = this.route.snapshot.paramMap.get('userId');
@@ -153,13 +160,9 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     await this.getEvent(+eventId!, +userId!);
     await this.getDataGame(+eventId!);
 
-    this.calledBall(5);
-    this.cleanBalls(true);
-    
     //* Web Socket
     this.socketServ.getConnectionStatus().subscribe({
       next: (status) => {
-        console.log('status: ' + status)
         if (status === 'connected') {
           this.titleMsgConnection = 'Conectado';
           this.textMsgConnection = 'Estas conectado a la sala';
@@ -177,36 +180,52 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
           this.titleMsgConnection = 'Sala de espera';
           this.textMsgConnection = 'Sala no iniciada. Por favor, espera a que el anfitrión inicie la sala.';
         }
-        this.statusConnection =  status;
+        this.statusConnection = status;
       }
     });
 
     this.socketServ.getConnectedPlayers().subscribe({
       next: (players) => {
         this.connectedPlayers = players;
+      },
+      error: (error) => {
+        console.log(error);
       }
     });
+
+    this.socketServ.getCalledBallSubject().subscribe({
+      next: (calledBall) => {
+        if (calledBall) {
+          this.lastCalledBall(calledBall.num, calledBall.colName);
+          this.calledBall(calledBall.num);
+        }
+      },
+      error: (error) => {
+        console.log(error);
+      }
+    })
   }
 
   ngAfterViewInit() {
     initFlowbite();
     initTabs();
   }
+
   ngOnDestroy() {
     if (this.eventData) {
       this.socketServ.offListenRoom(`room:${this.eventData.id}`, this.eventData.id);
     }
   }
-  
+
   async getAwardsList(awards: AwardSharedInterface[]) {
     let awardsList = awards.map(award => ({
       ...award,
       status: StatusAward.PROX
     }));
-    
+
     this.awardsList = awardsList;
   }
-  
+
   async getCardsList(eventId: number) {
     this.cardsServiceShared.findToEventByBuyer(eventId)
       .subscribe({
@@ -223,7 +242,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       });
   }
-  
+
   async getEvent(eventId: number, userId: number) {
     this.eventSharedServ.getEventWithAwards(+eventId, userId).subscribe({
       next: async (event) => {
@@ -231,9 +250,9 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         if (currentUserId === userId && event.userId === userId) {
           this.IsAdmin = true;
         } else {
-          await this.getCardsList(eventId);    
+          await this.getCardsList(eventId);
         }
-        if ((currentUserId === userId && event.userId === userId) || 
+        if ((currentUserId === userId && event.userId === userId) ||
           event.status == 'NOW') {
           this.socketServ.joinRoom(event.id);
           this.initEvent = true;
@@ -254,15 +273,15 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async getDataGame(eventId: number) {
     this.gameSharedServ.getDataGame(eventId).subscribe({
-      next: (data) => {
+      next: async (data) => {
         if (data) {
           this.initGame = true;
           const { game, gameMode, gameOnMode, gameRule } = data;
+          this.game = game;
           this.initData(gameMode, gameRule);
-
+          await this.getCalledBallsByGameId(game.id);
         } else {
           this.initGame = false;
-          console.log('game no existe');
         }
       },
       error(err) {
@@ -299,80 +318,83 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     })
   }
-  
+
+  lastCalledBall(num: number, col: string) {
+    this.gameServ.sendLastCalledBall(num, col);
+  }
+
   calledBall(ball: number) {
     this.gameServ.sendBall(ball);
   }
-  
+
   cleanBalls(val: boolean) {
     this.gameServ.cleanBalls(val);
   }
-  
+
   btnCellSelected(col: number, row: number) {
     console.log(col, row);
   }
-  
+
   btnNextCard() {
-    if ( this.cardsList ) {
+    if (this.cardsList) {
       const page = this.cardsList.length;
       if (this.cardPosition != page) {
         this.cardPosition = this.cardPosition + 1;
       }
     }
   }
-  
+
   btnPrevCard() {
-    if ( this.cardsList ) {
+    if (this.cardsList) {
       if (this.cardPosition != 0) {
         this.cardPosition = this.cardPosition - 1;
       }
     }
   }
-  
+
   btnNumberRandom() {
-    const maxCount = 10;
-    
-    if ( !this.arrNumbers || this.arrNumbers.length === 0) {
-      this.arrNumbers = Array.from({ length: maxCount }, (_, i) => i + 1);
-      this.arrNumbers.sort(() => Math.random() > 0.5 ? 1 : -1);
-    }
-    
-    if (this.arrNumbers.length === 0) {
-      this.numberRandom = 'Concluido';
-      return;
-    }
-    
-    let count = 0;
-    const animationCount= 20;
-    const intervalTime = 50;
-    
-    const interval = setInterval(() => {
-      this.numberRandom = Math.floor(Math.random() * maxCount) + 1;
-      
+    if (this.game && this.eventData) {
+      const { id: gameId } = this.game;
+      const { id: eventId } = this.eventData;
+
+      let maxCount = 75;
+      const intervalTime = 100;
       this.isAnimating = false;
-      setTimeout(() => this.isAnimating = true, 0);
-      
-      count++;
-      if (count >= animationCount) {
-        clearInterval(interval);
-        const nextNumber = this.arrNumbers.shift();
-        if (nextNumber && nextNumber <= 15 ) {
-          this.numberRandom  = nextNumber ? `B-${nextNumber}` : 'Conluido';
-        } else if (nextNumber && (nextNumber >= 16 && nextNumber <= 30) ) {
-          this.numberRandom  = nextNumber ? `I-${nextNumber}` : 'Conluido';
-        } else if (nextNumber && (nextNumber >= 31 && nextNumber <= 45) ) {
-          this.numberRandom  = nextNumber ? `N-${nextNumber}` : 'Conluido';
-        } else if (nextNumber && (nextNumber >= 46 && nextNumber <= 60) ) {
-          this.numberRandom  = nextNumber ? `G-${nextNumber}` : 'Conluido';
-        } else if (nextNumber && (nextNumber >= 61 && nextNumber <= 75) ) {
-          this.numberRandom  = nextNumber ? `O-${nextNumber}` : 'Conluido';
-        } else {
-          this.numberRandom  = 'Conluido';
+      const colNames = ['B', 'I', 'N', 'G', 'O'];
+
+      const interval = setInterval(async () => {
+        this.nameCol = colNames[Math.floor(Math.random() * colNames.length)];
+        this.numberRandom = Math.floor(Math.random() * maxCount) + 1;
+
+        setTimeout(() => this.isAnimating = true, 0);
+
+      }, intervalTime);
+
+      this.calledBallServ.unrepeatableTableNumberRaffle(gameId, eventId).subscribe({
+        next: (calledBall) => {
+          this.isAnimating = false;
+          clearInterval(interval);
+
+          if (!calledBall) {
+            this.statusGameRaffle = 'CONCLUIDO';
+          } else {
+            this.statusGameRaffle = 'INICIADO';
+
+            this.numberRandom = calledBall.num;
+            this.nameCol = calledBall.colName;
+            this.lastCalledBall(calledBall.num, calledBall.colName);
+          }
+        },
+        error: (error) => {
+          this.statusGameRaffle = 'ERROR';
+          console.log(error);
         }
-      }
-    }, intervalTime);
+      });
+    } else {
+      this.statusGameRaffle = 'INICIAR';
+    }
   }
-  
+
   async startEvent() {
     if (!this.eventData) {
       return;
@@ -380,15 +402,55 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     const { id: eventId } = this.eventData;
 
     const updateData: EventUpdateSharedInterface = { status: StatusEvent.NOW };
-    
+
     await this.updateStatusEvent(eventId, updateData);
-    
+
     this.toastServ.openToast('game', 'success', 'Evento iniciado');
   }
 
   async startGame() {
     this.clearForm();
     this.modalStartGameMode();
+  }
+
+  async getCalledBallsByGameId(gameId: number) {
+      this.calledBallServ.findByGameId(gameId).subscribe({
+        next: async (calledBall) => {
+          if (!calledBall) {
+            if (this.IsAdmin) {
+              this.statusGameRaffle = 'CONCLUIDO';
+            } else {
+              //TODO: Terminar Game
+              this.initGame = false;
+            }
+          } else {
+            this.statusGameRaffle = 'INICIADO';
+            const arrayCalledNums = calledBall.map(({num}) => num);
+            const calledEndNum = arrayCalledNums[arrayCalledNums.length - 1];
+            const nameCol = await this.columnIdentification(calledEndNum);
+
+            if (this.IsAdmin) {
+
+              this.numberRandom = calledEndNum;
+              this.nameCol = nameCol;
+            }
+
+            this.calledBallList = calledBall;
+  
+            this.lastCalledBall(calledEndNum, nameCol);
+
+            calledBall.forEach(({num}) => {
+              this.calledBall(num);
+            });
+          }
+        },
+        error: (error) => {
+          if (this.IsAdmin) {
+            this.statusGameRaffle = 'ERROR';
+          }
+          console.log(error);
+        }
+      });
   }
 
   createGame() {
@@ -417,7 +479,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
             this.closeModal();
           },
         })
-        
+
       } else {
         this.textMsgForm = "El formulario no es válido";
       }
@@ -458,6 +520,22 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   clearForm() {
     this.firstFormGroup.reset();
     this.secondFormGroup.reset();
+  }
+
+  private async columnIdentification(num: number): Promise<string> {
+    if (num > 0 && num <= 15 ) {
+      return `B`;
+    } else if (num >= 16 && num <= 30) {
+      return `I`;
+    } else if (num >= 31 && num <= 45) {
+      return `N`;
+    } else if (num >= 46 && num <= 60) {
+      return `G`;
+    } else if (num >= 61 && num <= 75) {
+      return `O`;
+    } else {
+      return '';
+    }
   }
 
   //* Event

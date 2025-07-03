@@ -9,4 +9,5 @@ export const environment = {
     apiMSGameModeUrl: '',
     apiMSGameUrl: '',
     apiMSOrderUrl: '',
+    apiMSCalledBallUrl: ''
 };

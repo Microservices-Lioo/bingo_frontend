@@ -10,7 +10,7 @@
         <div class="w-full h-auto md:h-screen grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
             <!-- Números cantados -->
-            <div class="order-1 sm:col-span-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
+            <div class="order-1 sm:col-span-2 min-h-52 max-h-60 overflow-y-auto border border-opacity-40 border-sky-700 rounded-lg p-3">
                 <div class="flex justify-between items-center p-1 mb-2 bg-sky-800 rounded-md">
                     <h3 class="text-sm font-medium text-white">Números cantados</h3>
                     <button class="text-white" data-popover-target="popover-info-nums" data-popover-placement="bottom-end" type="button">
@@ -36,9 +36,9 @@
             </div>
             
             <!-- Reglas y Modo de juego -->
-            <div class="order-3 sm:col-span-2 sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
+            <div class="order-3 sm:col-span-2 min-h-52 max-h-60 overflow-y-auto sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
                 
-                <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="mb-1 border-b border-gray-200 dark:border-gray-700">
                     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" role="tablist">
                         <li class="me-0" role="presentation">
                             <button (click)="tabModeSelected('modo')" class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="modo-tab" data-tabs-target="#modo" type="button" role="tab" aria-controls="modo" aria-selected="true">Modo de juego</button>
@@ -301,7 +301,11 @@
                                     (click)="btnNumberRandom()"
                                         style="box-shadow: inset 0 0 9px 1px #fff, 0 5px 5px rgba(0, 0, 0, 0.15);"
                                         class=" w-52 h-52 rounded-full bg-sky-900 text-white text-8x1 font-bold shadow-md transform transition duration-300 hover:scale-105">
-                                        <span class="text-[1.5rem] md:text-[2.5rem]" [class.slide-up]="isAnimating"> {{ numberRandom }}</span>
+                                        @if(statusGameRaffle != 'INICIADO') {
+                                            <span class="text-[1.5rem] md:text-[2.5rem]" [class.slide-up]="isAnimating"> {{ statusGameRaffle }} </span>
+                                        } @else {
+                                            <span class="text-[1.5rem] md:text-[2.5rem]" [class.slide-up]="isAnimating"> {{ nameCol }} <br> {{ numberRandom }}</span>
+                                        } 
                                     </button>
                                 </div>
                             </div>
