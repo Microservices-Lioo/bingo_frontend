@@ -1,5 +1,5 @@
 export interface CardNumsSharedI {
-    market: boolean;
+    marked: boolean;
     number: number;
 }
 export interface CardSharedI {

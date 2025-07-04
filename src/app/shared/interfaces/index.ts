@@ -7,3 +7,4 @@ export * from './game-mode-shared.interface';
 export * from './game-on-mode.interface';
 export * from './game-rule-shared.interface';
 export * from './game-shared.interface';
+export * from './room-status.interface';

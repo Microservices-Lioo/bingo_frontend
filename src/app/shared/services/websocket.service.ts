@@ -3,8 +3,10 @@ import { io, Socket } from 'socket.io-client';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
-import { StatusEvent } from '../enums';
-import { CalledBallI } from '../interfaces';
+import { StatusEvent, WsEnum } from '../enums';
+import { CalledBallI, RoomState } from '../interfaces';
+import { WsConst } from '../consts/ws.const';
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,11 +19,18 @@ export class WebsocketServiceShared {
     new BehaviorSubject<'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby'>('disconnected');
   private connectedPlayers$ =
     new BehaviorSubject<number>(0);
-  joinKeyRoom = 'room';
+  public currentRoom: string | null = null;
   private calledBallSubject$ = new BehaviorSubject<CalledBallI | null>(null);
+  private roomStateSubject = new BehaviorSubject<RoomState>({
+    isCounterActive: false,
+    counter: 0
+  });
+
+  public roomState$ = this.roomStateSubject.asObservable();
 
   constructor(
     private router: Router,
+    private loadingService: LoadingService
   ) {
   }
 
@@ -41,7 +50,7 @@ export class WebsocketServiceShared {
     });
 
     //* Eventos de conexión
-    this.socket.on("connect", () => {
+    this.socket.on(WsEnum.CONNECT, () => {
       console.log('connected');
       if ( 
         this.statusConnectionBefore === 'on-standby'
@@ -51,7 +60,7 @@ export class WebsocketServiceShared {
       this.statusConnection$.next('connected');
     });
 
-    this.socket.on("disconnect", () => {
+    this.socket.on(WsEnum.DISCONNECT, () => {
       if (
         this.statusConnection$.value === 'connected' || 
         this.statusConnection$.value === 'on-standby'
@@ -62,7 +71,7 @@ export class WebsocketServiceShared {
     });
 
     //* Eventos de reconexión
-    this.socket.io.on("reconnect_attempt", (count) => {
+    this.socket.io.on(WsEnum.RECONNECT_ATTEMPT, (count) => {
       if (
         this.statusConnection$.value === 'connected' || 
         this.statusConnection$.value === 'on-standby'
@@ -78,12 +87,12 @@ export class WebsocketServiceShared {
       }
     });
 
-    this.socket.io.on("reconnect", (count) => {
+    this.socket.io.on(WsEnum.RECONNECT, (count) => {
       console.log('Reconexión: ' + count);
     });
 
     //* Errores
-    this.socket.on('connect_error', (error) => {
+    this.socket.on(WsEnum.CONNECT_ERROR, (error) => {
       if (this.socket.active) {
         console.log('Error de reconección: ' + error.message);
       } else {
@@ -102,7 +111,12 @@ export class WebsocketServiceShared {
       }
     });
 
-    this.socket.on('unauthorized', (data) => {
+    this.socket.on(WsEnum.ERROR, (error) => {
+      console.log(error);
+      this.loadingService.clearAllLoading();
+    });
+
+    this.socket.on(WsEnum.UNAUTHORIZED, (data) => {
       this.socket.disconnect();
       this.router.navigate(['/home/principal']);
     });
@@ -110,14 +124,14 @@ export class WebsocketServiceShared {
   }
 
   joinRoom(roomId: number): void {
-    this.socket.emit('joinGame', roomId);
-    this.listenRoom(`${this.joinKeyRoom}:${roomId}`);
+    this.socket.emit(WsEnum.JOIN_GAME, roomId);
+    this.listenRoom(WsConst.keyRoom(roomId));
   }
 
   joinWaitingRoom(roomId: number): void {
     this.statusConnection$.next('on-standby');
-    this.socket.emit('waitingGame', roomId);
-    this.listenRoomWaiting(`${this.joinKeyRoom}:${roomId}`);
+    this.socket.emit(WsEnum.WAITING_GAME, roomId);
+    this.listenRoomWaiting(WsConst.keyRoom(roomId), WsConst.keyRoomWaiting(roomId));
   }
 
   listenRoom(room: string) {
@@ -127,49 +141,86 @@ export class WebsocketServiceShared {
     });    
 
     // count users
-    this.socket.off(`${room}:countUsers`);
-    this.socket.on(`${room}:countUsers`, (value: number) => {
+    this.socket.off(WsConst.keyRoomCountUsers(room));
+    this.socket.on(WsConst.keyRoomCountUsers(room), (value: number) => {
       this.connectedPlayers$.next(value);
     });  
 
     // called ball
-    this.socket.off(`${room}:calledBall`);
-    this.socket.on(`${room}:calledBall`, (calledBall: CalledBallI) => {
+    this.socket.off(WsConst.keyRoomCalledBall(room));
+    this.socket.on(WsConst.keyRoomCalledBall(room), (calledBall: CalledBallI) => {
       this.calledBallSubject$.next(calledBall);
+    });
+    
+    // Remaiining Time
+    this.socket.off(WsEnum.COUNTER_STARTED);
+    this.socket.on(WsEnum.COUNTER_STARTED, (data) => {
+      this.updateRoomState({
+        isCounterActive: data.isCounterActive,
+        counter: data.counter
+      });
+    });
+
+    // Remaiining Time
+    this.socket.off(WsEnum.COUNTER_UPDATE);
+    this.socket.on(WsEnum.COUNTER_UPDATE, (data) => {
+      this.updateRoomState({
+        isCounterActive: data.isCounterActive,
+        counter: data.counter
+      });
+    });
+    
+    // Remaiining Time
+    this.socket.off(WsEnum.COUNTER_FINISHED);
+    this.socket.on(WsEnum.COUNTER_FINISHED, (data) => {
+      this.updateRoomState({
+        isCounterActive: data.isCounterActive,
+        counter: data.counter
+      });
     });
   }
 
-  listenRoomWaiting(room: string) {
+  private updateRoomState(newState: RoomState) {
+    this.roomStateSubject.next(newState);
+  }
+
+  listenRoomWaiting(room: string, roomWaiting: string) {
     // waiting
-    this.socket.off(`${room}:waiting`);
-    this.socket.on(`${room}:waiting`, (value) => {
+    this.socket.off(roomWaiting);
+    this.socket.on(roomWaiting, (value) => {
       if (value && value === StatusEvent.NOW) {
         this.statusConnection$.next('connected');
         this.statusConnectionBefore = 'connected';
-        this.socket.off(`${room}:waiting`);
-        this.socket.off(`${room}:waiting:countUsers`);
+        this.socket.off(roomWaiting);
+        this.socket.off(WsConst.keyRoomCountUsers(roomWaiting));
         this.listenRoom(room);
       }
     });
     
     // count users waiting
-    this.socket.off(`${room}:waiting:countUsers`);
-    this.socket.on(`${room}:waiting:countUsers`, (value) => {
+    this.socket.off(WsConst.keyRoomCountUsers(roomWaiting));
+    this.socket.on(WsConst.keyRoomCountUsers(roomWaiting), (value) => {
       this.connectedPlayers$.next(value);
     });  
   }
 
-  offListenRoom(room: string, eventId: number) {
-    // waiting
-    this.socket.off(`${room}:waiting`);
-    // count users waiting
-    this.socket.off(`${room}:waiting:countUsers`);
-    this.socket.off(room);
-    // count users
-    this.socket.off(`${room}:countUsers`);
-    this.socket.off(`${room}:calledBall`);
+  offListenRoom(roomId: number) {
+    const key = WsConst.keyRoom(roomId);
+    const keyWaiting = WsConst.keyRoomWaiting(roomId);
 
-    this.socket.emit(`disconnectRoom`, eventId);
+    // waiting
+    this.socket.off(keyWaiting);
+    this.socket.off(WsConst.keyRoomCountUsers(keyWaiting));
+
+    // original
+    this.socket.off(key);
+    this.socket.off(WsConst.keyRoomCountUsers(key));
+    this.socket.off(WsConst.keyRoomCalledBall(key));
+    this.socket.off(WsEnum.COUNTER_STARTED);
+    this.socket.off(WsEnum.COUNTER_UPDATE);
+    this.socket.off(WsEnum.COUNTER_FINISHED);
+
+    this.socket.emit(`disconnectRoom`, roomId);
   }
 
   disconnect(): void {
@@ -189,5 +240,4 @@ export class WebsocketServiceShared {
   getCalledBallSubject() {
     return this.calledBallSubject$.asObservable();
   }
-
 }

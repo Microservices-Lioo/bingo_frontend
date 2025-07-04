@@ -1,7 +1,7 @@
 <div class="grid [grid-template-columns:repeat(auto-fit,minmax(30px,1fr))] gap-1 w-full max-w-6xl">
     <div class="loader-status bg-sky-800 font-bold text-sm flex justify-center items-center text-center col-span-2 row-span-2 flex-none ...">
-        @if(num_cantado == 0) {
-            {{ num_cantado }}
+        @if(colName == '' || num_cantado == 0) {
+            #
         } @else {
             {{colName}} <br> {{ num_cantado }}    
         }
