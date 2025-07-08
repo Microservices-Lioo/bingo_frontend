@@ -4,9 +4,10 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
 import { StatusEvent, WsEnum } from '../enums';
-import { CalledBallI, RoomState } from '../interfaces';
+import { CalledBallI, RoomState, Sing } from '../interfaces';
 import { WsConst } from '../consts/ws.const';
 import { LoadingService } from './loading.service';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,12 +26,15 @@ export class WebsocketServiceShared {
     isCounterActive: false,
     counter: 0
   });
+  private songsSubject = new BehaviorSubject<Sing | null>(null);
 
   public roomState$ = this.roomStateSubject.asObservable();
+  public songsState$ = this.songsSubject.asObservable();
 
   constructor(
     private router: Router,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private toastServ: ToastService
   ) {
   }
 
@@ -112,7 +116,7 @@ export class WebsocketServiceShared {
     });
 
     this.socket.on(WsEnum.ERROR, (error) => {
-      console.log(error);
+      this.toastServ.openToast('ws-error', 'danger', error);
       this.loadingService.clearAllLoading();
     });
 
@@ -134,11 +138,15 @@ export class WebsocketServiceShared {
     this.listenRoomWaiting(WsConst.keyRoom(roomId), WsConst.keyRoomWaiting(roomId));
   }
 
+  singBingo(roomId: number) {
+    this.socket.emit(WsEnum.SING, { roomId });
+  }
+
   listenRoom(room: string) {
     this.socket.off(room);
     this.socket.on(room, (value) => {
       console.log(value);
-    });    
+    });   
 
     // count users
     this.socket.off(WsConst.keyRoomCountUsers(room));
@@ -177,6 +185,12 @@ export class WebsocketServiceShared {
         isCounterActive: data.isCounterActive,
         counter: data.counter
       });
+    });
+    
+    // Songs
+    this.socket.off(WsEnum.SONGS);
+    this.socket.on(WsEnum.SONGS, (songs) => {
+      this.songsSubject.next(songs);
     });
   }
 
@@ -219,6 +233,8 @@ export class WebsocketServiceShared {
     this.socket.off(WsEnum.COUNTER_STARTED);
     this.socket.off(WsEnum.COUNTER_UPDATE);
     this.socket.off(WsEnum.COUNTER_FINISHED);
+    this.socket.off(WsEnum.COUNTER_FINISHED);
+    this.socket.off(WsEnum.SONGS);
 
     this.socket.emit(`disconnectRoom`, roomId);
   }

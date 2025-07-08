@@ -138,51 +138,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    Silver
-                                    <br>
-                                    <span class="text-gray-400">
-                                        14:30
-                                    </span>
-                                </th>
-                                <td class="px-2 py-4">
-                                    <div class="flex flex-col">
-                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
-                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    Kevin
-                                    <br>
-                                    <span class="text-gray-400">
-                                        14:32
-                                    </span>
-                                </th>
-                                <td class="px-2 py-4">
-                                    <div class="flex flex-col">
-                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
-                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="bg-white dark:bg-gray-800">
-                                <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    Lio
-                                    <br>
-                                    <span class="text-gray-400">
-                                        14:34
-                                    </span>
-                                </th>
-                                <td class="px-2 py-4">
-                                    <div class="flex flex-col">
-                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
-                                        <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
-                                    </div>
-                                </td>
-                            </tr>
+                            @if(songsList.length > 0) {
+                                @for(sing of songsList; track $index){
+                                    <tr [id]="'player-'+sing.id" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                        <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            {{ sing.fullnames }}
+                                            <br>
+                                            <span class="text-gray-400">
+                                                {{ sing.hour }}
+                                            </span>
+                                        </th>
+                                        <td class="px-2 py-4">
+                                            @if(IsAdmin){
+                                                <div class="flex flex-col">
+                                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Revisar</a>
+                                                    <a href="#" class="font-normal text-xs text-blue-600 dark:text-blue-500 hover:underline">Rechazar</a>
+                                                </div>
+                                            } @else {
+                                                <span class="bg-yellow-300 p-1 rounded-md">pendiente</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -258,6 +236,10 @@
                                         <span class="sr-only">Next page</span>
                                     </button>
                                 </div>
+                            </div>
+
+                            <div>
+                                <button (click)="singBingo()">Cantar</button>
                             </div>
                             <!-- Cards -->
                             <div

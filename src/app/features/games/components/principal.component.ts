@@ -35,7 +35,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
-import { AwardSharedInterface, CardSharedI, EventUpdateSharedInterface, GameModeSharedI, GameRuleSharedI } from '../../../shared/interfaces';
+import { AwardSharedInterface, CardSharedI, EventUpdateSharedInterface, GameModeSharedI, GameRuleSharedI, Sing } from '../../../shared/interfaces';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
 import { StatusEvent } from '../../../shared/enums';
@@ -126,6 +126,8 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     isCounterActive: false,
     counter: 0,
   };
+
+  songsList: Sing[] = [];
 
   // estados
   cardPosition: number = 0;
@@ -235,7 +237,15 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         this.roomState = state;
         this.loadingServ.setLoadingStates('btnNumberRandom', state.isCounterActive);
       })
-    )
+    );
+
+    this.subscriptions.push(
+      this.socketServ.songsState$.subscribe(sing => {
+        if (sing) {
+          this.songsList.push(sing);
+        }
+      })
+    );
   }
 
   ngAfterViewInit() {
@@ -280,8 +290,10 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.eventSharedServ.getEventWithAwards(+eventId, userId).subscribe({
       next: async (event) => {
         const currentUserId = this.authServ.currentUser.id;
+        let isAdmin = false;
         if (currentUserId === userId && event.userId === userId) {
-          this.IsAdmin = true;
+          isAdmin = true;
+          this.IsAdmin = isAdmin;
         } else {
           await this.getCardsList(eventId);
         }
@@ -638,6 +650,28 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   modoSelect(modo: 'manual' | 'automatico') {
     this.modoActive = modo;
+  }
+
+  singBingo() {
+    //* validar antes de enviar;
+    if (this.cardsList) {
+      this.cardsList?.forEach(card => {
+        for (let row = 0; row < card.nums.length; row++) {
+          for (let col = 0; col < card.nums[row].length; col++) {
+            if (this.gameRule?.rule.includes(`${row}:${col}`) && !card.nums[row][col].marked){
+              this.toastServ.openToast('sing', 'danger', 'Tus aciertos no coinciden con las reglas');
+              return;
+            }
+          }
+        }
+      })
+    }
+    
+    //* enviar para verificar
+    if (this.eventData) { 
+      this.toastServ.openToast('sing', 'success', 'Has cantado BINGO!!!, espera mientras el administrador valida tu tabla');
+      this.socketServ.singBingo(this.eventData.id);
+    }
   }
 
   //* Event
