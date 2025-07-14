@@ -15,7 +15,11 @@ export enum WsEnum {
     COUNTER_FINISHED = 'counterFinished',
     SONGS = 'songs',
     SING = 'sing',
+    DELETED_SONGS = 'delete-songs',
+
     // EMIT
     JOIN_GAME = 'joinGame',
-    WAITING_GAME = 'waitingGame'
+    WAITING_GAME = 'waitingGame',
+    VERIFY_SING = 'verify-sing',
+    DELETE_SONGS = 'delete-all-songs',
 }

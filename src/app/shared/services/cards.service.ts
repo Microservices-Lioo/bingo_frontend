@@ -29,4 +29,9 @@ export class CardsServiceShared {
     return this.http.post<CardNumsSharedI | null>(`${this.url}/check-or.uncheck/${cardId}`, { markedNum, marked })
       .pipe(catchError(handleError));
   }
+
+  getCardByIdBuyerEvent(eventId: number, cardId: number, buyer: number): Observable<CardNumsSharedI[][]> {
+    return this.http.get<CardNumsSharedI[][]>(`${this.url}/${cardId}/${buyer}/${eventId}`)
+      .pipe(catchError(handleError));
+  }
 }

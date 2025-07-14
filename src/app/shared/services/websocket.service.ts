@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
 import { StatusEvent, WsEnum } from '../enums';
-import { CalledBallI, RoomState, Sing } from '../interfaces';
+import { CalledBallI, RoomState, Sing, StatusSing } from '../interfaces';
 import { WsConst } from '../consts/ws.const';
 import { LoadingService } from './loading.service';
 import { ToastService } from './toast.service';
@@ -27,9 +27,11 @@ export class WebsocketServiceShared {
     counter: 0
   });
   private songsSubject = new BehaviorSubject<Sing | null>(null);
+  private songsArraySubject = new BehaviorSubject<Sing[] | null>(null);
 
   public roomState$ = this.roomStateSubject.asObservable();
   public songsState$ = this.songsSubject.asObservable();
+  public songsArrayState$ = this.songsArraySubject.asObservable();
 
   constructor(
     private router: Router,
@@ -138,8 +140,16 @@ export class WebsocketServiceShared {
     this.listenRoomWaiting(WsConst.keyRoom(roomId), WsConst.keyRoomWaiting(roomId));
   }
 
-  singBingo(roomId: number) {
-    this.socket.emit(WsEnum.SING, { roomId });
+  singBingo(roomId: number, cardId: number) {
+    this.socket.emit(WsEnum.SING, { roomId, cardId });
+  }
+  
+  verifySing(roomId: number, cardId: number, status: StatusSing, userId: number) {
+    this.socket.emit(WsEnum.VERIFY_SING, { roomId, cardId, status, userId});
+  }
+
+  deleteSongs(roomId: number) {
+    this.socket.emit(WsEnum.DELETE_SONGS, {roomId});
   }
 
   listenRoom(room: string) {
@@ -189,8 +199,14 @@ export class WebsocketServiceShared {
     
     // Songs
     this.socket.off(WsEnum.SONGS);
-    this.socket.on(WsEnum.SONGS, (songs) => {
+    this.socket.on(WsEnum.SONGS, (songs: Sing) => {
       this.songsSubject.next(songs);
+    });
+
+    // Songs arrray
+    this.socket.off(WsEnum.DELETED_SONGS);
+    this.socket.on(WsEnum.DELETED_SONGS, (songs: Sing[]) => {
+      this.songsArraySubject.next(songs);
     });
   }
 
@@ -235,6 +251,7 @@ export class WebsocketServiceShared {
     this.socket.off(WsEnum.COUNTER_FINISHED);
     this.socket.off(WsEnum.COUNTER_FINISHED);
     this.socket.off(WsEnum.SONGS);
+    this.socket.off(WsEnum.DELETED_SONGS);
 
     this.socket.emit(`disconnectRoom`, roomId);
   }
