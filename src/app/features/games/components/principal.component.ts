@@ -235,6 +235,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketServ.roomState$.subscribe(state => {
         this.roomState = state;
         this.loadingServ.setLoadingStates('btnNumberRandom', state.isCounterActive);
+
+        // admin automático
+        if (!state.isCounterActive && this.IsAdmin && this.modoActive == 'automatico') {
+          this.btnNumberRandom();
+        }
       })
     );
 
@@ -394,13 +399,13 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Mpetodo para enviar el último número llamado o cantado
+   * Método para enviar el último número llamado o cantado
    * @param num type number
    * @param col type string
    */
   async lastCalledBall(num: number, col: string) {
     this.gameServ.sendLastCalledBall(num, col);
-    if (this.modoActive === 'automatico') {
+    if (this.modoActive === 'automatico' && !this.IsAdmin) {
       this.updateCardCell(num);
     }
   }
@@ -495,6 +500,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   modoSelect(modo: 'manual' | 'automatico') {
     this.modoActive = modo;
+    if (this.IsAdmin && modo == 'automatico') {
+      if (!this.loadingServ.isLoading('btnNumberRandom')) {
+        this.btnNumberRandom();
+      }
+    }
   }
 
   /**
@@ -506,8 +516,28 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.songsList[index] = sing;
   }
 
+  /**
+   * Método para obtener el id del usuario autenticado
+   * @returns id type number
+   */
   getCurrentUserId() {
       return this.authServ.currentUser.id;
+  }
+
+  /**
+   * Método para concluir el juego
+   */
+  endGame() {
+    //* Limpiar los numeros cantados
+    //* Limpiar el ultimo numero cantado
+    //* Limpiar modo de juego y reglas seleccionadas
+    this.initGame = false;
+
+    // Admin
+
+    // User
+    //* Limpiar todas las tablas
+    this.cardPosition = 0;
   }
 
   //* FOR ADMIN
@@ -535,6 +565,12 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @returns 
    */
   btnNumberRandom() {
+    if (this.songsList.length > 0) {
+      this.toastServ.openToast('number-random', 'warning', 'Tienes cantos pendientes');
+      this.modoActive = 'manual';
+      return;
+    }
+
     if (this.loadingServ.isLoading('btnNumberRandom')) {
       this.toastServ.openToast('number-random', 'warning', 'Debes esperar a que se agote el tiempo de espera');
       return;
@@ -569,6 +605,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         clearInterval(interval);
 
         if (!calledBall) {
+          console.log('no hay numero llamado: ' + calledBall)
           this.statusGameRaffle = 'CONCLUIDO';
         } else {
           this.statusGameRaffle = 'INICIADO';
@@ -814,9 +851,12 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
-        const card = this.cardsList.find(card => card.id == cardId);
+        const position = this.cardsList.findIndex(card => card.id == cardId);
+        const card =  this.cardsList[position];
+
         if (card) {
-          card.nums.some(row =>
+          this.cardPosition = position;
+          const isMarked = card.nums.some(row =>
             row.some(cell => {
               if (cell.number === number) {
                 cell.marked = cel.marked;
@@ -824,11 +864,14 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
               }
               return false;
             })
-          );              
+          );
+          if (isMarked && this.modoActive == 'automatico') {
+            this.singBingoAuto(position);         
+          }
         }
       },
       error: (error) => {
-        console.timeLog(error);
+        this.toastServ.openToast('cell-selected', 'danger', error.message);
       }
     });
   }
@@ -959,5 +1002,33 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     //* enviar para verificar
     this.toastServ.openToast('sing', 'success', 'Has cantado BINGO!!!, espera mientras el administrador valida tu tabla');
     this.socketServ.singBingo(this.eventData.id, this.cardsList[this.cardPosition].id);
+  }
+
+  /**
+   * Método para cantar bingo automaticamente, emitido al administrador del juego para posteriormente ser verificado
+   * @returns 
+   */
+  async singBingoAuto(postion: number) {
+    if (!this.eventData) return this.toastServ.openToast('sing', 'danger', 'Evento no inicializado');
+    if (!this.cardsList) return this.toastServ.openToast('sing', 'danger', 'No existe una card asociada a tu usuario');
+    if (!this.gameRule) return this.toastServ.openToast('sing', 'danger', 'Reglas no seleccionadas por el administrador');
+
+    //* validar antes de enviar;
+    //* validar que la logitud de los numeros seleccionados en la card sean iguales o mayores a las reglas
+    const countRulePosition = this.gameRule.rule.length;
+    const countMarked = this.cardsList[postion].nums.flat().filter(cell => cell.marked).length;
+    if (countMarked < countRulePosition) return;
+
+    //* validar que los números de la card esten seleccionados segun la posicion de la regla
+    const card = this.cardsList[postion];
+    for (let row = 0; row < card.nums.length; row++) {
+      for (let col = 0; col < card.nums[row].length; col++) {
+        if (this.gameRule.rule.includes(`${row}:${col}`) && !card.nums[row][col].marked) return;
+      }
+    }
+    
+    //* enviar para verificar
+    this.toastServ.openToast('sing-'+postion, 'success', 'Has cantado BINGO!!!, espera mientras el administrador valida tu tabla');
+    this.socketServ.singBingo(this.eventData.id, this.cardsList[postion].id);
   }
 }
