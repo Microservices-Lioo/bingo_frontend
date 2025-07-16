@@ -286,10 +286,10 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   async transformAwardList(awards: AwardSharedInterface[]) {
     let awardsList = awards.map(award => ({
       ...award,
-      status: StatusAward.PROX
+      status:  award.gameId && !award.winner_user ? StatusAward.NOW : award.gameId && award.winner_user ? StatusAward.END : StatusAward.PROX
     }));
 
-    this.awardsList = awardsList;
+    this.awardsList = this.orderAwards(awardsList);
   }
 
   /**
@@ -538,6 +538,19 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     // User
     //* Limpiar todas las tablas
     this.cardPosition = 0;
+  }
+
+  /**
+   * Método para ordener los premios por categoria
+   * @param AwardGameInterface[]
+   * @return array ordernad 1: Ahora, 2: Prox, 3: Fin
+   */
+  orderAwards(awardsList: AwardGameInterface[]): AwardGameInterface[] {
+    const order = ['NOW', 'PROX', 'END'];
+
+    return awardsList.sort((a, b) => {
+      return order.indexOf(a.status) - order.indexOf(b.status);
+    });
   }
 
   //* FOR ADMIN

@@ -109,8 +109,8 @@
                                     </p>
                                 </div>
                                 <div class="inline-flex text-xs p-1 items-center font-semibold text-gray-900 dark:text-white rounded"
-                                [class]="award.gameId ? 'bg-green-400' : award.winner_user != null ? 'bg-red-500' : 'bg-yellow-300'">
-                                    {{ award.gameId ? 'Ahora' : award.winner_user != null ? 'Fin' : 'Prox.' }}
+                                [class]="award.status == 'NOW' ? 'bg-green-400' : award.status == 'END' ? 'bg-red-500' : 'bg-yellow-300'">
+                                    {{ award.status == 'NOW' ? 'Ahora' : award.status == 'END' ? 'Fin' : 'Prox.' }}
                                 </div>
                             </div>
                         </li>
