@@ -126,9 +126,16 @@
                     <h3 class="text-sm text-center font-medium text-white">Cantos</h3>
                 </div>
                 @if(IsAdmin) {
-                    <div class="flex justify-end">
+                    <div class="flex justify-between gap-1">
+                        <button
+                            title="Premiar"
+                            class="bg-transparent w-10 h-10 flex justify-center items-center"
+                            (click)="reward()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path fill="#ff808c" d="M8.548 1v4.44c.035.62.302 1.201.749 1.63l2.705 2.318V1z"/><path fill="#66e1ff" d="M15.455 5.44V1h-3.454v8.388l2.705-2.318a2.45 2.45 0 0 0 .749-1.63"/><path fill="#ffef5e" d="m16.44 18.764l2.119-2.12a.494.494 0 0 0 0-.697l-2.118-2.118l.395-1.983a.305.305 0 0 0-.22-.395a.3.3 0 0 0-.167.008l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119l-.395 1.983a.306.306 0 0 0 .387.387l1.984-.395l2.116 2.116a.49.49 0 0 0 .698 0l2.118-2.118l1.984.395a.305.305 0 0 0 .387-.387z"/><path fill="#fff9bf" d="M7.164 20.747a.34.34 0 0 0 .072.311l9.528-9.527a.34.34 0 0 0-.311-.072l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119z"/><path fill="#ffbc44" d="M12 18.764a2.467 2.467 0 1 0 0-4.935a2.467 2.467 0 0 0 0 4.935"/><path fill="#ffdda1" d="M10.256 18.041a2.468 2.468 0 0 1 3.49-3.49z"/><path stroke="#191919" stroke-linecap="round" stroke-linejoin="round" d="m16.44 18.764l2.119-2.12a.494.494 0 0 0 0-.697l-2.118-2.118l.395-1.983a.305.305 0 0 0-.22-.395a.3.3 0 0 0-.167.008l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119l-.395 1.983a.306.306 0 0 0 .387.387l1.984-.395l2.116 2.116a.49.49 0 0 0 .698 0l2.118-2.118l1.984.395a.305.305 0 0 0 .387-.387zM15.456 5.44a2.45 2.45 0 0 1-.75 1.63l-2.704 2.318L9.297 7.07a2.45 2.45 0 0 1-.75-1.63V1h6.909zM12.001 1v8.388M5.587 1h12.83" stroke-width="1"/><path stroke="#191919" stroke-linecap="round" stroke-linejoin="round" d="M12 18.764a2.467 2.467 0 1 0 0-4.935a2.467 2.467 0 0 0 0 4.935" stroke-width="1"/></g></svg>
+                        </button>
                         <button 
-                            class="bg-transparent w-10 h-10"
+                            title="Eliminar cantos"
+                            class="bg-transparent w-10 h-10 flex justify-center items-center"
                             (click)="deleteAllSongs()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#f46c6c" d="M16 16h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1m0-8h5c.55 0 1 .45 1 1s-.45 1-1 1h-5c-.55 0-1-.45-1-1s.45-1 1-1m0 4h4c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1s.45-1 1-1M3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3zM13 5h-2l-.71-.71c-.18-.18-.44-.29-.7-.29H6.41c-.26 0-.52.11-.7.29L5 5H3c-.55 0-1 .45-1 1s.45 1 1 1h10c.55 0 1-.45 1-1s-.45-1-1-1" stroke-width="0.5" stroke="#f46c6c"/></svg>
                         </button>
@@ -410,19 +417,21 @@
                                         </thead>
                                         <tbody>
                                             @for (award of awardsList; track $index) {
-                                                <tr class=" bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                                    <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                    {{ award.name }}
-                                                    </th>
-                                                    <td class="px-2 py-4">
-                                                        {{ award.description }}
-                                                    </td>
-                                                    <td class="px-2 py-4">
-                                                        <div class="flex flex-col">
-                                                            <mat-radio-button [name]="award.id+''" [value]="award.id" class="text-sky-800"></mat-radio-button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                @if (award.status == 'PROX') {
+                                                    <tr class=" bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                                        <th scope="row" class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                        {{ award.name }}
+                                                        </th>
+                                                        <td class="px-2 py-4">
+                                                            {{ award.description }}
+                                                        </td>
+                                                        <td class="px-2 py-4">
+                                                            <div class="flex flex-col">
+                                                                <mat-radio-button [name]="award.id+''" [value]="award.id" class="text-sky-800"></mat-radio-button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
                                             }
                                         </tbody>
                                     </mat-radio-group>
@@ -570,6 +579,97 @@
                         data-modal-hide="popup-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                     >Rechazar</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de premiación -->
+<div id="modal-reward" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-2xl max-h-full">
+        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+            <button (click)="closeModalReward()" type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="popup-modal">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <div class="p-4 md:p-5 flex flex-col gap-2 text-center">
+                <div class="flex justify-start items-start gap-3">
+                    <svg  class="text-sky-900" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7.171 12.906l-2.153 6.411l2.672-.89l1.568 2.34l1.825-5.183m5.73-2.678l2.154 6.411l-2.673-.89l-1.568 2.34l-1.825-5.183M9.165 4.3c.58.068 1.153-.17 1.515-.628a1.68 1.68 0 0 1 2.64 0a1.68 1.68 0 0 0 1.515.628a1.68 1.68 0 0 1 1.866 1.866c-.068.58.17 1.154.628 1.516a1.68 1.68 0 0 1 0 2.639a1.68 1.68 0 0 0-.628 1.515a1.68 1.68 0 0 1-1.866 1.866a1.68 1.68 0 0 0-1.516.628a1.68 1.68 0 0 1-2.639 0a1.68 1.68 0 0 0-1.515-.628a1.68 1.68 0 0 1-1.867-1.866a1.68 1.68 0 0 0-.627-1.515a1.68 1.68 0 0 1 0-2.64c.458-.361.696-.935.627-1.515A1.68 1.68 0 0 1 9.165 4.3M14 9a2 2 0 1 1-4 0a2 2 0 0 1 4 0"/>
+                    </svg>
+                    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Premiación</h3>
+                </div>
+                @if(winner) {
+                    <div class="w-full h-auto border border-opacity-40 border-sky-700 justify-center items-center rounded-lg p-3 flex flex-col gap-2">
+                        <h5 class="text-start">Felicidades al ganador</h5>
+                        <div class="w-full flex flex-col justify-center items-center gap-2 px-5">
+                            <span class="text-xs font-bold text-black">Premio</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><g fill="none"><path fill="#ffef5e" d="M12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74"/><path fill="#fff9bf" d="M9.13 3.87c.001.27.04.54.116.8A2.87 2.87 0 0 0 13.8 1.634A2.87 2.87 0 0 0 9.13 3.87"/><path fill="#ffbc44" d="m9.02 11.285l-2.431 1.14a1.598 1.598 0 0 0-.67 2.402l4.169 6.24h3.826l4.168-6.24a1.6 1.6 0 0 0-.67-2.402l-2.614-1.227z"/><path fill="#ffef5e" d="M15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913z"/><path fill="#fff9bf" d="M12 9.588a8.3 8.3 0 0 1-2.973-.581a.478.478 0 0 0-.638.554l2.655 11.505H12z"/><path stroke="#191919" stroke-linecap="round" stroke-linejoin="round" d="M17.467 22.629a4.26 4.26 0 0 0-3.045-1.542H9.639a4.4 4.4 0 0 0-3.076 1.519L6.262 23H17.74zM15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913zM12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74m4.528 5.27l.884.415a1.598 1.598 0 0 1 .67 2.403l-4.169 6.24m-6.44-9.058l-.884.415a1.598 1.598 0 0 0-.67 2.403l4.169 6.24" stroke-width="1"/></g>
+                            </svg>
+                            <p 
+                                class="text-black text-sm font-bold">
+                                {{ awardsList[0].name }}</p>
+                            <div class="w-1/2 flex justify-start gap-1">
+                                <p class="text-black text-sm font-bold">Para: </p>
+                                <span class="text-sm text-gray-700">{{ winner.fullnames }}</span>
+                            </div>
+                            <div class="w-1/2 flex justify-start gap-1">
+                                <p class="text-black text-sm font-bold">Tabla: </p>
+                                <span class="text-sm text-gray-700">#{{ winner.cardId }}</span>
+                            </div>
+                        </div>
+                        <button 
+                            (click)="endGameAndNewGame()"
+                            type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                            Terminar juego y continuar
+                        </button>
+                    </div>
+                } @else if (tieBreakerList.length > 0) {
+                    <div class="w-full h-auto border border-opacity-40 border-sky-700 rounded-lg p-3 flex flex-col gap-2">
+                        <h5 class="text-start">Sorteo número mayor</h5>
+                        <span class="text-start text-sm">Los jugadores seleccionados deberán jugar a número mayor para ganar</span>
+                        <div class="w-full h-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            @for(user of tieBreakerList; track $index; let i = $index){
+                            <div 
+                                class=" relative flex flex-col gap-1 w-full h-full rounded-md justify-between items-center border border-solid border-sky-900 p-2 text-xs text-white"
+                                [class]="user.num > 0 ? 'bg-green-500' : tieBreakerList[i - 1] && tieBreakerList[i - 1].num > 0 && user.num == 0 ? 'bg-sky-600' : 'bg-transparent'"
+                                >                            
+                                <span class="text-xs font-bold text-black"> {{ user.sing.fullnames }}</span>
+                               <div class="w-full h-auto">
+                                    @if (user.num > 0) {
+                                        <p class="text-4xl text-white"> {{ user.num }}</p>
+                                    } @else {                                    
+                                        <app-loading textLoading="Esperando..."/>
+                                    }
+                               </div>
+                            </div>
+                            }
+                        </div>
+                        <p class="text-start text-sm text-red-500 py-2"> {{ textMsgForm }}</p>
+                        <button 
+                            (click)="awardingHigherNumber()"
+                            type="button" 
+                            class="flex justify-center text-center text-white !bg-sky-800 hover:!bg-sky-900 font-medium rounded-lg text-sm items-center px-5 py-2.5">
+                            Premiar
+                        </button>
+                    </div>
+                } @else {
+                    <div class="w-full h-auto border border-opacity-40 border-sky-700 rounded-lg p-3 flex flex-col gap-2">
+                        <span class="text-gray-600">Aun no hay ganadores</span>
+                        <div>
+                            <button 
+                                (click)="closeModalReward()"
+                                type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                                Aceptar
+                            </button>
+                            <button 
+                                (click)="closeModalReward()"
+                                type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                            >Cancelar</button>
+                        </div>
+                    </div>
+                }                
             </div>
         </div>
     </div>

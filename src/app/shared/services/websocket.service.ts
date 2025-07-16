@@ -28,10 +28,16 @@ export class WebsocketServiceShared {
   });
   private songsSubject = new BehaviorSubject<Sing | null>(null);
   private songsArraySubject = new BehaviorSubject<Sing[] | null>(null);
+  private tieBreakerSubject = 
+    new BehaviorSubject<{ sing: Sing, order: number, num: number } | null>(null);
+
+  private rewardSubject = new BehaviorSubject<Sing | null>(null);
 
   public roomState$ = this.roomStateSubject.asObservable();
   public songsState$ = this.songsSubject.asObservable();
   public songsArrayState$ = this.songsArraySubject.asObservable();
+  public tieBreaker$ = this.tieBreakerSubject.asObservable();
+  public reward$ = this.rewardSubject.asObservable();
 
   constructor(
     private router: Router,
@@ -152,6 +158,14 @@ export class WebsocketServiceShared {
     this.socket.emit(WsEnum.DELETE_SONGS, {roomId});
   }
 
+  reward(sing: Sing) {
+    this.socket.emit(WsEnum.REWARD_EMIT, {sing});
+  }
+
+  tieBreaker(data: { sing: Sing, order: number, num: number }[]) {
+    this.socket.emit(WsEnum.TIEBREAKER_EMIT, { data });
+  }
+
   listenRoom(room: string) {
     this.socket.off(room);
     this.socket.on(room, (value) => {
@@ -208,6 +222,25 @@ export class WebsocketServiceShared {
     this.socket.on(WsEnum.DELETED_SONGS, (songs: Sing[]) => {
       this.songsArraySubject.next(songs);
     });
+
+    // tie-breaker
+    this.socket.off(WsEnum.TIEBREAKER_LISTEN);
+    this.socket.on(WsEnum.TIEBREAKER_LISTEN, 
+      (data: { sing: Sing, order: number, num: number }) => {
+        this.tieBreakerSubject.next(data);
+        // if (typeof data === 'object') {
+        //   this.tieBreakerSubject.next(data);
+        // } else if (Array.isArray(data)) {
+        //   this.tieBreakerSubject.next(data);
+        // }
+    });
+    
+    // reward
+    this.socket.off(WsEnum.REWARD_LISTEN);
+    this.socket.on(WsEnum.REWARD_LISTEN, 
+      (data: Sing) => {
+        this.rewardSubject.next(data);
+    });
   }
 
   private updateRoomState(newState: RoomState) {
@@ -252,6 +285,8 @@ export class WebsocketServiceShared {
     this.socket.off(WsEnum.COUNTER_FINISHED);
     this.socket.off(WsEnum.SONGS);
     this.socket.off(WsEnum.DELETED_SONGS);
+    this.socket.off(WsEnum.TIEBREAKER_LISTEN);
+    this.socket.off(WsEnum.REWARD_LISTEN);
 
     this.socket.emit(`disconnectRoom`, roomId);
   }

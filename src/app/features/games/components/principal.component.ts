@@ -15,10 +15,8 @@ import { initFlowbite, ModalInterface } from 'flowbite';
 import { GamesService } from '../services/games.service';
 import {
   AwardGameInterface,
-  CalledBallI,
   GameI,
   GameModeI,
-  GameOnModeI,
   GameRuleI,
   StatusAward
 } from '../interfaces';
@@ -35,13 +33,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
-import { AwardSharedInterface, CardNumsSharedI, CardSharedI, EventUpdateSharedInterface, GameModeSharedI, GameRuleSharedI, Sing, StatusSing } from '../../../shared/interfaces';
+import { 
+  AwardSharedInterface, 
+  CardNumsSharedI, 
+  CardSharedI, 
+  EventUpdateSharedInterface, 
+  GameModeSharedI,
+  GameRuleSharedI, 
+  Sing, 
+  StatusSing 
+} from '../../../shared/interfaces';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
 import { StatusEvent } from '../../../shared/enums';
 import { initTabs } from 'flowbite';
 import { CalledBallsService } from '../services/called-balls.service';
 import { Subscription } from 'rxjs';
+import { LoadingComponent } from '../../../shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-principal',
@@ -57,6 +65,7 @@ import { Subscription } from 'rxjs';
     MatIconModule,
     MatRadioModule,
     StatusConnectionComponent,
+    LoadingComponent
   ],
   templateUrl: './principal.component.html',
   styles: `
@@ -123,6 +132,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   songsList: Sing[] = [];
 
   modoActive: 'manual' | 'automatico' = 'manual';
+
+  // Premiacion
+  modalReward: ModalInterface | null = null;
+  winner: Sing | null = null;
+  tieBreakerList: { sing: Sing, order: number, num: number}[] = [];
 
   //* FOR ADMIN
   // Buton de sorteo de numero random
@@ -263,6 +277,22 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     );
+
+    this.subscriptions.push(
+      this.socketServ.reward$.subscribe((reward => {
+        if (reward) {
+          this.winner = reward;
+        }
+      }))
+    )
+    
+    this.subscriptions.push(
+      this.socketServ.tieBreaker$.subscribe((tieBreaker => {
+        if (tieBreaker) {
+          this.tieBreakerList.push(tieBreaker);
+        }
+      }))
+    )
   }
 
   ngAfterViewInit() {
@@ -525,19 +555,49 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Método para concluir el juego
+   * Método para resetear el juego
    */
-  endGame() {
-    //* Limpiar los numeros cantados
-    //* Limpiar el ultimo numero cantado
-    //* Limpiar modo de juego y reglas seleccionadas
+  resetGameData() {
     this.initGame = false;
+    this.calledBallList = [];
+    this.game = null;
+    this.gameMode = null;
+    this.gameRule = null;
+    this.gameModeSelected = false;
+    this.gameRuleSelected = false;
+    this.awardGameModeSelected = false;
+    this.numberRandom = 0;
+    this.nameCol = '';
+    this.statusGameRaffle = 'INICIAR';
+    this.isAnimating = false;
+    this.songsList = [];
+    this.selectedSing = null;
+    this.winner = null;
+    this.tieBreakerList = [];
+    this.firstFormGroup.reset();
+    this.secondFormGroup.reset();
+    this.modalGameMode = null;
+    this.modalSongs = null;
+    this.textMsgForm = '';
+  }
 
-    // Admin
-
-    // User
-    //* Limpiar todas las tablas
+  /**
+ * Limpia todos los datos y banderas de un EVENTO (incluye los del juego)
+ */
+  resetEventData() {
+    this.resetGameData();
+    this.initEvent = false;
+    this.eventData = undefined!;
+    this.awardsList = [];
+    this.cardsList = null;
     this.cardPosition = 0;
+    this.connectedPlayers = 0;
+    this.roomState = { isCounterActive: false, counter: 0 };
+    this.modalReward = null;
+    this.modoActive = 'manual';
+    // Si tienes suscripciones, también puedes limpiarlas aquí si es necesario
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
   }
 
   /**
@@ -795,6 +855,111 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.eventData) return this.toastServ.openToast('song-verify', 'danger', 'El evento no está inicializado');
     const { id: roomId } = this.eventData;
     this.socketServ.deleteSongs(roomId);
+  }
+
+  /**
+   * 
+   */
+  reward() {
+    const count = this.songsList.filter(award => award.status === StatusSing.VERIFIED).length;
+    // const songs = this.songsList.filter(award => award.status === StatusSing.VERIFIED);
+    const songs = [
+      {
+        "id": "t5q3KSu7-HVi-yy2AABV",
+        "userId": 10,
+        "cardId": 70,
+        "eventId": 4,
+        "fullnames": "Luis Juan Lopez Zamora",
+        "hour": "13:35:14",
+        "status": "verified"
+      },
+      {
+        "id": "t5q3KSu7-HVi-yy2AABV",
+        "userId": 10,
+        "cardId": 69,
+        "eventId": 4,
+        "fullnames": "Kevin Steven Zambrano Roldan",
+        "hour": "13:35:19",
+        "status": "verified"
+      },
+      {
+        "id": "t5q3KSu7-HVi-yy2AABV",
+        "userId": 10,
+        "cardId": 69,
+        "eventId": 4,
+        "fullnames": "Karen Luisa Correa Onicham",
+        "hour": "13:35:19",
+        "status": "verified"
+      },
+      {
+        "id": "t5q3KSu7-HVi-yy2AABV",
+        "userId": 10,
+        "cardId": 69,
+        "eventId": 4,
+        "fullnames": "Daniel Nobita Noboa Bucaram",
+        "hour": "13:35:19",
+        "status": "verified"
+      },
+      {
+        "id": "t5q3KSu7-HVi-yy2AABV",
+        "userId": 10,
+        "cardId": 69,
+        "eventId": 4,
+        "fullnames": "J Balvin",
+        "hour": "13:35:19",
+        "status": "verified"
+      }
+    ]
+
+    this.tieBreakerList = [
+      { sing: songs[0] as Sing, order: 1, num: 5},
+      { sing: songs[1] as Sing, order: 2, num: 20},
+      { sing: songs[2] as Sing, order: 3, num: 33},
+      { sing: songs[3] as Sing, order: 4, num: 1},
+      { sing: songs[4] as Sing, order: 5, num: 75},
+    ];
+  
+    // if (count === 1 && songs.length == 1) {
+    //   this.socketServ.reward(songs[0]);
+    // } else if (count > 1 && songs.length > 1) {
+    //   this.socketServ.tieBreaker(songs);
+    // }
+
+    this.openModalReward();
+  }
+
+  /**
+   * Método para abrir modal de premiación
+   */
+  openModalReward() {
+    if (!this.eventData) return this.toastServ.openToast('open-modal', 'danger', 'Evento no inicializado');
+    const modal = this.modalSev.createModal('modal-reward');
+    this.modalReward = modal;
+    this.modalSev.openModal(modal);
+  }
+
+  closeModalReward() {
+    if (this.modalReward) {
+      this.modalSev.closeModal(this.modalReward);
+    }
+  }
+
+  awardingHigherNumber() {
+    this.textMsgForm = '';
+    if (!this.eventData) return this.toastServ.openToast('awarding-higher', 'danger', 'Evento no inicializado');
+    if (this.tieBreakerList.length === 0) return this.textMsgForm = 'No existen ganadores seleccionados';
+    if (this.tieBreakerList.filter(data => { data.num === 0 }).length > 0) return this.textMsgForm = 'Hay jugadores que aun no juegan a número mayor';
+
+    const winners = this.tieBreakerList.sort((a, b) => a.num - b.num);
+    const winner = winners[winners.length - 1];
+
+    this.winner = winner.sing;
+    this.tieBreakerList = [];
+  }
+
+  endGameAndNewGame() {
+    this.resetGameData();
+    this.closeModalReward();
   }
 
   //* FOR USER

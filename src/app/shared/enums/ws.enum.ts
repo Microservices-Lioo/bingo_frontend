@@ -16,6 +16,10 @@ export enum WsEnum {
     SONGS = 'songs',
     SING = 'sing',
     DELETED_SONGS = 'delete-songs',
+    TIEBREAKER_EMIT = 'tie-breaker:emit',
+    TIEBREAKER_LISTEN = 'tie-breaker:listen',
+    REWARD_EMIT ='reward:emit',
+    REWARD_LISTEN ='reward:listen',
 
     // EMIT
     JOIN_GAME = 'joinGame',
