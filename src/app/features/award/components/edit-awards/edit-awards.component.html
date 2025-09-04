@@ -1,11 +1,11 @@
-<div class="flex flex-col justify-start items-start w-full h-full p-5 table-none md:table-fixed">
+<div class="flex flex-col justify-start items-start w-full h-full p-5 table-none md:table-fixed">    
     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <caption
             class="text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
             Edita los premios
             <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">Es necesario ingresar como
                 mínimo un premio</p>
-        </caption>
+            </caption>
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="p-4">
@@ -42,30 +42,37 @@
                         formControlName="description">
                     </textarea>
                 </td>
-                <td class="w-5 max-w-5">                    
-                    <button class="m-1" type="button" (click)="updateAward(i)">
-                        <app-icon name="update" [width]="20" [height]="20"/>
-                    </button>
-                    <button class="m-1" type="button" (click)="removeAward(i)">
+                <td class="w-5 max-w-5">
+                    <button class="m-1" type="button" (click)="removeAwardForm(i)" title="Eliminar">
                         <app-icon name="delete" [width]="20" [height]="20"/>
                     </button>
                 </td>
             </tr>
             }
         </tbody>
+        <tfoot>
+            <app-primary-button 
+                class="w-10"
+                title="Agregar un nuevo premio"
+                label="+" 
+                type="submit"  
+                bg="bg-blue-700" 
+                (btnCliked)="addAward()" />
+        </tfoot>
     </table>
 
-    <div class="flex items-start justify-around text-center flex-wrap gap-5 my-3">
+    <div class="w-full flex justify-end text-center flex-wrap gap-5 my-3">
         <app-primary-button 
-            label="Agregar nuevo premio" 
-            type="submit"  
-            bg="bg-blue-700" 
-            (btnCliked)="addAward()" />
+            bg="bg-red-500"
+            label="Cancelar" 
+            type="button" 
+            [loading]="loading"
+            (btnCliked)="onBack()" />
         <app-primary-button 
             label="Guardar todo" 
             type="button" 
             [loading]="loading"
-            (btnCliked)="OnSubmitAwards()" />
+            (btnCliked)="submitAwards()" />
     </div>
 </div>
 

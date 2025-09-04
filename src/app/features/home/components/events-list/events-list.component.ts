@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PaginationInterface, PaginationQueryInterface } from '../../../../core/interfaces';
+import { IPagination, PaginationQueryInterface } from '../../../../core/interfaces';
 import { StatusEvent } from '../../../../shared/enums';
 import { EventsCardComponent } from '../events-card/events-card.component';
 import { HrComponent } from '../../../../shared/components/hr/hr.component';
-import { EventServiceShared, EventWithBuyerInterface } from '../../../../shared/services/event.service';
+import { EventServiceShared } from '../../../../shared/services/event.service';
 import { AuthService } from '../../../auth/services';
+import { IEventWithBuyer } from '../../../../shared/interfaces';
 
 @Component({
   selector: 'app-events-list',
@@ -14,7 +15,7 @@ import { AuthService } from '../../../auth/services';
   styles: ``
 })
 export class EventsListComponent implements OnInit {
-  eventList: PaginationInterface<EventWithBuyerInterface> | undefined;
+  eventList: IPagination<IEventWithBuyer> | undefined;
   isSession: boolean = false;
   title: string = '';
   status: StatusEvent | undefined;
@@ -80,7 +81,7 @@ export class EventsListComponent implements OnInit {
     })
   }
 
-  setEventList(status: StatusEvent, eventList: PaginationInterface<EventWithBuyerInterface>) {
+  setEventList(status: StatusEvent, eventList: IPagination<IEventWithBuyer>) {
     if (this.eventList) {
       this.eventList.data = [ ...this.eventList.data, ...eventList.data ];
       this.eventList.meta = eventList.meta;

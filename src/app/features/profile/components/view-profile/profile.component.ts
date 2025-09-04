@@ -1,7 +1,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
-import { UserInterface } from '../../../../core/interfaces';
+import { IUser } from '../../../../core/interfaces';
 import { LoadingService, ToastService } from '../../../../shared/services';
 import { UserService } from '../../services';
 import { AuthService } from '../../../auth/services';
@@ -14,7 +14,7 @@ import { AuthService } from '../../../auth/services';
   styles: ``
 })
 export class ProfileComponent implements OnInit {
-  user: UserInterface | null = null;
+  user: IUser | null = null;
   isLogged: boolean = false;
 
   constructor(
@@ -44,11 +44,11 @@ export class ProfileComponent implements OnInit {
         setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
       }
     } else {
-      this.getUserOne(+id);
+      this.getUserOne(id);
     }
   }
 
-  getUserOne(id: number) {
+  getUserOne(id: string) {
     this.userServ.getUser(id).subscribe({
       next: (user) => {
         this.loadingServ.loadingOff();

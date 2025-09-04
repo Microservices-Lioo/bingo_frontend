@@ -1,11 +1,10 @@
-export interface AwardSharedInterface {
-    id: number;
+export interface IAwardShared {
+    id: string;
     name: string;
     description: string;
-    num_award: number | null;
-    eventId: number;
-    winner_user: number | null;
-    gameId: number | null;
+    gameId: string | null;
+    eventId: string;
+    winner: string | null;
 }
 
-// export interface AwardSharedPagination { data: AwardSharedInterface[], meta: {lastPage: number, page: number, total: number} }
+// export interface AwardSharedPagination { data: IAwardShared[], meta: {lastPage: number, page: number, total: number} }

@@ -20,10 +20,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const authReq = req.clone({ headers });
 
-
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if ((error.status == 401 || error.status == 403) && (error.error.error == 'invalid_token' || error.error.error == 'invalid_refresh_token') && refresh_token) {
+      if (access_token && refresh_token 
+        && (error.status == 401 || error.status == 403)
+        && error.error.code === "INVALID_TOKEN"
+      ) {
         return authServ.refreshToken().pipe(
           switchMap(newToken => {
             if (!newToken) return throwError(() => new Error('No se puede actualizar el token'));
@@ -34,7 +36,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           })
         )
       }
-      if ( (error.status == 401 || error.status == 403) && error.error.error == 'cannot_modify_user' ) {
+      if ((error.status == 401 || error.status == 403)
+        && error.error.code === "UNAUTHORIZED"
+      ) {
         authServ.logOut();
       }
       

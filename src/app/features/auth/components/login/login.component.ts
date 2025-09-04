@@ -5,7 +5,7 @@ import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/pr
 import { AuthService } from '../../services';
 import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { UserInterface } from '../../../../core/interfaces';
+import { IUser } from '../../../../core/interfaces';
 
 export interface ItemForm {
   email: FormControl<string>,
@@ -66,7 +66,7 @@ export class LoginComponent implements OnInit {
     this.authServ.login(loginData).subscribe({
       next: (values) => {
         if (values && values.user && values.access_token && values.refresh_token) {
-          const user: UserInterface = values.user;
+          const user: IUser = values.user;
           localStorage.setItem('access_token', values.access_token);
           localStorage.setItem('refresh_token', values.refresh_token);
           localStorage.setItem('user', JSON.stringify(user));

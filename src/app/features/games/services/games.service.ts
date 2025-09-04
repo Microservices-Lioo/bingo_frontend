@@ -42,7 +42,7 @@ export class GamesService {
             .pipe(catchError(handleError));
     }
 
-    createGameWithMode(eventId: number, awardId: number, gameModeId: number): Observable<DataGameSharedI> {
+    createGameWithMode(eventId: string, awardId: string, gameModeId: string): Observable<DataGameSharedI> {
         return this.http.post<DataGameSharedI>(`${this.urlGame}/with/mode`, { eventId, awardId, gameModeId })
             .pipe(catchError(handleError));
     }

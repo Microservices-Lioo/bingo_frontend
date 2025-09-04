@@ -4,11 +4,11 @@ import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Va
 import { Router } from '@angular/router';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
-import { UserInterface } from '../../../../core/interfaces';
+import { IUser } from '../../../../core/interfaces';
 import { AuthService } from '../../../auth/services';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { UserService } from '../../services';
-import { UpdateUserInterface } from '../../interfaces';
+import { UpdateIUser } from '../../interfaces';
 
 export interface ItemForm {
   name: FormControl<string>,
@@ -35,7 +35,7 @@ export interface ItemForm {
     } `
 })
 export class EditProfileComponent implements OnInit {
-  user: UserInterface | any = null;
+  user: IUser | any = null;
   loading: boolean = false;
 
   fb = inject(NonNullableFormBuilder);
@@ -90,7 +90,7 @@ export class EditProfileComponent implements OnInit {
     if (!data.new_password) delete data.new_password;
     if (!data.repit_new_password) delete data.repit_new_password;
 
-    this.userServ.updateUser(data as UpdateUserInterface).pipe(
+    this.userServ.updateUser(data as UpdateIUser).pipe(
       switchMap((user) => {
         if (!user) {
           this.loading = false;

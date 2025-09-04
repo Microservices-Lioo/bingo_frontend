@@ -1,6 +1,6 @@
 export interface GameOnModeSharedI {
-    gameId: number;
-    gameModeId: number;
+    gameId: string;
+    gameModeid: string;
     assignedAt: Date;
     assinedBy: string;
     is_active: boolean;

@@ -1,14 +1,8 @@
-import { AwardInterface } from "../../award/interfaces";
+import { IEvent } from './event.interface';
+import { IAward } from "../../award/interfaces";
 
-export interface EventAwardsInterface {
-    id: number;
-    name: string;
-    description: string;
-    userId: number;
-    status: string;
-    time: Date;
-    price: number;
-    award: AwardInterface[]
+export interface IEventAwards extends IEvent {
+    award: IAward[];
 }
 
-export interface EventAwardPagination { data: EventAwardsInterface[], meta: {lastPage: number, page: number, total: number} }
+export interface EventAwardPagination { data: IEventAwards[], meta: {lastPage: number, page: number, total: number} }

@@ -2,7 +2,7 @@ export interface CreateOrderInterface {
 
     totalItems: number;
 
-    eventId: number;
+    eventId: string;
 
     nameEvent: string;
 

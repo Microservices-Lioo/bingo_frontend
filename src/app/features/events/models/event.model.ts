@@ -1,10 +1,10 @@
-import { UserInterface } from "../../../core/interfaces";
+import { IUser } from "../../../core/interfaces";
 
 export interface EventModel {
-    id: number;
+    id: string;
     name: string;
     description: string;
-    user: UserInterface;
+    user: IUser;
     status: string;
     time: Date;
     start_time: Date;

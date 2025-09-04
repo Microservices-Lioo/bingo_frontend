@@ -15,12 +15,12 @@ export class CalledBallsService {
     private http: HttpClient
   ) { }
 
-  unrepeatableTableNumberRaffle(gameId: number, eventId: number): Observable<CalledBallI | null> {
+  unrepeatableTableNumberRaffle(gameId: string, eventId: string): Observable<CalledBallI | null> {
     return this.http.post<CalledBallI | null>(this.urlCalledBall, {gameId, eventId})
         .pipe(catchError(handleError));
   }
 
-  findByGameId(gameId: number): Observable<{ num: number}[]> {
+  findByGameId(gameId: string): Observable<{ num: number}[]> {
     return this.http.get<{ num: number}[]>(`${this.urlCalledBall}/game/${gameId}`,)
         .pipe(catchError(handleError));
   }

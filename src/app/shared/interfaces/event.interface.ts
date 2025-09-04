@@ -8,6 +8,10 @@ export interface IEvent {
     status: StatusEvent;
     price: number;
     start_time: Date;
-    end_time?: Date;
-    host_is_active?: boolean;
+    end_time: Date;
+    host_is_active: boolean;
+}
+
+export interface IEventWithBuyer extends IEvent {
+  buyer?: boolean;
 }

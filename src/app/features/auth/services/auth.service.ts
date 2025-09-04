@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
-import { UserInterface } from '../../../core/interfaces';
+import { IUser } from '../../../core/interfaces';
 import { AuthInterface, LoginInterface, RegisterInterface } from '../interfaces';
 import { handleError } from '../../../core/errors';
 
@@ -13,10 +13,10 @@ import { handleError } from '../../../core/errors';
 export class AuthService {
   url: string = environment.apiUrl + environment.apiMSAuthUrl;
   private loggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  private currentUserSubject: BehaviorSubject<UserInterface> = new BehaviorSubject({} as UserInterface);
+  private currentUserSubject: BehaviorSubject<IUser> = new BehaviorSubject({} as IUser);
   
   isLoggedIn$: Observable<boolean> = this.loggedIn.asObservable();
-  currentUser$: Observable<UserInterface> = this.currentUserSubject.asObservable();
+  currentUser$: Observable<IUser> = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -32,7 +32,7 @@ export class AuthService {
     }
   }
 
-  setCurrentUser(user: UserInterface) {
+  setCurrentUser(user: IUser) {
     this.currentUserSubject.next(user);
   }
 
@@ -40,7 +40,7 @@ export class AuthService {
     this.loggedIn.next(value);
   }
 
-  get currentUser(): UserInterface {
+  get currentUser(): IUser {
     return this.currentUserSubject.value;
   }
 

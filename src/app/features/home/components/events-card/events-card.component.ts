@@ -1,11 +1,11 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
-import { EventInterface, UserInterface } from '../../../../core/interfaces';
+import { IUser } from '../../../../core/interfaces';
 import { AuthService } from '../../../auth/services';
-import { EventWithBuyerInterface } from '../../../../shared/services/event.service';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { IEventWithBuyer } from '../../../../shared/interfaces';
 
 @Component({
   selector: 'app-events-card',
@@ -20,11 +20,12 @@ import { RouterLink } from '@angular/router';
 })
 export class EventsCardComponent {
   isSession: boolean = false;
-  currentUser: UserInterface | undefined;
-  event = input.required<EventWithBuyerInterface>();
+  currentUser: IUser | undefined;
+  event = input.required<IEventWithBuyer>();
 
   constructor(
-    private authServ: AuthService
+    private authServ: AuthService,
+    protected route: ActivatedRoute
   ) {
     this.authServ.isLoggedIn$.subscribe( value => {
       this.isSession = value;

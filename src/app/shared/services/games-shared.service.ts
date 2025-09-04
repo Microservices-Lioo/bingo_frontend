@@ -15,7 +15,7 @@ export class GamesSharedService {
     private http: HttpClient,
   ) { }
 
-  getDataGame(eventId: number): Observable<DataGameSharedI | null> {
+  getDataGame(eventId: string): Observable<DataGameSharedI | null> {
     return this.http.get<DataGameSharedI | null>(`${this.url}/event/${eventId}`)
       .pipe(catchError(handleError));
   }

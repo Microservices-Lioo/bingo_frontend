@@ -1,61 +1,62 @@
 
 <div class="flex flex-col justify-center items-center w-full h-full">
-    <form [formGroup]="editEventForm" class="space-y-4">
-        <h3 class="mb-4 text-lg font-medium leading-none text-gray-900 dark:text-white">Detalles del evento</h3>
+    @if (event) {
+        <form [formGroup]="editEventForm" class="space-y-4">
+            <h3 class="mb-4 text-lg font-medium leading-none text-gray-900 dark:text-white">Detalles del evento</h3>
 
-        <div class="grid gap-4 mb-4 sm:grid-cols-2">
-            <app-custom-input 
-                class="col-start-1 col-end-3" 
-                [id]="'name'" 
-                [label]="'Título *'" 
-                [type]="'text'"
-                [placeholder]="'Título del evento'" 
-                [control]="editEventForm.controls.name"
-                formControlName="name" />
+            <div class="grid gap-4 mb-4 sm:grid-cols-2">
+                <app-custom-input 
+                    class="col-start-1 col-end-3" 
+                    [id]="'name'" 
+                    [label]="'Título *'" 
+                    [type]="'text'"
+                    [placeholder]="'Título del evento'" 
+                    [control]="editEventForm.controls.name"
+                    formControlName="name" />
 
-            <app-custom-input 
-                [id]="'time'" 
-                [label]="'Inicio *'" 
-                [type]="'datetime-local'"
-                [placeholder]="'Selecciona la fecha y hora que iniciará el evento'"
-                [minDate]="minDate"
-                [control]="editEventForm.controls.time" 
-                formControlName="time" />
+                <app-custom-input 
+                    [id]="'start_time'" 
+                    [label]="'Inicio *'" 
+                    [type]="'datetime-local'"
+                    [placeholder]="'Selecciona la fecha y hora que iniciará el evento'"
+                    [minDate]="minDate"
+                    [control]="editEventForm.controls.start_time" 
+                    formControlName="start_time" />
 
-            <app-custom-input 
-                [id]="'price'" 
-                [label]="'Precio *'" 
-                [type]="'number'"
-                [placeholder]="'Ingresa el valor de una tabla de bingo individual'"
-                [control]="editEventForm.controls.price" 
-                formControlName="price" />
-                
-            <div class="col-start-1 col-end-3">
-                <label for="description"
-                    class="block my-3 text-sm font-medium text-gray-900 dark:text-white">
-                    Descripción *</label>
-                <textarea
-                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Escribe una breve presentación del evento" rows="5" id="description"
-                    formControlName="description"></textarea>
+                <app-custom-input 
+                    [id]="'price'" 
+                    [label]="'Precio *'" 
+                    [type]="'number'"
+                    [placeholder]="'Ingresa el valor de una tabla de bingo individual'"
+                    [control]="editEventForm.controls.price" 
+                    formControlName="price" />
+                    
+                <div class="col-start-1 col-end-3">
+                    <label for="description"
+                        class="block my-3 text-sm font-medium text-gray-900 dark:text-white">
+                        Descripción *</label>
+                    <textarea
+                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Escribe una breve presentación del evento" rows="5" id="description"
+                        formControlName="description"></textarea>
+                </div>
+
             </div>
+            <div class="flex flex-row justify-around items-center">
+                <app-primary-button 
+                    label="Cancelar" 
+                    type="button"
+                    bg="bg-red-500"
+                    (btnCliked)="goBack()"
+                    />
 
-
-        </div>
-        <div class="flex flex-row justify-around items-center">
-            <app-primary-button 
-                label="Cancelar" 
-                type="button"
-                bg="bg-red-700"
-                url="/events"/>
-
-            <app-primary-button 
-                label="Guardar" 
-                type="submit" 
-                [disabled]="!editEventForm.valid"
-                (btnCliked)="OnSubmitEvent()" 
-                [loading]="loading" />
-        </div>
-    </form>
-
+                <app-primary-button 
+                    label="Guardar" 
+                    type="submit" 
+                    [disabled]="!editEventForm.valid"
+                    (btnCliked)="submitEvent()" 
+                    [loading]="loading" />
+            </div>
+        </form>
+    }
 </div>

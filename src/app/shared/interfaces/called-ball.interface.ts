@@ -1,6 +1,6 @@
 export interface CalledBallI {
-    id: number;
-    gameId: number;
+    id: string;
+    gameId: string;
     num: number;
     colName: string;
 }

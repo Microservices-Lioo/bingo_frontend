@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
-import { Router } from '@angular/router';
 import { handleError } from '../../../core/errors';
-import { UpdateUserInterface } from '../interfaces';
-import { UserInterface } from '../../../core/interfaces';
+import { UpdateIUser } from '../interfaces';
+import { IUser } from '../../../core/interfaces';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../auth/services';
 
@@ -16,20 +15,20 @@ export class UserService {
 
   constructor(
     private http: HttpClient,
-    private router: Router,
     private authServ: AuthService
   ) {
   }
 
-  getUser(id: number): Observable<UserInterface> {
-    return this.http.get<UserInterface>(this.url+'/'+id )
+  //* Obtener un usuario
+  getUser(id: string): Observable<IUser> {
+    return this.http.get<IUser>(this.url+'/id/'+id )
       .pipe(catchError(handleError));
   }
 
-  updateUser(user: UpdateUserInterface): Observable<UserInterface> {
+  updateUser(user: UpdateIUser): Observable<IUser> {
     const currentUser = this.authServ.currentUser;
 
-    return this.http.put<UserInterface>(`${this.url}/${currentUser.id}`, user)
+    return this.http.put<IUser>(`${this.url}/${currentUser.id}`, user)
     .pipe(catchError(handleError));
   }
 

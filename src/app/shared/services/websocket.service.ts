@@ -135,26 +135,26 @@ export class WebsocketServiceShared {
 
   }
 
-  joinRoom(roomId: number): void {
+  joinRoom(roomId: string): void {
     this.socket.emit(WsEnum.JOIN_GAME, roomId);
     this.listenRoom(WsConst.keyRoom(roomId));
   }
 
-  joinWaitingRoom(roomId: number): void {
+  joinWaitingRoom(roomId: string): void {
     this.statusConnection$.next('on-standby');
     this.socket.emit(WsEnum.WAITING_GAME, roomId);
     this.listenRoomWaiting(WsConst.keyRoom(roomId), WsConst.keyRoomWaiting(roomId));
   }
 
-  singBingo(roomId: number, cardId: number) {
+  singBingo(roomId: string, cardId: string) {
     this.socket.emit(WsEnum.SING, { roomId, cardId });
   }
   
-  verifySing(roomId: number, cardId: number, status: StatusSing, userId: number) {
+  verifySing(roomId: string, cardId: string, status: StatusSing, userId: string) {
     this.socket.emit(WsEnum.VERIFY_SING, { roomId, cardId, status, userId});
   }
 
-  deleteSongs(roomId: number) {
+  deleteSongs(roomId: string) {
     this.socket.emit(WsEnum.DELETE_SONGS, {roomId});
   }
 
@@ -251,7 +251,7 @@ export class WebsocketServiceShared {
     // waiting
     this.socket.off(roomWaiting);
     this.socket.on(roomWaiting, (value) => {
-      if (value && value === StatusEvent.NOW) {
+      if (value && value === StatusEvent.ACTIVE) {
         this.statusConnection$.next('connected');
         this.statusConnectionBefore = 'connected';
         this.socket.off(roomWaiting);
@@ -267,7 +267,7 @@ export class WebsocketServiceShared {
     });  
   }
 
-  offListenRoom(roomId: number) {
+  offListenRoom(roomId: string) {
     const key = WsConst.keyRoom(roomId);
     const keyWaiting = WsConst.keyRoomWaiting(roomId);
 

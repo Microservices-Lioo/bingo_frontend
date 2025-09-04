@@ -1,9 +1,8 @@
-export interface AwardInterface {
-    id: number;
+export interface IAward {
+    id: string;
     name: string;
     description: string;
-    num_award: number | undefined;
-    eventId: number;
-    winner_user: number;
-    gameId: number;
+    gameId: string | null;
+    eventId: string;
+    winner: string | null;
 }

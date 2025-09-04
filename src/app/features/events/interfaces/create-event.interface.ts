@@ -1,7 +1,13 @@
+import { ICreateAward } from "../../award/interfaces";
 
-export interface CreateEvent {
+export interface ICreateEvent {
     name: string;
     description: string;
-    time: Date;
     price: number;
+    start_time: Date;
+}
+
+export interface ICreateEventAwards {
+    event: ICreateEvent;
+    awards: ICreateAward[];
 }

@@ -1,4 +1,4 @@
-export interface UpdateUserInterface {
+export interface UpdateIUser {
     name: string,
     lastname: string,
     new_email: string | null,

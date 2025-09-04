@@ -1,5 +1,5 @@
 export interface GameModeSharedI {
-    id: number;
+    id: string;
     name: string;
     description: string;
 }

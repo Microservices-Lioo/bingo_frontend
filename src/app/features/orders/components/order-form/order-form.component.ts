@@ -1,5 +1,5 @@
 import { Component, effect, inject } from '@angular/core';
-import { EventAwardsInterface } from '../../../events/interfaces';
+import { IEventAwards } from '../../../events/interfaces';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,7 +11,6 @@ import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Va
 import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { OrderService } from '../../services/order.service';
 import { CreateOrderInterface } from '../../interfaces';
-import { v4 as uuidv4 } from 'uuid';
 
 export interface ItemForm {
   quantity: FormControl<number>
@@ -25,12 +24,13 @@ export interface ItemForm {
   styles: ``
 })
 export class OrderFormComponent {
-  infoEventAward: EventAwardsInterface | null = null;
+  infoEventAward: IEventAwards | null = null;
   owner = 'Desconocido';
   letterOwner = '';
   cantCard = 0;
 
   fb = inject(NonNullableFormBuilder);
+StatusEvent: any;
 
   constructor(
     private router: Router,
@@ -69,8 +69,8 @@ export class OrderFormComponent {
       this.route.paramMap.subscribe(value => {
         const eventId = value.get('id');
         if (eventId) {
-          this.getEventAward(+eventId);
-          this.getCountCards(+eventId);
+          this.getEventAward(eventId);
+          this.getCountCards(eventId);
           
         } else {
           this.router.navigate(['/', '/home/principal']);
@@ -82,7 +82,7 @@ export class OrderFormComponent {
     }    
   }
 
-  getEventAward(eventId: number) {
+  getEventAward(eventId: string) {
     this.eventServ.getEventWithAwards(eventId).subscribe({
       next: (event) => {
         if (!event) {
@@ -90,7 +90,7 @@ export class OrderFormComponent {
           return;
         }
         this.infoEventAward = event;
-        this.getOwner(event.userId);
+        // this.getOwner(event.userId);
         this.loadingServ.loadingOff();
       },
       error: (error) => {
@@ -100,11 +100,11 @@ export class OrderFormComponent {
     })
   }
 
-  getUser(userId: number) {
+  getUser(userId: string) {
     return this.userServ.getUser(userId);
   }
 
-  getOwner(userId: number): string {
+  getOwner(userId: string): string {
     let ownerName = 'Desconocido';
     this.getUser(userId).subscribe({
       next: (user) => {
@@ -175,26 +175,26 @@ export class OrderFormComponent {
           this.toastServ.openToast('quantity-data', 'danger', 'No se especificó la cantidad de elemntos a comprar para este evento.')
           this.loadingServ.loadingOff();
       } else {
-          const orderEvent: CreateOrderInterface = { totalItems: quantity, eventId: this.infoEventAward.id, nameEvent: this.infoEventAward.name, unitAmount: this.infoEventAward.price};
-          this.orderServ.createOrder(orderEvent).subscribe({
-            next: (data) => {
-              if (!data.url) return;
-              window.location.href = data.url;
-            },
-            error: (error) => {
-              this.toastServ.openToast('res-error', 'danger', error.message)
-              this.loadingServ.loadingOff();
-            },
-            complete: () => {
-              this.loadingServ.loadingOff();
-            }
-          })
+          // const orderEvent: CreateOrderInterface = { totalItems: quantity, eventId: this.infoEventAward.id, nameEvent: this.infoEventAward.name, unitAmount: this.infoEventAward.price};
+          // this.orderServ.createOrder(orderEvent).subscribe({
+          //   next: (data) => {
+          //     if (!data.url) return;
+          //     window.location.href = data.url;
+          //   },
+          //   error: (error) => {
+          //     this.toastServ.openToast('res-error', 'danger', error.message)
+          //     this.loadingServ.loadingOff();
+          //   },
+          //   complete: () => {
+          //     this.loadingServ.loadingOff();
+          //   }
+          // })
         }
       }      
     }
   }
 
-  getCountCards(eventId: number) {
+  getCountCards(eventId: string) {
     this.cardsServ.getCardCountForUserAndEvent(eventId).subscribe({
       next: (value) => {
         this.cantCard = value;

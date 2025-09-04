@@ -1,3 +1,3 @@
-import { AwardInterface } from "./award.interface";
+import { IAward } from "./award.interface";
 
-export type UpdateAwardInterface = Pick<AwardInterface, 'name' | 'description' | 'eventId' >
+export type UpdateIAward = Pick<IAward, 'name' | 'description' | 'eventId' >

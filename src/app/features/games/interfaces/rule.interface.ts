@@ -1,6 +1,6 @@
 export interface GameRuleI {
-    id: number;
+    id: string;
     description: string;
     rule: string[];
-    gameModeId: number;
+    gameModeid: string;
 }

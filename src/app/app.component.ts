@@ -10,7 +10,7 @@ import { LoadingIndicatorComponent } from './shared/components/loading-indicator
   template:  `
     <app-header /> 
     <div class="content">
-      <router-outlet />
+      <router-outlet/>
     </div>
     <app-loading-indicator />
 

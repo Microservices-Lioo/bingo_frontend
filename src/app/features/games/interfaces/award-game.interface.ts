@@ -1,4 +1,4 @@
-import { AwardSharedInterface } from "../../../shared/interfaces";
+import { IAwardShared } from "../../../shared/interfaces";
 
 export enum StatusAward {
     NOW = 'NOW',
@@ -6,6 +6,6 @@ export enum StatusAward {
     END = 'END',
 }
 
-export interface AwardGameInterface extends AwardSharedInterface {
+export interface AwardGameInterface extends IAwardShared {
   status: StatusAward;
 };

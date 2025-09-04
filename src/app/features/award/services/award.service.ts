@@ -1,9 +1,9 @@
-import { EditAwardInterface } from './../interfaces/edit-award.interface';
+import { EditIAward } from './../interfaces/edit-award.interface';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
-import { AwardInterface, CreateAwardInterface, UpdateAwardInterface } from '../interfaces';
+import { IAward, ICreateAward, UpdateIAward } from '../interfaces';
 import { handleError } from '../../../core/errors';
 
 @Injectable({
@@ -17,28 +17,32 @@ export class AwardService {
     private http: HttpClient
   ) { }
 
-  createAward(createAward: CreateAwardInterface): Observable<AwardInterface> {
-    return this.http.post<AwardInterface>(this.url + 'create', createAward)
+  //* Crear un premio
+  createAward(createAward: ICreateAward): Observable<IAward> {
+    return this.http.post<IAward>(this.url, createAward)
+      .pipe(catchError(handleError));
+  }
+  
+  //* Crea muchos premios
+  createAwards(createAward: ICreateAward[]): Observable<IAward> {
+    return this.http.post<IAward>(this.url + 'many', createAward)
       .pipe(catchError(handleError));
   }
 
-  createAwards(createAwards: CreateAwardInterface[]): Observable<AwardInterface> {
-    return this.http.post<AwardInterface>(this.url + '/multi', createAwards)
+  //*Actualizar un premio
+  updateAward(id: string, updateAward: UpdateIAward): Observable<IAward> {
+    return this.http.patch<IAward>(this.url + `/${id}`, updateAward)
       .pipe(catchError(handleError));
   }
 
-  updateAward(id: number, updateAward: UpdateAwardInterface): Observable<AwardInterface> {
-    return this.http.patch<AwardInterface>(this.url + `/${id}`, updateAward)
+  getAwardsByEvent(eventId: string): Observable<IAward[]> {
+    return this.http.get<IAward[]>(this.url+'/event/' + eventId)
       .pipe(catchError(handleError));
   }
 
-  getAwardsByEvent(eventId: number): Observable<AwardInterface[]> {
-    return this.http.get<AwardInterface[]>(this.url+'/event/' + eventId)
-      .pipe(catchError(handleError));
-  }
-
-  deleteAward(id: number): Observable<any> {
-    return this.http.delete<any>(this.url + `/${id}`)
+  //* Eliminar un premio
+  deleteAward(id: string): Observable<IAward> {
+    return this.http.delete<IAward>(this.url + `/${id}`)
       .pipe(catchError(handleError));
   }
 }

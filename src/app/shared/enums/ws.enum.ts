@@ -26,4 +26,6 @@ export enum WsEnum {
     WAITING_GAME = 'waitingGame',
     VERIFY_SING = 'verify-sing',
     DELETE_SONGS = 'delete-all-songs',
+    TIEBREAKER_WINNER = 'tie-breaker-winner',
+    WINNER = 'winner',
 }

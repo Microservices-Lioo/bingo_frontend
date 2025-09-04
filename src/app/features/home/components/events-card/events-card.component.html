@@ -3,19 +3,15 @@
         <div class="w-full flex justify-between items-start ">
             <app-icon name="table-bingo" [width]="50" [height]="100"/>
             <div class="text-sm font-bold">
-                @if ( event().status == 'NOW') {
+                @if ( event().status == 'ACTIVE') {
                 <span
                     class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Ahora</span>
                 }
-                @if ( event().status == 'TODAY') {
-                <span
-                    class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Hoy</span>
-                }
-                @if ( event().status == 'PROGRAMMED' ) {
+                @if ( event().status == 'PENDING' ) {
                 <span
                     class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Programada</span>
                 }
-                @if ( event().status == 'CULMINATED' ) {
+                @if ( event().status == 'COMPLETED' ) {
                 <span
                     class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Culminada</span>
                 }
@@ -24,7 +20,7 @@
         </div>        
         <div class="w-full flex flex-col mt-2">
             <div class="w-full">
-                <a [routerLink]="['/home/event-detail', { id: event().id}]"><span class="text-md font-bold">{{ event().name }}</span></a> <br>
+                <a [routerLink]="['../event-detail']" [queryParams]="{ id: event().id }" [relativeTo]="route"><span class="text-md font-bold">{{ event().name }}</span></a> <br>
                 <p class="text-sm truncate ...">{{ event().description }}</p>
             </div>
             
@@ -46,7 +42,7 @@
                             d="M12 9v4l2.5 2.5m-11-11l4-2.5m13 2.5l-4-2.5" />
                     </g>
                 </svg>
-                <span class="text-sm px-2">{{ event().time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
+                <span class="text-sm px-2">{{ event().start_time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
             </div>
             @if ( !isSession ) {
                 <app-primary-button label="Comprar Cartón" [url]="['/order', { id: event().id }]"  class="mp-3" />
@@ -54,22 +50,13 @@
                 @if ( currentUser.id === event().userId ) {
                     <app-primary-button label="Administrar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" /> 
                 } @else {  
-                    @if ( event().status == 'NOW' ) {
+                    @if ( event().status == 'ACTIVE' ) {
                         @if (event().buyer) {
                             <app-primary-button label="Jugar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" />
                         } @else {
                             <app-primary-button label="No disponible" [disabled]="true" class="w-full pt-3" />
                         }
-                    } @else if ( event().status == 'TODAY' ) {
-                        <div class="w-full flex gap-2 py-1">
-                             @if(event().buyer) {
-                                <app-primary-button icon="shopping-cart" [url]="['/order', { id: event().id }]" class="w-auto flex-none" />
-                                <app-primary-button label="No iniciado" class="w-full" />
-                             } @else {
-                                <app-primary-button label="Comprar Cartón" [url]="['/order', { id: event().id }]" class="w-full flex-none" />
-                             }
-                        </div>
-                    } @else if ( event().status == 'PROGRAMMED' ) {
+                    } @else if ( event().status == 'PENDING' ) {
                         <div class="w-full flex gap-2 py-1">
                             @if(event().buyer) {
                                <app-primary-button icon="shopping-cart" [url]="['/order', { id: event().id }]" class="w-auto flex-none" />

@@ -1,14 +1,14 @@
-import { AwardInterface } from "./award.interface";
+import { IAward } from "./award.interface";
 
-export interface EventAwardsInterface {
-    id: number;
+export interface IEventAwards {
+    id: string;
     name: string;
     description: string;
-    userId: number;
+    userId: string;
     status: string;
     time: Date;
     start_time: Date;
     end_time: Date;
     price: number;
-    award: AwardInterface[]
+    award: IAward[]
 }

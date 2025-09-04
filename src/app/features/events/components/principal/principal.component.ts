@@ -1,19 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { EventService } from '../../services/event.service';
-import { EventAwardPagination, EventAwardsInterface, EventInterface } from '../../interfaces';
+import { EventAwardPagination, IEventAwards } from '../../interfaces';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ModalService } from '../../../../shared/services/modal.service';
 import { ModalInterface } from 'flowbite';
-import { AwardInterface } from '../../../award/interfaces';
-import { ListViewComponent } from '../../../award/components/list-view/list-view.component';
+import { IAward } from '../../../award/interfaces';
 import { LoadingService } from '../../../../shared/services';
 
 @Component({
   selector: 'app-principal',
-  imports: [PrimaryButtonComponent, IconComponent, ListViewComponent, RouterLink],
+  imports: [PrimaryButtonComponent, IconComponent, RouterLink],
   templateUrl: './principal.component.html',
   styles: `
   `
@@ -23,13 +22,14 @@ export class PrincipalComponent implements OnInit {
   limit = 5;
   maxIndexPag = 5;
   modal: ModalInterface | null = null;
-  eventDeleteId: number = 0;
-  awardsSelected: AwardInterface[] | null = null;
+  eventDeleteId: string = "";
+  awardsSelected: IAward[] | null = null;
 
   constructor(
     private eventServ: EventService,
     private toastServ: ToastService,
     private router: Router,
+    private route: ActivatedRoute,
     private modalServ: ModalService,
     private loadingServ: LoadingService
   ) {}
@@ -108,12 +108,14 @@ export class PrincipalComponent implements OnInit {
     return paginas;
   }
 
-  editEvent(eventAward: EventAwardsInterface) {
+  // Ir a Componente de editar un evento
+  editEvent(eventAward: IEventAwards) {
     const { award, ...event } = eventAward;
-    this.router.navigate(['events', 'edit'], { state: { event } })
+    this.eventServ.sendSeleted(event);
+    this.router.navigate(["./edit"], { relativeTo: this.route });
   }
 
-  deleteEvent(id: number) {
+  deleteEvent(id: string) {
     const modal = this.modalServ.createModal('delete-event-modal');
     this.modalServ.openModal(modal);
     this.modal = modal;
@@ -133,7 +135,7 @@ export class PrincipalComponent implements OnInit {
       next: (_) => {
         this.getEventsByUserAwards(1);
         this.toastServ.openToast('delete-event', 'success', `Evento con id #${this.eventDeleteId} eliminado`);
-        this.eventDeleteId = 0;
+        this.eventDeleteId = "";
         this.modalClose();
       },
       error: (error) => {
@@ -143,7 +145,7 @@ export class PrincipalComponent implements OnInit {
     })
   }
 
-  viewAwards(awards: AwardInterface[]) {
+  viewAwards(awards: IAward[]) {
     this.awardsSelected = awards;
     const modal = this.modalServ.createModal('view-award-modal');
     this.modal = modal;

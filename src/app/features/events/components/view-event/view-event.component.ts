@@ -1,13 +1,14 @@
 import { LoadingService } from './../../../../shared/services/loading.service';
 import { Component, Input, OnInit } from '@angular/core';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
-import { EventAwardsInterface } from '../../interfaces';
+import { IEventAwards } from '../../interfaces';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services';
 import { UserService } from '../../../profile/services';
 import { CommonModule } from '@angular/common';
 import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
+import { AuthService } from '../../../auth/services';
 
 @Component({
   selector: 'app-view-event',
@@ -17,38 +18,36 @@ import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/pr
   standalone: true
 })
 export class ViewEventComponent implements OnInit {
-  @Input() eventWithAward!: EventAwardsInterface;
+  @Input() eventWithAward: IEventAwards | null =  null;
   owner = 'Desconocido';
-  letterOwner = '';
-  winners: { id: number, name: string}[] = [];
+  letterOwner = 'D';
+  winners: { id: string, name: string}[] = [];
   
   constructor(
     private router: Router,
-    private route: ActivatedRoute,
+    protected route: ActivatedRoute,
     private eventServ: EventService,
     private toastServ: ToastService,
     private userServ: UserService,
-    private loadingServ: LoadingService
+    private loadingServ: LoadingService,
+    protected authServ: AuthService
   ) {}
 
   ngOnInit() {
-    this.loadingServ.loadingOn();
-    if (!this.eventWithAward) {
-      this.route.paramMap.subscribe(value => {
-        const eventId = value.get('id');
-        if (eventId) {
-          this.getEventAward(+eventId);
-        } else {
-          this.router.navigate(['/', '/home/principal']);
-          this.loadingServ.loadingOff();
-        }
-      });
-    } else {
-      this.loadingServ.loadingOff();
-    }
+    this.route.queryParamMap.subscribe(value => {
+      this.loadingServ.loadingOn();
+      const eventId = value.get('id');
+      if (eventId) {
+        this.getEventAward(eventId);
+      } else {
+        this.router.navigate(['..'], { relativeTo: this.route });
+        this.loadingServ.loadingOff();
+      }
+    });
   }  
 
-  getEventAward(eventId: number) {
+  // Obtener el evento con sus premios
+  getEventAward(eventId: string) {
     this.eventServ.getEventWithAwards(eventId).subscribe({
       next: (event) => {
         if (!event) {
@@ -56,45 +55,41 @@ export class ViewEventComponent implements OnInit {
           return;
         }
         this.eventWithAward = event;
-        this.getOwner(event.userId);
+        this.getUser(event.userId);
         event.award.forEach((award) => {
-          if (award.winner_user === null) return;
-          this.getWinner(award.winner_user);
+          if (!award.winner) return;
+          this.getWinner(award.winner);
         });
         this.loadingServ.loadingOff();
       },
       error: (error) => {
-        this.router.navigate(['/', '/home/principal']);
+        this.router.navigate(['..', { relativeTo: this.route }]);
         this.toastServ.openToast('event-awards', 'danger', error.message);
         this.loadingServ.loadingOff();
       }
     })
   }
 
-  getUser(userId: number) {
-    return this.userServ.getUser(userId);
-  }
-
-  getOwner(userId: number) {
-    let ownerName = 'Desconocido';
-    this.getUser(userId).subscribe({
+  // Obtener datos de un usuario
+  getUser(userId: string) {
+    this.userServ.getUser(userId).subscribe({
       next: (user) => {
         if (user) {
           const { name, lastname, ...data } = user;
           const username = name + ' ' + lastname;
           this.owner = username != this.owner ? username : this.owner;
-          ownerName = this.owner;
           this.getLetter();
         }
       },
       error: (error) => {
         this.toastServ.openToast('get-owner', 'danger', 'Error al obtener el owner del evento');
       }
-    });
+    });;
   }
 
-  getWinner(userId: number) {
-    this.getUser(userId).subscribe({
+  // Obtener los ganadores de los premios
+  getWinner(userId: string) {
+    this.userServ.getUser(userId).subscribe({
       next: (user) => {
         if (user) {
           const { name, lastname, ...data } = user;
@@ -108,11 +103,13 @@ export class ViewEventComponent implements OnInit {
     });
   }
 
-  getWinnerName(userId: number): string {
+  // Unión de name y lastname de los usuario premiados
+  getWinnerName(userId: string): string {
     const winner = this.winners.find(w => w.id === userId);
     return winner ? winner.name : 'Desconocido';
   }
 
+  // Obtener la letra principal del usuario de su name y lastname
   getLetter() {
     let letter = '';
     const arrayOwner = this.owner.split(' ');
@@ -132,6 +129,7 @@ export class ViewEventComponent implements OnInit {
     this.letterOwner = letter;
   }
 
+  // Ocultar y mostrar texto
   toggleText(event: Event, id: string) {
     const pElement = document.getElementById(id);
     if (pElement) {

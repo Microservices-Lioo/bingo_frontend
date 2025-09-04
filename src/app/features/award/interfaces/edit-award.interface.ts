@@ -1,5 +1,5 @@
-export interface EditAwardInterface {
-    id: number;
+export interface EditIAward {
+    id: string;
     name: string;
     description: string;
 }

@@ -9,7 +9,7 @@ import {
   ToastService,
   WebsocketServiceShared
 } from '../../../shared/services';
-import { EventAwardsInterface } from '../../../core/interfaces';
+import { IEventAwards } from '../../../core/interfaces';
 import { BallStatusComponent } from './ball-status/ball-status.component';
 import { initFlowbite, ModalInterface } from 'flowbite';
 import { GamesService } from '../services/games.service';
@@ -34,9 +34,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
 import { 
-  AwardSharedInterface, 
-  CardNumsSharedI, 
-  CardSharedI, 
+  IAwardShared, 
+  ICardNumsShared, 
+  ICardShared, 
   EventUpdateSharedInterface, 
   GameModeSharedI,
   GameRuleSharedI, 
@@ -92,7 +92,7 @@ import { LoadingComponent } from '../../../shared/components/loading/loading.com
 export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   //* EVERYONE
   loadingBtnAnimated = false;
-  eventData!: EventAwardsInterface;
+  eventData!: IEventAwards;
   matrixMode: boolean[][] = [];
   numCalled: number | null = null;
   awardsList!: AwardGameInterface[];
@@ -146,11 +146,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   isAnimating = false;
 
   // cantos
-  numsSongsByUser: CardNumsSharedI[] = [];
+  numsSongsByUser: ICardNumsShared[] = [];
   selectedSing: Sing | null = null;
 
   //* FOR USER
-  cardsList: CardSharedI[] | null = null;
+  cardsList: ICardShared[] | null = null;
   cardPosition: number = 0;
   
   private subscriptions: Subscription[] = [];
@@ -179,19 +179,16 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
+    const eventId = this.route.snapshot.paramMap.get('id');
     const buyer = this.route.snapshot.paramMap.get('userId');
-    if (!id || !buyer) {
+    if (!eventId || !buyer) {
       this.router.navigate(['/home']);
       return;
     }
 
-    const eventId = parseInt(id);
-    const userId = parseInt(buyer);
-
     this.socketServ.initWS();
 
-    await this.getEventWithAwards(eventId!, userId!);
+    await this.getEventWithAwards(eventId!, buyer!);
     await this.getDataGame(eventId!);
 
     //* Web Socket
@@ -313,10 +310,10 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * Agrega status con valor definido 
    * @param awards[]
    */
-  async transformAwardList(awards: AwardSharedInterface[]) {
+  async transformAwardList(awards: IAwardShared[]) {
     let awardsList = awards.map(award => ({
       ...award,
-      status:  award.gameId && !award.winner_user ? StatusAward.NOW : award.gameId && award.winner_user ? StatusAward.END : StatusAward.PROX
+      status:  award.gameId && !award.winner ? StatusAward.NOW : award.gameId && award.winner ? StatusAward.END : StatusAward.PROX
     }));
 
     this.awardsList = this.orderAwards(awardsList);
@@ -327,7 +324,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param eventId type number
    * @param userId type number
    */
-  async getEventWithAwards(eventId: number, userId: number) {
+  async getEventWithAwards(eventId: string, userId: string) {
     this.eventSharedServ.getEventWithAwards(eventId, userId).subscribe({
       next: async (event) => {
 
@@ -346,17 +343,17 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.IsAdmin = isAdmin;
 
-        if (isAdmin || event.status == 'NOW') {
-          this.socketServ.joinRoom(eventId);
-          this.initEvent = true;
-          this.getGameModeToForm();
-        } else if (event.status == 'TODAY') {
-          this.socketServ.joinWaitingRoom(eventId);
-        }
+        // if (isAdmin || event.status == 'NOW') {
+        //   this.socketServ.joinRoom(eventId);
+        //   this.initEvent = true;
+        //   this.getGameModeToForm();
+        // } else if (event.status == 'TODAY') {
+        //   this.socketServ.joinWaitingRoom(eventId);
+        // }
 
         this.eventData = event;
 
-        await this.transformAwardList(event.award as AwardSharedInterface[]);
+        await this.transformAwardList(event.award);
       },
       error: (error) => {
         this.toastServ.openToast('get-event-awards', 'danger', error.message);
@@ -370,7 +367,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param owner type number
    * @returns boolean - True si es owner o False is player
    */
-  async isAdminUser(currentUserId: number, owner: number) {
+  async isAdminUser(currentUserId: string, owner: string) {
     if (currentUserId === owner) {
       return true;
     } else {
@@ -383,7 +380,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * Obtengo game, gameMode, gameOnMode, gameRule
    * @param eventId type number
    */
-  async getDataGame(eventId: number) {
+  async getDataGame(eventId: string) {
     this.gameSharedServ.getDataGame(eventId).subscribe({
       next: async (data) => {
         if (!data) {
@@ -470,7 +467,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param array type number
    * @returns number[]
    */
-  sortAscendantForObject(array: CardNumsSharedI[][]) {
+  sortAscendantForObject(array: ICardNumsShared[][]) {
     const arrayFlat = array.flat();
     return arrayFlat.sort((a, b) => a.number - b.number);
   }
@@ -706,7 +703,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const { id: eventId } = this.eventData;
 
-    const updateData: EventUpdateSharedInterface = { status: StatusEvent.NOW };
+    const updateData: EventUpdateSharedInterface = { status: StatusEvent.ACTIVE };
 
     await this.updateStatusEvent(eventId, updateData);
 
@@ -822,7 +819,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param eventId type number
    * @param data type EventUpdateSharedInterface
    */
-  async updateStatusEvent(eventId: number, data: EventUpdateSharedInterface) {
+  async updateStatusEvent(eventId: string, data: EventUpdateSharedInterface) {
     this.eventSharedServ.updateStatusEvent(eventId, data)
       .subscribe({
         complete: () => console.log('Evento actualizado'),
@@ -858,73 +855,30 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * 
+   * Método para premiar al ganador, verificando si solo existe un ganador
    */
   reward() {
     const count = this.songsList.filter(award => award.status === StatusSing.VERIFIED).length;
-    // const songs = this.songsList.filter(award => award.status === StatusSing.VERIFIED);
-    const songs = [
-      {
-        "id": "t5q3KSu7-HVi-yy2AABV",
-        "userId": 10,
-        "cardId": 70,
-        "eventId": 4,
-        "fullnames": "Luis Juan Lopez Zamora",
-        "hour": "13:35:14",
-        "status": "verified"
-      },
-      {
-        "id": "t5q3KSu7-HVi-yy2AABV",
-        "userId": 10,
-        "cardId": 69,
-        "eventId": 4,
-        "fullnames": "Kevin Steven Zambrano Roldan",
-        "hour": "13:35:19",
-        "status": "verified"
-      },
-      {
-        "id": "t5q3KSu7-HVi-yy2AABV",
-        "userId": 10,
-        "cardId": 69,
-        "eventId": 4,
-        "fullnames": "Karen Luisa Correa Onicham",
-        "hour": "13:35:19",
-        "status": "verified"
-      },
-      {
-        "id": "t5q3KSu7-HVi-yy2AABV",
-        "userId": 10,
-        "cardId": 69,
-        "eventId": 4,
-        "fullnames": "Daniel Nobita Noboa Bucaram",
-        "hour": "13:35:19",
-        "status": "verified"
-      },
-      {
-        "id": "t5q3KSu7-HVi-yy2AABV",
-        "userId": 10,
-        "cardId": 69,
-        "eventId": 4,
-        "fullnames": "J Balvin",
-        "hour": "13:35:19",
-        "status": "verified"
-      }
-    ]
 
-    this.tieBreakerList = [
+    if (count == 0) {
+      this.toastServ.openToast('reward', 'warning', 'No existen ganadores aún');
+    } else if (count > 1) {
+      const songs = this.songsList.filter(award => award.status === StatusSing.VERIFIED);
+      this.tieBreakerList = [
       { sing: songs[0] as Sing, order: 1, num: 5},
       { sing: songs[1] as Sing, order: 2, num: 20},
       { sing: songs[2] as Sing, order: 3, num: 33},
       { sing: songs[3] as Sing, order: 4, num: 1},
       { sing: songs[4] as Sing, order: 5, num: 75},
     ];
-  
-    // if (count === 1 && songs.length == 1) {
-    //   this.socketServ.reward(songs[0]);
-    // } else if (count > 1 && songs.length > 1) {
-    //   this.socketServ.tieBreaker(songs);
-    // }
-
+      const songsOrder = songs.map((sing, i) => { return { sing: sing as Sing, order: (i+1), num: 0 } });
+      this.tieBreakerList = songsOrder;
+      this.socketServ.tieBreaker(songsOrder);
+    } else {
+      console.log('Solo hay un ganador')
+      const songs = this.songsList.filter(award => award.status === StatusSing.VERIFIED);
+      this.socketServ.reward(songs[0]);
+    }
     this.openModalReward();
   }
 
@@ -968,7 +922,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * Almacena las cards dentro de cardsList
    * @param eventId type number
    */
-  async getCardsList(eventId: number) {
+  async getCardsList(eventId: string) {
     this.cardsServiceShared.findToEventByBuyer(eventId)
       .subscribe({
         next: (cards) => {
@@ -1017,7 +971,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param cel type object
    * @param market type boolean 
    */
-  async cellSelected(cardId: number, cel: { marked: boolean, number: number }, market?: boolean) {
+  async cellSelected(cardId: string, cel: { marked: boolean, number: number }, market?: boolean) {
     const { number} = cel;
 
     if (number === 0) return;
@@ -1059,7 +1013,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param cardId type number
    * @param cel type object
    */
-  async btnCellSelected(cardId: number, cel: { marked: boolean, number: number }) {
+  async btnCellSelected(cardId: string, cel: { marked: boolean, number: number }) {
     this.modoActive = 'manual';
     await this.cellSelected(cardId, cel);
   }
@@ -1095,7 +1049,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
    * Método para obtener los numeros llamdos en un juego por su identificador
    * @param gameId type number
    */
-  async getCalledBallsByGameId(gameId: number) {
+  async getCalledBallsByGameId(gameId: string) {
       this.calledBallServ.findByGameId(gameId).subscribe({
         next: async (calledBall) => {
           if (calledBall.length == 0) {

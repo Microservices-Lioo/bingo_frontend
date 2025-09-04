@@ -6,9 +6,9 @@ export enum StatusSing {
 
 export interface Sing {
   id: string,
-  userId: number,
-  cardId: number,
-  eventId: number,
+  userId: string,
+  cardId: string,
+  eventId: string,
   fullnames: string,
   hour: string,
   status: StatusSing

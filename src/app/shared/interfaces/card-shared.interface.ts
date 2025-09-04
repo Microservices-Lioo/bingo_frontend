@@ -1,12 +1,11 @@
-export interface CardNumsSharedI {
+export interface ICardNumsShared {
     marked: boolean;
     number: number;
 }
-export interface CardSharedI {
-    id: number;
-    num: number;
-    buyer: number;
-    eventId: number;
+export interface ICardShared {
+    id: string;
+    eventId: string;
+    buyer: string;
     available: boolean;
-    nums: CardNumsSharedI[][]
+    nums: ICardNumsShared[][]
 }

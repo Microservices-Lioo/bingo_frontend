@@ -7,21 +7,14 @@ export const eventGuard: CanActivateFn = (route, state) => {
   const eventSharedServ = inject(EventServiceShared);
 
   try {
-    const event = route.paramMap.get('id');
-    const user = route.paramMap.get('userId');
+    const eventId = route.paramMap.get('id');
+    const userId = route.paramMap.get('userId');
     
-    if ( event === null || user === null ) {
+    if ( eventId === null || userId === null ) {
       return router.navigate(['/home']).then(() => false);
     }
 
-    const eventId = parseInt(event, 10);
-    const userId = parseInt(user, 10);
-
-    if ( isNaN(eventId) || isNaN(userId)) {
-      return router.navigate(['/home']).then(() => false);
-    }
-
-    eventSharedServ.getEventWithAwards(+eventId, +userId).subscribe({
+    eventSharedServ.getEventWithAwards(eventId, userId).subscribe({
       next: (event) => {
         return true;
       },

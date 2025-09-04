@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { AwardInterface } from '../../interfaces';
+import { IAward } from '../../interfaces';
 import { initFlowbite } from 'flowbite'
 
 @Component({
@@ -10,7 +10,7 @@ import { initFlowbite } from 'flowbite'
   standalone: true
 })
 export class ListViewComponent implements AfterViewInit  {
-  @Input() listAwards!: AwardInterface[];  
+  @Input() listAwards!: IAward[];  
 
   ngAfterViewInit () {
     initFlowbite();

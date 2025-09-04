@@ -1,6 +1,6 @@
 export interface GameI {
-    id: number;
-    eventId: number;
+    id: string;
+    eventId: string;
     start_time: Date;
     end_time?: Date | null;
 }

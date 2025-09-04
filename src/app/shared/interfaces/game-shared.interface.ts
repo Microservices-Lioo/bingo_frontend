@@ -1,6 +1,6 @@
 export interface GameSharedInterface {
-    id: number;
-    eventId: number;
+    id: string;
+    eventId: string;
     start_time: Date;
     end_time?: Date | null;
 }
