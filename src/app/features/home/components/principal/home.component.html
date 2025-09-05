@@ -20,47 +20,24 @@
     </div>
 </section>
 }
+
 @for (item of itemsSection; track $index) {
-    <section class="mt-2 p-2">
-        <h1 class="font-bold pb-2">{{ item.title }}</h1>
-
-        @if (item.name === 'ACTIVE') {
-            @if (eventListActive && eventListActive.data.length > 0) {
-                <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-start flex-wrap">
-                    @for (event of eventListActive.data; track $index) {
-                        <app-events-card [event]="event"></app-events-card>
-                    }
-                </div>
-                @if (eventListActive.meta.total > (limit * 2)) {
-                    <app-hr type="a" text="Ver todo" bgText="white" (clicked)="allEventStatus(item.title, item.name)"></app-hr>
-                } @else if (eventListActive.meta.page < eventListActive.meta.lastPage) {
-                    <app-hr type="a" text="Mostrar más"
-                    bgText="white" (click)="moreEventStatus(item.name)"></app-hr>
-                    }
-                } @else {
-                    <div class="flex justify-center items-center">
-                        <p class="ms-3 text-xs text-gray-500 truncate ...">Sin eventos</p>
-                    </div>
+    @defer (on viewport) {
+        <section class="mt-2 p-2">
+            <h1 class="font-bold pb-2">{{ item.title }}</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-start flex-wrap">
+                @for (event of item.events.data; track $index) {
+                    <app-events-card [event]="event"></app-events-card>
                 }
-
-            } @else if (item.name === 'PENDING') {
-                @if (eventListPending && eventListPending.data.length > 0) {
-                    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-start flex-wrap">
-                        @for (event of eventListPending.data; track $index) {
-                            <app-events-card [event]="event"></app-events-card>
-                        }
-                    </div>
-                    @if (eventListPending.meta.total > (limit * 2)) {
-                        <app-hr type="a" text="Ver todo" bgText="white" (clicked)="allEventStatus(item.title, item.name)"></app-hr>
-                    } @else if (eventListPending.meta.page < eventListPending.meta.lastPage) { 
-                        <app-hr type="a" text="Mostrar más" bgText="white" (clicked)="moreEventStatus(item.name)"></app-hr>
-                    }
-                } @else {
-                    <div class="flex justify-center items-center">
-                        <p class="ms-3 text-xs text-gray-500 truncate ...">Sin eventos</p>
-                    </div>
-                }
-            }
-
-    </section>
+            </div>
+        </section>
+        @if (item.events.meta.total > (limit * 2)) {
+            <app-hr type="a" text="Ver todo" bgText="white" (clicked)="allEventStatus(item.status)"></app-hr>
+        } @else if (item.events.meta.page < item.events.meta.lastPage) {
+            <app-hr type="a" text="Mostrar más"
+            bgText="white" (click)="moreEventStatus(item.status)"></app-hr>
+        }
+    } @placeholder{
+        <app-loading textLoading="Cargando..."/>        
+    }
 }

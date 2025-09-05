@@ -7,96 +7,97 @@ import { HrComponent } from '../../../../shared/components/hr/hr.component';
 import { EventServiceShared } from '../../../../shared/services/event.service';
 import { AuthService } from '../../../auth/services';
 import { IEventWithBuyer } from '../../../../shared/interfaces';
+import { ISectionItem } from '../principal/home.component';
+import { LoadingComponent } from "../../../../shared/components/loading/loading.component";
+import { ToastService } from '../../../../shared/services';
 
 @Component({
   selector: 'app-events-list',
-  imports: [EventsCardComponent, HrComponent],
+  imports: [EventsCardComponent, HrComponent, LoadingComponent],
   templateUrl: './events-list.component.html',
   styles: ``
 })
 export class EventsListComponent implements OnInit {
-  eventList: IPagination<IEventWithBuyer> | undefined;
+  section!: ISectionItem;
   isSession: boolean = false;
-  title: string = '';
-  status: StatusEvent | undefined;
   limit: number = 8;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private eventServ: EventServiceShared,
-    private authServ: AuthService
+    private authServ: AuthService,
+    private toastServ: ToastService
   ) {}
 
   ngOnInit() {
-    const title = this.route.snapshot.paramMap.get('title');
-    const status = this.route.snapshot.paramMap.get('status');
-    if (title === null || status === null) {
-      this.router.navigate(['principal']);
+    const status = this.route.snapshot.paramMap.get('status') as StatusEvent;
+    if (status === null) {
+      this.router.navigate(['..'], { relativeTo: this.route });
       return;
     }
-    this.status = status as StatusEvent;
-    this.title = title;
     this.authServ.isLoggedIn$.subscribe({
       next: (value) => {
         this.isSession = value;
-        if (value) {
-          this.getEventsByUserStatus({limit: this.limit});
-        } else {
-          this.getEventsStatus({limit: this.limit});
-        }
       }
-    })
+    });
+    this.getEventsStatus(status, { limit: this.limit });
   } 
 
-  getPagination(): PaginationQueryInterface {
-    let page = 1;
-    if (this.status && this.eventList) {
-      page+= this.eventList.meta.page;
-    }
-    return { limit: this.limit, page: page };
-  }
-
-  getEventsStatus(pagination: PaginationQueryInterface) {
-    if (!this.status) return;
-    this.eventServ.eventListStatus(this.status, pagination).subscribe({
+  // Obtener los eventos por status
+  getEventsStatus(status: StatusEvent, pagination: PaginationQueryInterface) {
+    this.eventServ.eventListStatus(status, pagination).subscribe({
       next: (eventList) => {
-        this.setEventList(this.status!, eventList);
+        if (eventList && eventList.data.length > 0) {
+          this.setEventList(status, eventList);
+        }
       },
       error: (error) => {
-        console.log(error);
+        console.error(error);
+        this.toastServ.openToast('get-events', 'danger', 'Error al cargar los eventos');
       }
     })
   }
 
-  getEventsByUserStatus(pagination: PaginationQueryInterface) {
-    if (!this.status) return;
-    this.eventServ.eventListByUserStatus(this.status, pagination).subscribe({
-      next: (eventList) => {
-        this.setEventList(this.status!, eventList);
-      },
-      error: (error) => {
-        console.log(error);
-      }
-    })
-  }
-
+  // llenar las secciones
   setEventList(status: StatusEvent, eventList: IPagination<IEventWithBuyer>) {
-    if (this.eventList) {
-      this.eventList.data = [ ...this.eventList.data, ...eventList.data ];
-      this.eventList.meta = eventList.meta;
+    if (status === StatusEvent.ACTIVE) {
+      if (this.section && this.section.events.data.length > 0) {
+        this.section.events.data.push(...eventList.data);
+        this.section.events.meta = eventList.meta;
+      } else {
+        this.section = { 
+          title: "Ahora",
+          status: status,
+          events: eventList
+        };
+      }
     } else {
-      this.eventList = eventList;
+      if (this.section && this.section.events.data.length > 0) {
+        this.section.events.data.push(...eventList.data);
+        this.section.events.meta = eventList.meta;
+      } else {
+        this.section = { 
+          title: "Próximos",
+          status: status,
+          events: eventList
+        };
+      }
     }
   }
 
-  moreEventStatus() {
-    const pagination = this.getPagination();
-    if (!this.isSession) {
-      this.getEventsStatus(pagination);
-    } else {
-      this.getEventsByUserStatus(pagination);
-    }
+  // Mostrar mas eventos
+  moreEventStatus(status: StatusEvent) {
+    const pagination = this.getPagination(status);
+    if (!pagination) return;
+    this.getEventsStatus(status, pagination);
+  }
+
+    // Obtener las paginación
+  getPagination(status: StatusEvent): PaginationQueryInterface | null {
+    let page = 1;
+    page = this.section.events.meta.page + 1;
+    return { limit:  this.limit, page: page };
   }
 
 }

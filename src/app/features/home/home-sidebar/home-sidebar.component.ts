@@ -46,7 +46,7 @@ export class HomeSidebarComponent implements OnInit {
   // Obtener los eventos de activos
   async getEvents(): Promise<IPagination<IEventWithBuyer>> {
     const events = await firstValueFrom(
-      this.eventServ.eventListStatus(StatusEvent.PENDING, {})
+      this.eventServ.eventListStatus(StatusEvent.ACTIVE, {})
     );
     return events;
   }
