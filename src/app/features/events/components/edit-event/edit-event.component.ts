@@ -1,12 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { IEvent, UpdateEvent } from '../../interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { formatDate, Location } from '@angular/common';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { EventService } from '../../services/event.service';
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
+import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
 
 export interface ItemEventForm {
   name: FormControl<string>,
@@ -16,7 +16,7 @@ export interface ItemEventForm {
 }
 @Component({
   selector: 'app-edit-event',
-  imports: [PrimaryButtonComponent, CustomInputComponent, ReactiveFormsModule],
+  imports: [CustomInputComponent, ReactiveFormsModule, CustomButtonComponent],
   templateUrl: './edit-event.component.html',
   styles: ``
 })

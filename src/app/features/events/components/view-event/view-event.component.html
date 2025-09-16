@@ -1,21 +1,35 @@
-<div class="w-full h-full p-4">
+@if (loadingServ.isLoadingG) {
+<app-loading-indicator />
+} @else {
+<div class="w-full h-full">
     <div class="w-full p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
         @if(eventWithAward) {
-            <div class="grid md:grid-cols-4 grid-row-1 gap-4 mb-4">
-                <div class="flex items-center justify-center h-auto w-full rounded-sm bg-sky-900 dark:bg-gray-800">
-                    @defer (on viewport) {
-                        <app-icon [name]="'table-bingo'" [width]="200" [height]="200"/>
-                    } @placeholder {                   
-                        <div class="flex items-center justify-center w-56 h-56 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                            <div role="status">
-                                <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/></svg>
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                        </div>
-                    }
+        <div class="grid md:grid-cols-4 grid-row-1 gap-4 mb-4 bg-gray-50">
+            <div class="flex items-center justify-center h-auto w-full rounded-sm">
+                @defer (on viewport) {
+                <app-icon [name]="'table-bingo'" [width]="200" [height]="200" />
+                } @placeholder {
+                <div
+                    class="flex items-center justify-center w-56 h-56 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                    <div role="status">
+                        <svg aria-hidden="true"
+                            class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                            viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor" />
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="currentFill" />
+                        </svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
-                <div class="flex flex-col items-center justify-center h-auto rounded-sm md:col-span-3 row-span-1 p-2 bg-gray-50 dark:bg-gray-800">
-                <h1 class="font-bold text-center text-xl p-1">{{ eventWithAward.name ? eventWithAward.name : '' }}</h1>            
+                }
+            </div>
+            <div
+                class="flex flex-col items-center justify-center h-auto rounded-sm md:col-span-3 row-span-1 p-2 dark:bg-gray-800">
+                <h1 class="font-bold text-center text-xl p-1">{{ eventWithAward.name ? eventWithAward.name : '' }}</h1>
                 <h5 class="text-base w-full justify-start font-bold py-2 px-1">Detalles:</h5>
                 <div class="flex w-full items-center justify-start gap-2">
                     <div class="rounded-sm p-1">
@@ -47,7 +61,20 @@
                 </div>
                 <div class="flex w-full items-center justify-start gap-2">
                     <p class="text-sm text-gray-500 p-1 dark:text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 26 26"><g fill="#000" stroke-width="0.5" stroke="#000"><path d="M26 14c0 6.627-5.373 12-12 12S2 20.627 2 14S7.373 2 14 2s12 5.373 12 12" opacity="0"/><g fill-rule="evenodd" clip-rule="evenodd"><path d="m9.804 5.632l-.637.264A3.51 3.51 0 0 0 7 9.137v4.386a1.46 1.46 0 0 0 2.167 1.276l.227-.126a4 4 0 0 1 3.88 0l.453.251a4 4 0 0 0 3.88 0l.733-.407A3.22 3.22 0 0 0 20 11.7V7.638a1.605 1.605 0 0 0-2.07-1.534l-.893.272a4 4 0 0 1-2.693-.13l-1.482-.614a4 4 0 0 0-3.058 0M8 9.137c0-1.014.611-1.929 1.549-2.317l.638-.264a3 3 0 0 1 2.293 0l1.481.613a5 5 0 0 0 3.367.163l.893-.271a.604.604 0 0 1 .779.577V11.7c0 .807-.438 1.551-1.144 1.943l-.735.407a3 3 0 0 1-2.91 0l-.453-.252a5 5 0 0 0-4.85 0l-.226.126A.46.46 0 0 1 8 13.523z"/><path d="M8 5a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V6a1 1 0 0 1 1-1"/></g><path fill-rule="evenodd" d="M13 24.5c6.351 0 11.5-5.149 11.5-11.5S19.351 1.5 13 1.5S1.5 6.649 1.5 13S6.649 24.5 13 24.5m0 1c6.904 0 12.5-5.596 12.5-12.5S19.904.5 13 .5S.5 6.096.5 13S6.096 25.5 13 25.5" clip-rule="evenodd"/></g></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 26 26">
+                            <g fill="#000" stroke-width="0.5" stroke="#000">
+                                <path d="M26 14c0 6.627-5.373 12-12 12S2 20.627 2 14S7.373 2 14 2s12 5.373 12 12"
+                                    opacity="0" />
+                                <g fill-rule="evenodd" clip-rule="evenodd">
+                                    <path
+                                        d="m9.804 5.632l-.637.264A3.51 3.51 0 0 0 7 9.137v4.386a1.46 1.46 0 0 0 2.167 1.276l.227-.126a4 4 0 0 1 3.88 0l.453.251a4 4 0 0 0 3.88 0l.733-.407A3.22 3.22 0 0 0 20 11.7V7.638a1.605 1.605 0 0 0-2.07-1.534l-.893.272a4 4 0 0 1-2.693-.13l-1.482-.614a4 4 0 0 0-3.058 0M8 9.137c0-1.014.611-1.929 1.549-2.317l.638-.264a3 3 0 0 1 2.293 0l1.481.613a5 5 0 0 0 3.367.163l.893-.271a.604.604 0 0 1 .779.577V11.7c0 .807-.438 1.551-1.144 1.943l-.735.407a3 3 0 0 1-2.91 0l-.453-.252a5 5 0 0 0-4.85 0l-.226.126A.46.46 0 0 1 8 13.523z" />
+                                    <path d="M8 5a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V6a1 1 0 0 1 1-1" />
+                                </g>
+                                <path fill-rule="evenodd"
+                                    d="M13 24.5c6.351 0 11.5-5.149 11.5-11.5S19.351 1.5 13 1.5S1.5 6.649 1.5 13S6.649 24.5 13 24.5m0 1c6.904 0 12.5-5.596 12.5-12.5S19.904.5 13 .5S.5 6.096.5 13S6.096 25.5 13 25.5"
+                                    clip-rule="evenodd" />
+                            </g>
+                        </svg>
                     </p>
                     <div>
                         @if ( eventWithAward.status == 'ACTIVE') {
@@ -63,76 +90,81 @@
                             class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Culminada</span>
                         }
                     </div>
-                </div>            
+                </div>
                 <div class="flex w-full my-1 flex-col items-center md:flex-row justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-sky-800 rounded-full dark:bg-gray-600">
-                                <span class="font-medium text-gray-100 dark:text-gray-300">{{ letterOwner }}</span>
-                            </div>
-                            <a [routerLink]="['../profile', { id: eventWithAward.userId }]" [relativeTo]="route">
-                                <div class="font-medium dark:text-white">
-                                    <div>{{ owner }}</div>
-                                    <div class="text-sm text-gray-500 dark:text-gray-400">Propietario</div>
-                                </div>
-                            </a>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-sky-800 rounded-full dark:bg-gray-600">
+                            <span class="font-medium text-gray-100 dark:text-gray-300">{{ letterOwner }}</span>
                         </div>
-                        @if (authServ.currentUser.id !== eventWithAward.userId) {
-                            <app-primary-button label="Comprar Cartón" [url]="['/order', { id: eventWithAward.id }]"  class="mt-3" />              
+                        <a [routerLink]="['../profile', { id: eventWithAward.userId }]" [relativeTo]="route">
+                            <div class="font-medium dark:text-white">
+                                <div>{{ owner }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Propietario</div>
+                            </div>
+                        </a>
+                    </div>
+                    @if (authServ.currentUser.id !== eventWithAward.userId) {
+                    <app-custom-button label="Comprar Cartón" [url]="['/order', { id: eventWithAward.id }]"
+                        class="mt-3" />
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-center rounded-sm  mb-4 bg-gray-50 dark:bg-gray-800">
+            <div class="w-full p-4 rounded-lg shadow-sm dark:bg-gray-800">
+                <div class="flex items-center justify-start mb-4">
+                    <h5 class="text-base font-bold leading-none text-gray-900 dark:text-white">Descripción</h5>
+                </div>
+                <div class="flex justify-start py-1">
+                    <p id="text-descripcion" (click)="toggleText($event, 'text-descripction')"
+                        class="text-sm cursor-pointer truncate text-gray-500 dark:text-gray-500">
+                        {{eventWithAward.description}}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-center rounded-sm bg-gray-50 dark:bg-gray-800">
+            <div class="w-full p-4 rounded-lg shadow-sm dark:bg-gray-800">
+                <div class="flex items-center justify-start mb-4">
+                    <h5 class="text-base font-bold leading-none text-gray-900 dark:text-white">Premios</h5>
+                </div>
+                <div>
+                    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for(award of eventWithAward.award; track award.id; let j = $index) {
+                        <li class="py-3 sm:py-4">
+                            <div class="flex items-center">
+                                <div>
+                                    {{ j + 1 }}
+                                </div>
+                                <div class="flex-1 min-w-0 ms-4">
+                                    <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                        {{ award.name }}
+                                    </p>
+                                    <p [id]="'award-'+award.id" (click)="toggleText($event, 'award-'+award.id)"
+                                        class="text-sm cursor-pointer truncate text-gray-500 dark:text-gray-400">
+                                        {{ award.description }}
+                                    </p>
+                                </div>
+                                @if( award.winner != null && this.winners.length > 0 && getWinnerName(award.winner) !=
+                                'Desconocido') {
+                                <div class="ms-4">
+                                    <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                        Ganador
+                                    </p>
+                                    <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                                        {{ getWinnerName(award.winner) }}
+                                    </p>
+                                </div>
+                                }
+                            </div>
+                        </li>
                         }
-                    </div>
+                    </ul>
                 </div>
             </div>
-            <div class="flex items-center justify-center rounded-sm  mb-4 bg-gray-50 dark:bg-gray-800">
-                <div class="w-full p-4 rounded-lg shadow-sm dark:bg-gray-800">
-                    <div class="flex items-center justify-start mb-4">
-                        <h5 class="text-base font-bold leading-none text-gray-900 dark:text-white">Descripción</h5>
-                    </div>
-                    <div class="flex justify-start py-1">
-                        <p id="text-descripcion" (click)="toggleText($event, 'text-descripction')" class="text-sm cursor-pointer truncate text-gray-500 dark:text-gray-500">
-                            {{eventWithAward.description}}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center justify-center rounded-sm bg-gray-50 dark:bg-gray-800">
-                <div class="w-full p-4 rounded-lg shadow-sm dark:bg-gray-800">
-                    <div class="flex items-center justify-start mb-4">
-                        <h5 class="text-base font-bold leading-none text-gray-900 dark:text-white">Premios</h5>
-                    </div>
-                    <div>
-                        <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @for(award of eventWithAward.award; track award.id; let j = $index) {
-                                <li class="py-3 sm:py-4">
-                                    <div class="flex items-center">
-                                        <div>
-                                            {{ j + 1 }}
-                                        </div>
-                                        <div class="flex-1 min-w-0 ms-4">
-                                            <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                                {{ award.name }}
-                                            </p>
-                                            <p [id]="'award-'+award.id" (click)="toggleText($event, 'award-'+award.id)" class="text-sm cursor-pointer truncate text-gray-500 dark:text-gray-400">
-                                                {{ award.description }}
-                                            </p>
-                                        </div>
-                                        @if( award.winner != null && this.winners.length > 0 &&  getWinnerName(award.winner) != 'Desconocido') {
-                                            <div class="ms-4">
-                                                <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                                    Ganador
-                                                </p>
-                                                <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                                                    {{ getWinnerName(award.winner) }}
-                                                </p>
-                                            </div>
-                                        }
-                                    </div>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-            </div>
+        </div>
         }
     </div>
 </div>
- 
+}

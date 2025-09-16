@@ -1,30 +1,37 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Component, Input, OnInit } from '@angular/core';
 import { initFlowbite } from 'flowbite';
-import { HrComponent } from '../hr/hr.component';
 import { IItemSection, ISectionSidebar } from '../../interfaces';
+import { HrComponent } from '../../components/hr/hr.component';
+import { SidebarService } from '../../services/sidebar.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [HrComponent],
-  templateUrl: './sidebar.component.html',
+  templateUrl: './app-sidebar.component.html',
   styles: `
     .bg-sidebar {
       background: var(--bg-primary-color);
-    }
+    }    
   `
 })
 export class SidebarComponent implements OnInit {
   @Input() sections: ISectionSidebar[] = [];
 
+  isCollapsed= true;
+
   constructor(
     protected route: ActivatedRoute,
     protected router: Router,
+    private sidebarServ: SidebarService
   ) {}
 
   ngOnInit() {
     initFlowbite();
+    this.sidebarServ.isExpanded$.subscribe(value => {
+      this.isCollapsed = value;
+    })
     // const params = this.sections.map
     // this.authServ.isLoggedIn$.subscribe({
     //   next: (value) => {

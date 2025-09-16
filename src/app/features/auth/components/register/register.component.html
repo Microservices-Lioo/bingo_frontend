@@ -1,4 +1,4 @@
-<div class="bg-container flex justify-center items-center">
+<div class="bg-container h-screen flex justify-center items-center">
 
     <div class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-[#14294a]">
         <form class="space-y-4" [formGroup]="registerForm">
@@ -40,7 +40,7 @@
                 formControlName="password"
             />
             <div class="mt-3"></div>
-            <app-primary-button label="Crear" type="submit" [disabled]="!registerForm.valid" (btnCliked)="OnSubmit()"
+            <app-custom-button label="Crear" type="submit" [disabled]="!registerForm.valid" (btnCliked)="OnSubmit()"
                 [loading]="loading" />
             <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Ya tienes cuenta? <a routerLink="/auth/login"

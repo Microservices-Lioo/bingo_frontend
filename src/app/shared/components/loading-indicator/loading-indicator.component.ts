@@ -1,26 +1,18 @@
-import { Component, ContentChild, Input, OnInit, TemplateRef } from '@angular/core';
-import { Observable, tap } from 'rxjs';
-import { LoadingService } from '../../services';
-import { RouteConfigLoadEnd, RouteConfigLoadStart, Router,  } from '@angular/router';
-import { AsyncPipe } from '@angular/common';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-loading-indicator',
-  imports: [AsyncPipe],
   template: `
-  @if(loading$ | async ) {
-      <div class="loader bg-gray-300 fixed w-full h-full flex justify-center items-center top-0 left-0">
-        <div class="dot">B</div>
-        <div class="dot">I</div>
-        <div class="dot">N</div>
-        <div class="dot">G</div>
-        <div class="dot">O</div>
-      </div>
-  }
+    <div class="loader bg-gray-300 w-full h-full flex justify-center items-center top-0 left-0">
+      <div class="dot">B</div>
+      <div class="dot">I</div>
+      <div class="dot">N</div>
+      <div class="dot">G</div>
+      <div class="dot">O</div>
+    </div>
   `,
   styles: `
   .loader {
-    margin-top: 4rem;
     z-index: 2000;
   }
 
@@ -64,34 +56,6 @@ import { AsyncPipe } from '@angular/common';
   .loader .dot:nth-child(5) {
     animation-delay: 0.5s;
   }
-  `,
-  standalone: true
+  `
 })
-export class LoadingIndicatorComponent implements OnInit {
-  loading$: Observable<boolean>;
-
-  @Input() detectRouteTransitions = false;
-
-  constructor(
-    private loadingServ: LoadingService,
-    private router: Router
-  ) {
-    this.loading$ = this.loadingServ.loading$;
-  }
-
-  ngOnInit() {
-    if (this.detectRouteTransitions) {
-      this.router.events
-        .pipe(
-          tap((event)=> {
-            if (event instanceof RouteConfigLoadStart) {
-              this.loadingServ.loadingOn();
-            } else if (event instanceof RouteConfigLoadEnd) {
-              this.loadingServ.loadingOff();
-            }
-          })
-        )
-        .subscribe();
-    }
-  }
-}
+export class LoadingIndicatorComponent {}

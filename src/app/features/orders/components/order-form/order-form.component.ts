@@ -2,15 +2,15 @@ import { Component, effect, inject } from '@angular/core';
 import { IEventAwards } from '../../../events/interfaces';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EventService } from '../../../events/services/event.service';
 import { CardsServiceShared, LoadingService, ToastService } from '../../../../shared/services';
 import { UserService } from '../../../profile/services';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { OrderService } from '../../services/order.service';
-import { CreateOrderInterface } from '../../interfaces';
+import { AuthService } from '../../../auth/services';
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
+import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
 
 export interface ItemForm {
   quantity: FormControl<number>
@@ -18,29 +18,36 @@ export interface ItemForm {
 
 @Component({
   selector: 'app-order-form',
-  imports: [CommonModule, IconComponent, PrimaryButtonComponent, 
-    ReactiveFormsModule, CustomInputComponent],
+  imports: [
+    CommonModule,
+    IconComponent,
+    ReactiveFormsModule,
+    CustomInputComponent,
+    RouterLink,
+    CustomButtonComponent
+],
   templateUrl: './order-form.component.html',
   styles: ``
 })
 export class OrderFormComponent {
   infoEventAward: IEventAwards | null = null;
   owner = 'Desconocido';
-  letterOwner = '';
+  letterOwner = 'D';
   cantCard = 0;
+  winners: { id: string, name: string}[] = [];
 
   fb = inject(NonNullableFormBuilder);
-StatusEvent: any;
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute,
+    protected route: ActivatedRoute,
     private eventServ: EventService,
     private toastServ: ToastService,
     private userServ: UserService,
     private loadingServ: LoadingService,
     private orderServ: OrderService,
-    private cardsServ: CardsServiceShared
+    private cardsServ: CardsServiceShared,
+    protected authServ: AuthService
   ) {
     effect(() => {
       const query = new URLSearchParams(window.location.search);
@@ -73,7 +80,7 @@ StatusEvent: any;
           this.getCountCards(eventId);
           
         } else {
-          this.router.navigate(['/', '/home/principal']);
+          this.router.navigate(['/', '/principal']);
           this.loadingServ.loadingOff();
         }
       });
@@ -82,6 +89,7 @@ StatusEvent: any;
     }    
   }
 
+  // Obtener el evento con sus premios
   getEventAward(eventId: string) {
     this.eventServ.getEventWithAwards(eventId).subscribe({
       next: (event) => {
@@ -90,11 +98,11 @@ StatusEvent: any;
           return;
         }
         this.infoEventAward = event;
-        // this.getOwner(event.userId);
+        this.getOwner(event.userId);
         this.loadingServ.loadingOff();
       },
       error: (error) => {
-        this.router.navigate(['/', '/home/principal']);
+        this.router.navigate(['/', '/principal']);
         this.loadingServ.loadingOff();
       }
     })

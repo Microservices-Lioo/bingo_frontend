@@ -7,12 +7,14 @@ import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services';
 import { UserService } from '../../../profile/services';
 import { CommonModule } from '@angular/common';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { AuthService } from '../../../auth/services';
+import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
+import { LoadingIndicatorComponent } from '../../../../shared/components/loading-indicator/loading-indicator.component';
+import { finalize, map, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-view-event',
-  imports: [CommonModule, IconComponent, RouterLink, PrimaryButtonComponent],
+  imports: [CommonModule, IconComponent, RouterLink, CustomButtonComponent, LoadingIndicatorComponent],
   templateUrl: './view-event.component.html',
   styles: ``,
   standalone: true
@@ -29,62 +31,45 @@ export class ViewEventComponent implements OnInit {
     private eventServ: EventService,
     private toastServ: ToastService,
     private userServ: UserService,
-    private loadingServ: LoadingService,
+    protected loadingServ: LoadingService,
     protected authServ: AuthService
   ) {}
 
   ngOnInit() {
-    this.route.queryParamMap.subscribe(value => {
-      this.loadingServ.loadingOn();
+    this.loadingServ.on();
+    this.route.queryParamMap.subscribe(async (value) => {
       const eventId = value.get('id');
       if (eventId) {
-        this.getEventAward(eventId);
+        this.initData(eventId);
       } else {
         this.router.navigate(['..'], { relativeTo: this.route });
-        this.loadingServ.loadingOff();
+        this.loadingServ.off();
       }
     });
-  }  
-
-  // Obtener el evento con sus premios
-  getEventAward(eventId: string) {
-    this.eventServ.getEventWithAwards(eventId).subscribe({
-      next: (event) => {
-        if (!event) {
-          this.loadingServ.loadingOff();
-          return;
-        }
-        this.eventWithAward = event;
-        this.getUser(event.userId);
-        event.award.forEach((award) => {
-          if (!award.winner) return;
-          this.getWinner(award.winner);
-        });
-        this.loadingServ.loadingOff();
-      },
-      error: (error) => {
-        this.router.navigate(['..', { relativeTo: this.route }]);
-        this.toastServ.openToast('event-awards', 'danger', error.message);
-        this.loadingServ.loadingOff();
-      }
-    })
   }
 
-  // Obtener datos de un usuario
-  getUser(userId: string) {
-    this.userServ.getUser(userId).subscribe({
-      next: (user) => {
+  initData(eventId: string) {
+    this.eventServ.getEventWithAwards(eventId).pipe(
+      switchMap(
+        event => this.userServ.getUser(event.userId)
+          .pipe( map( user => ({user, event})))),          
+      finalize(() => this.loadingServ.off())
+    ).subscribe({
+      next: ({user, event}) => {
+        this.eventWithAward = event;
+
         if (user) {
-          const { name, lastname, ...data } = user;
+          const { name, lastname } = user;
           const username = name + ' ' + lastname;
           this.owner = username != this.owner ? username : this.owner;
           this.getLetter();
         }
       },
       error: (error) => {
-        this.toastServ.openToast('get-owner', 'danger', 'Error al obtener el owner del evento');
+        this.toastServ.openToast('event-awards', 'danger', error.message);
+        this.loadingServ.off();
       }
-    });;
+    })
   }
 
   // Obtener los ganadores de los premios
@@ -98,6 +83,7 @@ export class ViewEventComponent implements OnInit {
         }
       },
       error: (error) => {
+        console.error(error);
         this.toastServ.openToast('get-winner', 'danger', 'Error al cargar los ganadores');
       }
     });

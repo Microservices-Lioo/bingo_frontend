@@ -1,16 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { RouterLink, UrlTree } from '@angular/router';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { RouterLink } from '@angular/router';
+import { IconComponent } from '../../icon/icon.component';
 
 @Component({
-  selector: 'app-primary-button',
+  selector: 'app-custom-button',
   imports: [RouterLink, IconComponent],
   template: `
     <button
-      class="text-white w-full px-2 py-2 rounded-xl shadow-md hover:opacity-90"
+      class="text-white text-center w-full px-4 py-2 rounded-xl shadow-md hover:opacity-90"
       [class]="bg ? bg.toString() : 'bg-btn'"
       [type]="type"
-      [disabled]="disabled"
       [routerLink]="url"
       (click)="this.btnCliked.emit()" >
       @if (loading) {
@@ -32,7 +31,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
     }
   `
 })
-export class PrimaryButtonComponent {
+export class CustomButtonComponent {
   @Input() label: string = '';
   @Input() type: 'button' | 'submit' = 'button';
   @Input() url: string | any[] | undefined;

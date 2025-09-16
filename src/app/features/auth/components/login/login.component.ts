@@ -1,11 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { AuthService } from '../../services';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { IUser } from '../../../../core/interfaces';
+import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
 
 export interface ItemForm {
   email: FormControl<string>,
@@ -14,12 +14,11 @@ export interface ItemForm {
 
 @Component({
   selector: 'app-login',
-  imports: [PrimaryButtonComponent, RouterLink, ReactiveFormsModule, CustomInputComponent],
+  imports: [RouterLink, ReactiveFormsModule, CustomButtonComponent, CustomInputComponent],
   templateUrl: './login.component.html',
   styles: `
     .bg-container {
       width: 100%;
-      height: calc(100vh - 4rem); ;
       background-color: #dce2f6;
       background-image: radial-gradient(#859bfb 10%, transparent 10%),
                           radial-gradient(#859bfb 10%, transparent 10%);

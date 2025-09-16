@@ -1,15 +1,15 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AwardService } from '../../services/award.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IAward, EditIAward, UpdateIAward, ICreateAward } from '../../interfaces';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
+import { IAward, EditIAward } from '../../interfaces';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ModalService } from '../../../../shared/services/modal.service';
 import { ModalInterface } from 'flowbite';
 import { Location } from '@angular/common';
+import { CustomButtonComponent } from '../../../../shared/components/ui/button/custom-button.component';
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
 
 export interface ItemAwardForm {
   id: FormControl<string>;
@@ -22,7 +22,7 @@ export type CustomFormAwardGroup = FormGroup<ItemAwardForm>;
 
 @Component({
   selector: 'app-edit-awards',
-  imports: [ReactiveFormsModule, CustomInputComponent, PrimaryButtonComponent, IconComponent],
+  imports: [ReactiveFormsModule, CustomInputComponent, CustomButtonComponent, IconComponent],
   templateUrl: './edit-awards.component.html',
   styles: ``
 })

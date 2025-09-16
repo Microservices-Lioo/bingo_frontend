@@ -1,15 +1,13 @@
 import { Routes } from "@angular/router";
-import { authGuard } from "../../core/guards";
-import { AdminComponent } from "./admin.component";
 import { eventsRoutes } from "../events/routes";
 import { awardRoutes } from "../award/routes";
+import { AppAdminLayoutComponent } from "../../shared/layout/app-admin-layout/app-admin-layout.component";
 
 
 export const adminRoutes: Routes = [
     { 
         path: '', 
-        component: AdminComponent,
-        canActivate: [authGuard],
+        component: AppAdminLayoutComponent,
         children: [
             { 
                 path: '', 

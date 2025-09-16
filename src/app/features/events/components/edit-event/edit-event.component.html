@@ -43,14 +43,14 @@
 
             </div>
             <div class="flex flex-row justify-around items-center">
-                <app-primary-button 
+                <app-custom-button 
                     label="Cancelar" 
                     type="button"
                     bg="bg-red-500"
                     (btnCliked)="goBack()"
                     />
 
-                <app-primary-button 
+                <app-custom-button 
                     label="Guardar" 
                     type="submit" 
                     [disabled]="!editEventForm.valid"

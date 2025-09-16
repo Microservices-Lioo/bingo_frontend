@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { AuthService } from '../../services';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { CustomButtonComponent } from '../../../../shared/components/ui/button/custom-button.component';
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
 
 export interface ItemForm {
     name: FormControl<string>,
@@ -16,12 +16,11 @@ export interface ItemForm {
 @Component({
     selector: 'app-register',
     standalone: true,
-    imports: [PrimaryButtonComponent, RouterLink, ReactiveFormsModule, CustomInputComponent],
+    imports: [CustomButtonComponent, RouterLink, ReactiveFormsModule, CustomInputComponent],
     templateUrl: './register.component.html',
     styles: `
     .bg-container {
       width: 100%;
-      height: calc(100vh - 4rem); ;
       background-color: #dce2f6;
       background-image: radial-gradient(#859bfb 10%, transparent 10%),
                           radial-gradient(#859bfb 10%, transparent 10%);

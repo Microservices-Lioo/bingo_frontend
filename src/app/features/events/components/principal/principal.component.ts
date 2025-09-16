@@ -2,17 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { EventService } from '../../services/event.service';
 import { EventAwardPagination, IEventAwards } from '../../interfaces';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ModalService } from '../../../../shared/services/modal.service';
 import { ModalInterface } from 'flowbite';
 import { IAward } from '../../../award/interfaces';
 import { LoadingService } from '../../../../shared/services';
+import { CustomButtonComponent } from '../../../../shared/components/ui/button/custom-button.component';
 
 @Component({
   selector: 'app-principal',
-  imports: [PrimaryButtonComponent, IconComponent, RouterLink],
+  imports: [CustomButtonComponent, IconComponent, RouterLink],
   templateUrl: './principal.component.html',
   styles: `
   `

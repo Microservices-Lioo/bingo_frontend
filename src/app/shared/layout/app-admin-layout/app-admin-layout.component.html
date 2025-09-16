@@ -1,0 +1,19 @@
+<div class="min-h-screen">
+    <!-- app header start -->
+    <app-header/>
+  <div
+    class="transition-all duration-300 ease-in-out
+    p-4 h-full"
+    [class]="{
+      'md:ml-0': !isCollapsed,
+      'md:ml-64': isCollapsed
+    }"
+  >
+    <app-sidebar [sections]="sections"/>
+    <!-- app header end -->
+    <div class="mx-auto pt-14 max-w-(--breakpoint-2xl)">
+      <router-outlet></router-outlet>
+      <!-- <app-loading-indicator /> -->
+    </div>
+  </div>
+</div>

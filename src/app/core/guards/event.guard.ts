@@ -11,7 +11,7 @@ export const eventGuard: CanActivateFn = (route, state) => {
     const userId = route.paramMap.get('userId');
     
     if ( eventId === null || userId === null ) {
-      return router.navigate(['/home']).then(() => false);
+      return router.navigateByUrl('/').then(() => false);
     }
 
     eventSharedServ.getEventWithAwards(eventId, userId).subscribe({
@@ -19,11 +19,11 @@ export const eventGuard: CanActivateFn = (route, state) => {
         return true;
       },
       error: (error) => {
-        return router.navigate(['/home']).then(() => false);
+        return router.navigateByUrl('/').then(() => false);
       }
     });
     return true;
   } catch (error) {
-    return router.navigate(['/home']).then(() => false);
+    return router.navigateByUrl('/').then(() => false);
   }
 };

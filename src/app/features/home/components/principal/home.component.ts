@@ -8,7 +8,9 @@ import { EventsCardComponent } from '../events-card/events-card.component';
 import { IEventWithBuyer } from '../../../../shared/interfaces';
 import { LoadingComponent } from '../../../../shared/components/loading/loading.component';
 import { HrComponent } from "../../../../shared/components/hr/hr.component";
-import { ToastService } from '../../../../shared/services';
+import { LoadingService, ToastService } from '../../../../shared/services';
+import { LoadingIndicatorComponent } from '../../../../shared/components/loading-indicator/loading-indicator.component';
+import { finalize, map, switchMap } from 'rxjs';
 
 export interface ISectionItem {
   title: string;
@@ -19,7 +21,7 @@ export interface ISectionItem {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [EventsCardComponent, RouterLink, LoadingComponent, HrComponent],
+  imports: [EventsCardComponent, RouterLink, LoadingComponent, HrComponent, LoadingIndicatorComponent],
   templateUrl: './home.component.html',
   styles: ``
 })
@@ -33,7 +35,8 @@ export class HomeComponent implements OnInit {
     private eventServ: EventServiceShared,
     private router: Router,
     private route: ActivatedRoute,
-    private toastServ: ToastService
+    private toastServ: ToastService,
+    protected loadingServ: LoadingService
   ) {}
 
   ngOnInit() {
@@ -46,8 +49,30 @@ export class HomeComponent implements OnInit {
   }
 
   initSection() {
-    this.getEventsStatus(StatusEvent.ACTIVE, { limit: this.limit });
-    this.getEventsStatus(StatusEvent.PENDING, { limit: this.limit });
+    this.loadingServ.on();
+    this.eventServ.eventListStatus(StatusEvent.ACTIVE, { limit: this.limit })
+    .pipe(
+      switchMap( 
+        eventActive => 
+          this.eventServ.eventListStatus(StatusEvent.PENDING, { limit: this.limit })
+          .pipe( map( eventPending => ({ eventActive, eventPending })))
+      ),
+      finalize(() => this.loadingServ.off())    
+    ).subscribe({
+      next: ({eventActive, eventPending}) => {
+        if (eventActive && eventActive.data.length > 0) {
+          this.setEventList(StatusEvent.ACTIVE, eventActive);
+        }
+        
+        if (eventPending && eventPending.data.length > 0) {
+          this.setEventList(StatusEvent.PENDING, eventPending);
+        }
+      },
+      error: (error) => {
+        console.error(error);
+        this.toastServ.openToast('get-events', 'danger', 'Error al cargar los eventos');
+      }
+    })
   }
 
   // Obtener los eventos por status

@@ -115,7 +115,7 @@ export class WebsocketServiceShared {
           error.message === 'Token inválido' ||
           error.message === 'Error de autenticación'
         ) {
-          this.router.navigate(['/home/principal']);
+          this.router.navigate(['/principal']);
         } else {
           this.statusConnection$.next('failed');
           this.socket.connect();
@@ -130,7 +130,7 @@ export class WebsocketServiceShared {
 
     this.socket.on(WsEnum.UNAUTHORIZED, (data) => {
       this.socket.disconnect();
-      this.router.navigate(['/home/principal']);
+      this.router.navigate(['/principal']);
     });
 
   }

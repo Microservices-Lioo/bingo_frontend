@@ -1,15 +1,15 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import { IUser } from '../../../../core/interfaces';
 import { LoadingService, ToastService } from '../../../../shared/services';
 import { UserService } from '../../services';
 import { AuthService } from '../../../auth/services';
+import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [PrimaryButtonComponent],
+  imports: [CustomButtonComponent],
   templateUrl: './profile.component.html',
   styles: ``
 })
@@ -41,7 +41,7 @@ export class ProfileComponent implements OnInit {
         this.toastServ.openToast('user', 'danger', 'Usuario no encontrado, redireccionando...');
         setTimeout
         setTimeout(() =>this.toastServ.removeToast('user'), 1000);
-        setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
+        setTimeout(() =>this.router.navigate(['/principal']), 1500);
       }
     } else {
       this.getUserOne(id);
@@ -57,14 +57,14 @@ export class ProfileComponent implements OnInit {
         } else {
           this.toastServ.openToast('user', 'danger', 'El usuario no existe');
           setTimeout(() =>this.toastServ.removeToast('user'), 1000);
-          setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
+          setTimeout(() =>this.router.navigate(['/principal']), 1500);
         }
       },
       error: (error) => {
         this.loadingServ.loadingOff();
         this.toastServ.openToast('user', 'danger', 'No se encontro los datos del usuario');
         setTimeout(() =>this.toastServ.removeToast('user'), 1000);
-        setTimeout(() =>this.router.navigate(['/home/principal']), 1500);
+        setTimeout(() =>this.router.navigate(['/principal']), 1500);
       }
     })
   }

@@ -51,7 +51,7 @@
             }
         </tbody>
         <tfoot>
-            <app-primary-button 
+            <app-custom-button 
                 class="w-10"
                 title="Agregar un nuevo premio"
                 label="+" 
@@ -62,13 +62,13 @@
     </table>
 
     <div class="w-full flex justify-end text-center flex-wrap gap-5 my-3">
-        <app-primary-button 
+        <app-custom-button 
             bg="bg-red-500"
             label="Cancelar" 
             type="button" 
             [loading]="loading"
             (btnCliked)="onBack()" />
-        <app-primary-button 
+        <app-custom-button 
             label="Guardar todo" 
             type="button" 
             [loading]="loading"

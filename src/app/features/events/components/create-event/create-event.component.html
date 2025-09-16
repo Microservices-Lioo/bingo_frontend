@@ -78,8 +78,8 @@
 
                 </div>
                 <div class="flex justify-end flex-wrap gap-2">
-                    <app-primary-button bg="bg-red-500" label="Cancelar" type="button" (btnCliked)="goBack()" />
-                    <app-primary-button class="" label="Guardar y continuar" type="submit" [disabled]="!createEventForm.valid"
+                    <app-custom-button bg="bg-red-500" label="Cancelar" type="button" (btnCliked)="goBack()" />
+                    <app-custom-button class="" label="Guardar y continuar" type="submit" [disabled]="!createEventForm.valid"
                         (btnCliked)="nextAward()" [loading]="loadingEvent" />
                 </div>
             </form>
@@ -153,8 +153,8 @@
                 </tbody>
             </table>
             <div class="flex justify-end flex-wrap gap-2 mt-2">
-                <app-primary-button bg="bg-red-500" label="Cancelar" type="button" (btnCliked)="goBack()" />
-                <app-primary-button class="" label="Guardar y continuar" type="submit" [disabled]="!createEventForm.valid"
+                <app-custom-button bg="bg-red-500" label="Cancelar" type="button" (btnCliked)="goBack()" />
+                <app-custom-button class="" label="Guardar y continuar" type="submit" [disabled]="!createEventForm.valid"
                     (btnCliked)="nextConf()" [loading]="loadingEvent" />
             </div>
         </div>
@@ -244,8 +244,8 @@
 
             }
             <div class="flex justify-end flex-wrap gap-2 mt-2">
-                <app-primary-button bg="bg-red-500" label="Cancelar" type="button" (btnCliked)="goBack()" />
-                <app-primary-button label="Crear Evento" type="button" [loading]="loadingConfirmation" (btnCliked)="createEvent()" />
+                <app-custom-button bg="bg-red-500" label="Cancelar" type="button" (btnCliked)="goBack()" />
+                <app-custom-button label="Crear Evento" type="button" [loading]="loadingConfirmation" (btnCliked)="createEvent()" />
             </div>
 
         </div>

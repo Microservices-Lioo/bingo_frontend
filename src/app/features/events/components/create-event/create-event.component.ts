@@ -1,6 +1,4 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
 import {
   FormArray,
   FormControl,
@@ -11,13 +9,13 @@ import {
 } from '@angular/forms';
 import { EventService } from '../../services/event.service';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ICreateEvent, ICreateEventAwards, IEventAwards } from '../../interfaces';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ICreateEvent, ICreateEventAwards } from '../../interfaces';
 import { formatDate, Location } from '@angular/common';
-import { ViewEventComponent } from '../view-event/view-event.component';
 import { ICreateAward } from '../../../award/interfaces';
-import { AuthService } from '../../../auth/services';
 import { CommonModule } from '@angular/common';
+import { CustomButtonComponent } from '../../../../shared/components/ui/button/custom-button.component';
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
 
 export interface ItemEventForm {
   name: FormControl<string>,
@@ -44,7 +42,7 @@ export interface ItemStepper {
   selector: 'app-create-event',
   imports: [
     CustomInputComponent,
-    PrimaryButtonComponent,
+    CustomButtonComponent,
     ReactiveFormsModule,
     CommonModule,
   ],

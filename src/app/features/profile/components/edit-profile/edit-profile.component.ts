@@ -2,13 +2,13 @@ import { catchError, of, switchMap } from 'rxjs';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PrimaryButtonComponent } from '../../../../ui/buttons/primary-button/primary-button.component';
-import { CustomInputComponent } from '../../../../ui/inputs/custom-input/custom-input.component';
 import { IUser } from '../../../../core/interfaces';
 import { AuthService } from '../../../auth/services';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { UserService } from '../../services';
 import { UpdateIUser } from '../../interfaces';
+import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
+import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
 
 export interface ItemForm {
   name: FormControl<string>,
@@ -21,7 +21,7 @@ export interface ItemForm {
 
 @Component({
   selector: 'app-edit-profile',
-  imports: [CustomInputComponent, ReactiveFormsModule, PrimaryButtonComponent],
+  imports: [CustomInputComponent, ReactiveFormsModule, CustomButtonComponent],
   templateUrl: './edit-profile.component.html',
   styles: `
   .bg-container {

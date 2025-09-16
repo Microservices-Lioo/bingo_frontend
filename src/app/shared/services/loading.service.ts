@@ -5,11 +5,24 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class LoadingService {
+  // Loading Global
+  private loadingGSub = new BehaviorSubject<boolean>(false);
+  
+  loadingG$ = this.loadingGSub.asObservable();
 
+  // Loading section
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private loadingStates = new Map<string, BehaviorSubject<boolean>>();
 
   loading$ = this.loadingSubject.asObservable();
+
+  on() {
+    this.loadingGSub.next(true);
+  }
+
+  off() {
+    this.loadingGSub.next(false);
+  }
 
   loadingOn() {
     this.loadingSubject.next(true);
@@ -31,6 +44,10 @@ export class LoadingService {
       this.loadingStates.set(actionId, new BehaviorSubject<boolean>(false));
     }
     return this.loadingStates.get(actionId)!.next(isLoading);
+  }
+
+  get isLoadingG(): boolean {
+    return this.loadingGSub.value;
   }
 
   isLoading(actionId: string): boolean {

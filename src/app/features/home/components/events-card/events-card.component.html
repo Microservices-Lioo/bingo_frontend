@@ -20,11 +20,11 @@
         </div>        
         <div class="w-full flex flex-col mt-2">
             <div class="w-full">
-                <a [routerLink]="['../event-detail']" [queryParams]="{ id: event().id }" [relativeTo]="route"><span class="text-md font-bold">{{ event().name }}</span></a> <br>
+                <a routerLink="event-detail" [queryParams]="{ id: event().id }" [relativeTo]="route"><span class="text-md font-bold">{{ event().name }}</span></a> <br>
                 <p class="text-sm truncate ...">{{ event().description }}</p>
             </div>
             
-            <div class="flex justify-start mt-1">
+            <div class="flex justify-start items-center mt-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <g fill="none" stroke="currentColor" stroke-width="1.5">
                         <circle cx="12" cy="12" r="10" />
@@ -34,7 +34,7 @@
                 </svg>
                 <span class="text-sm px-2">{{ event().price }}</span>
             </div>
-            <div class="flex justify-start mt-1">
+            <div class="flex justify-start items-center mt-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <g fill="none" stroke="currentColor" stroke-width="1.5">
                         <circle cx="12" cy="13" r="9" />
@@ -44,32 +44,34 @@
                 </svg>
                 <span class="text-sm px-2">{{ event().start_time | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
             </div>
-            @if ( !isSession ) {
-                <app-primary-button label="Comprar Cartón" [url]="['/order', { id: event().id }]"  class="mp-3" />
-            } @if(currentUser) { 
-                @if ( currentUser.id === event().userId ) {
-                    <app-primary-button label="Administrar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" /> 
-                } @else {  
-                    @if ( event().status == 'ACTIVE' ) {
-                        @if (event().buyer) {
-                            <app-primary-button label="Jugar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" />
-                        } @else {
-                            <app-primary-button label="No disponible" [disabled]="true" class="w-full pt-3" />
-                        }
-                    } @else if ( event().status == 'PENDING' ) {
-                        <div class="w-full flex gap-2 py-1">
-                            @if(event().buyer) {
-                               <app-primary-button icon="shopping-cart" [url]="['/order', { id: event().id }]" class="w-auto flex-none" />
-                               <app-primary-button label="Próximamente" class="w-full" />
+            <div class="mt-2">
+                @if ( !isSession ) {
+                    <app-custom-button label="Comprar Cartón" [url]="['/order', { id: event().id }]"  class="mp-3" />
+                } @if(currentUser) { 
+                    @if ( currentUser.id === event().userId ) {
+                        <app-custom-button label="Administrar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" /> 
+                    } @else {  
+                        @if ( event().status == 'ACTIVE' ) {
+                            @if (event().buyer) {
+                                <app-custom-button label="Jugar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" />
                             } @else {
-                                <app-primary-button label="Comprar Cartón" [url]="['/order', { id: event().id }]" class="w-full flex-none" />
+                                <app-custom-button label="No disponible" [disabled]="true" class="w-full pt-3" />
                             }
-                        </div>
-                    }  @else {
-                        <app-primary-button label="No disponible" [disabled]="true" class="pt-3" />
-                    } 
-                }
-            }           
+                        } @else if ( event().status == 'PENDING' ) {
+                            <div class="w-full flex gap-2 py-1">
+                                @if(event().buyer) {
+                                <app-custom-button icon="shopping-cart" [url]="['/order', { id: event().id }]" class="w-auto flex-none" />
+                                <app-custom-button label="Próximamente" class="w-full" />
+                                } @else {
+                                    <app-custom-button label="Comprar Cartón" [url]="['/order', { id: event().id }]" class="w-full flex-none" />
+                                }
+                            </div>
+                        }  @else {
+                            <app-custom-button label="No disponible" [disabled]="true" class="pt-3" />
+                        } 
+                    }
+                }    
+            </div>       
         </div>
     </div>
 </div>

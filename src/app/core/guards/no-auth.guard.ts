@@ -13,13 +13,13 @@ export const noAuthGuard: CanActivateFn = (route, state) => {
     authServ.verifyToken(token).subscribe({
       next: (result) => {
         if (result) {
-          return router.navigate(['/home']).then(() => false);
+          return router.navigateByUrl('/').then(() => false);
         } else {
           if (refresh_token) {
             return authServ.refreshToken().subscribe({
               next: (newToken: string) => {
                 localStorage.setItem('access_token', newToken);
-                return router.navigate(['/home']).then(() => false);
+                return router.navigateByUrl('/').then(() => false);
               },
               error: (err) => {
                 return true;
