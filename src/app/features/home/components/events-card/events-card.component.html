@@ -63,7 +63,7 @@
                                 <app-custom-button icon="shopping-cart" [url]="['/order', { id: event().id }]" class="w-auto flex-none" />
                                 <app-custom-button label="Próximamente" class="w-full" />
                                 } @else {
-                                    <app-custom-button label="Comprar Cartón" [url]="['/order', { id: event().id }]" class="w-full flex-none" />
+                                    <app-custom-button label="Comprar Carttón" [url]="'order/' + event().id" class="w-full flex-none" />
                                 }
                             </div>
                         }  @else {

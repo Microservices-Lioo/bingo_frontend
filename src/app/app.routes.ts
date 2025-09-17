@@ -16,22 +16,12 @@ export const routes: Routes = [
         canActivate: [authGuard] 
     },
     { 
-        path: '', 
-        title: 'Inicio', 
-        loadChildren: () => import('./features/home/routes').then(m => m.homeRoutes) 
-    },
-    { 
         path: 'profile', 
         title: 'Perfil', 
         loadChildren: () => import('./features/profile/routes').then(m => m.profileRoutes),  
     },
     // { path: 'events', title: 'Eventos', loadChildren: () => import('./features/events/routes').then(m => m.eventsRoutes),  },
     // { path: 'award', title: 'Premios', loadChildren: () => import('./features/award/routes').then(m => m.awardRoutes),  },
-    { 
-        path: 'order', 
-        title: 'Orden', 
-        loadChildren: () => import('./features/orders/routes').then(m => m.orderRoutes),  
-    },
     // error
     { 
         path: 'forbidden',  
@@ -39,8 +29,8 @@ export const routes: Routes = [
         component: ForbiddenComponent
     },
     { 
-        path: '**',  
-        title: 'Página no encontrada',
-        component: NotFoundComponent
-    },
+        path: '', 
+        title: 'Inicio', 
+        loadChildren: () => import('./features/home/routes').then(m => m.homeRoutes) 
+    }
 ];

@@ -1,10 +1,6 @@
-export interface CreateOrderInterface {
+export interface ICreateOrder {
 
-    totalItems: number;
+    quantity: number;
 
     eventId: string;
-
-    nameEvent: string;
-
-    unitAmount: number;
 }

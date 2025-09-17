@@ -6,6 +6,8 @@ import { PrincipalComponent as PrincipalGamesComponent } from "../games/componen
 import { authGuard, eventGuard } from "../../core/guards";
 import { ProfileComponent } from "../profile/components/view-profile/profile.component";
 import { AppLayoutComponent } from "../../shared/layout/app-layout/app-layout.component";
+import { orderRoutes } from "../orders/routes";
+import { NotFoundComponent } from "../other-page/not-found/not-found.component";
 
 export const homeRoutes: Routes = [
     { 
@@ -39,7 +41,16 @@ export const homeRoutes: Routes = [
                 component: PrincipalGamesComponent, 
                 canActivate: [authGuard, eventGuard] 
             },
-            { path: '**', redirectTo: '' }
+            {
+                path: 'order',
+                title: 'Orden de compra',
+                children: orderRoutes
+            },
+            { 
+                path: '**',  
+                title: 'Página no encontrada',
+                component: NotFoundComponent
+            }
         ]
     },
 ];

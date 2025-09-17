@@ -11,6 +11,9 @@ import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../../auth/services';
 import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
 import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
+import { LoadingIndicatorComponent } from "../../../../shared/components/loading-indicator/loading-indicator.component";
+import { finalize, map, switchMap } from 'rxjs';
+import { ICreateOrder } from '../../interfaces';
 
 export interface ItemForm {
   quantity: FormControl<number>
@@ -24,10 +27,10 @@ export interface ItemForm {
     ReactiveFormsModule,
     CustomInputComponent,
     RouterLink,
-    CustomButtonComponent
+    CustomButtonComponent,
+    LoadingIndicatorComponent
 ],
   templateUrl: './order-form.component.html',
-  styles: ``
 })
 export class OrderFormComponent {
   infoEventAward: IEventAwards | null = null;
@@ -44,7 +47,7 @@ export class OrderFormComponent {
     private eventServ: EventService,
     private toastServ: ToastService,
     private userServ: UserService,
-    private loadingServ: LoadingService,
+    protected loadingServ: LoadingService,
     private orderServ: OrderService,
     private cardsServ: CardsServiceShared,
     protected authServ: AuthService
@@ -71,64 +74,44 @@ export class OrderFormComponent {
   });
 
   ngOnInit() {
-    this.loadingServ.loadingOn();
-    if (!this.infoEventAward) {
-      this.route.paramMap.subscribe(value => {
-        const eventId = value.get('id');
-        if (eventId) {
-          this.getEventAward(eventId);
-          this.getCountCards(eventId);
-          
-        } else {
-          this.router.navigate(['/', '/principal']);
-          this.loadingServ.loadingOff();
-        }
-      });
-    } else {
-      this.loadingServ.loadingOff();
-    }    
-  }
+    this.loadingServ.on();
+    this.route.paramMap.subscribe(value => {
+      const eventId = value.get('id');
+      if (eventId) {
+        this.eventServ.getEventWithAwards(eventId).pipe(
+          switchMap( 
+            event => this.userServ.getUser(event.userId)
+            .pipe(map(user => ({event, user})))
+          ),
+          switchMap(
+            ({event, user}) => this.cardsServ.getCardCountForUserAndEvent(event.id)
+            .pipe(map(cant => ({event, user, cant})))
+          ),
+          finalize(() => this.loadingServ.off())
+        ).subscribe({
+          next: ({event, user, cant}) => {
+            this.infoEventAward = event;
 
-  // Obtener el evento con sus premios
-  getEventAward(eventId: string) {
-    this.eventServ.getEventWithAwards(eventId).subscribe({
-      next: (event) => {
-        if (!event) {
-          this.loadingServ.loadingOff();
-          return;
-        }
-        this.infoEventAward = event;
-        this.getOwner(event.userId);
-        this.loadingServ.loadingOff();
-      },
-      error: (error) => {
-        this.router.navigate(['/', '/principal']);
-        this.loadingServ.loadingOff();
+            if (user) {
+              const { name, lastname } = user;
+              const username = name + ' ' + lastname;
+              this.owner = username != this.owner ? username : this.owner;
+              this.getLetter();
+            }
+
+            this.cantCard = cant;
+          },
+          error: (error) => {
+            console.error(error);
+            this.router.navigate(['..']);
+            this.loadingServ.off();
+          }
+        });        
+      } else {
+        this.router.navigate(['..']);
+        this.loadingServ.off();
       }
-    })
-  }
-
-  getUser(userId: string) {
-    return this.userServ.getUser(userId);
-  }
-
-  getOwner(userId: string): string {
-    let ownerName = 'Desconocido';
-    this.getUser(userId).subscribe({
-      next: (user) => {
-        if (user) {
-          const { name, lastname, ...data } = user;
-          const username = name + ' ' + lastname;
-          this.owner = username != this.owner ? username : this.owner;
-          ownerName = this.owner;
-          this.getLetter();
-        }
-      },
-      error: (error) => {
-        return ownerName;
-      }
-    });
-    return ownerName;
+    });   
   }
 
   getLetter() {
@@ -168,48 +151,36 @@ export class OrderFormComponent {
   }
 
   buy() {
-    this.loadingServ.loadingOn();
+    this.loadingServ.on();
 
     if (this.createCard.invalid) {
       this.toastServ.openToast('invalid-form', 'danger', 'Formulario invalido.');
-      this.loadingServ.loadingOff();
+      this.loadingServ.off();
     } else {
       if (this.infoEventAward === null) {
         this.toastServ.openToast('event-data', 'danger', 'No se encontró la información del evento.')
-        this.loadingServ.loadingOff();
+        this.loadingServ.off();
       } else {
         const quantity = this.createCard.value.quantity;
         if (!quantity) {
-          this.toastServ.openToast('quantity-data', 'danger', 'No se especificó la cantidad de elemntos a comprar para este evento.')
-          this.loadingServ.loadingOff();
+          this.toastServ.openToast('quantity-data', 'danger', 'No se especificó la cantidad de elementos a comprar para este evento.')
+          this.loadingServ.off();
       } else {
-          // const orderEvent: CreateOrderInterface = { totalItems: quantity, eventId: this.infoEventAward.id, nameEvent: this.infoEventAward.name, unitAmount: this.infoEventAward.price};
-          // this.orderServ.createOrder(orderEvent).subscribe({
-          //   next: (data) => {
-          //     if (!data.url) return;
-          //     window.location.href = data.url;
-          //   },
-          //   error: (error) => {
-          //     this.toastServ.openToast('res-error', 'danger', error.message)
-          //     this.loadingServ.loadingOff();
-          //   },
-          //   complete: () => {
-          //     this.loadingServ.loadingOff();
-          //   }
-          // })
+          const orderEvent: ICreateOrder = { quantity, eventId: this.infoEventAward.id };
+          this.orderServ.createOrder(orderEvent).subscribe({
+            next: (data) => {
+              if (!data.url) return;
+              window.location.href = data.url;
+            },
+            error: (error) => {
+              console.error(error);
+              this.toastServ.openToast('res-error', 'danger', "Error crear la orden de pago");
+              this.loadingServ.off()
+            },
+            complete: () => this.loadingServ.off(),
+          })
         }
       }      
     }
-  }
-
-  getCountCards(eventId: string) {
-    this.cardsServ.getCardCountForUserAndEvent(eventId).subscribe({
-      next: (value) => {
-        this.cantCard = value;
-      },
-      error: (error) => {
-        this.toastServ.openToast('get-count-cards', 'danger', 'Error al obtener la cantidad de cards compradas');
-      }
-    })
   }
 }
