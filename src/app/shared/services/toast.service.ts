@@ -34,7 +34,7 @@ export class ToastService {
 
     setTimeout(() => {
       this.removeToast(id);
-    }, 5000);
+    }, 3000);
 
   }
 
@@ -72,9 +72,7 @@ export class ToastService {
     const toastOpened = document.getElementById(id);
     if ( !toastOpened ) return;
     toastOpened.classList.add('opacity-0');
-    setTimeout(() => {
-      toastOpened.remove();
-    }, 300);
+    toastOpened.remove();
   }
   
 }

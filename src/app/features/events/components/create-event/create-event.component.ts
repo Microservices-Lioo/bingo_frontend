@@ -186,14 +186,16 @@ export class CreateEventComponent implements OnInit {
     const eventAwards = { event, awards };
 
     this.eventServ.createEventAwards(eventAwards).subscribe({
-      next: (_) => {
+      next: (data) => {
+        this.toastServ.openToast('msg-room', 'success', data.room);
+        this.toastServ.openToast('msg-member', 'success', data.member);
         this.router.navigate(["..", { relativeTo: this.route }]);
         this.loadingConfirmation = false;
         this.toastServ.openToast('creating-event', 'success', "Evento creado!");
       },
       error: (error) => {
         this.loadingConfirmation = false;
-        this.toastServ.openToast('creating-event', 'danger', error.message);
+        this.toastServ.openToast('error-creating-event', 'danger', error.message);
       }
     });
   }
