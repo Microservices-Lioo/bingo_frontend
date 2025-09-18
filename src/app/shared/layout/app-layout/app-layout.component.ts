@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { IPagination } from '../../../core/interfaces';
 import { StatusEvent } from '../../enums';
@@ -13,10 +13,10 @@ import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-layout',
   imports: [
-    CommonModule, 
-    RouterOutlet, 
-    SidebarComponent, 
-    HeaderComponent, 
+    CommonModule,
+    RouterOutlet,
+    SidebarComponent,
+    HeaderComponent,
   ],
   templateUrl: './app-layout.component.html',
   styles: ``
@@ -25,26 +25,38 @@ export class AppLayoutComponent implements OnInit {
   sections: ISectionSidebar[] = [];
   isCollapsed = true;
 
-  constructor( 
+  constructor(
     private eventServ: EventServiceShared,
     private sidebarServ: SidebarService
-  ) {}
+  ) {
+    effect(() => {
+      const data = this.sidebarServ.sections().get(1);
+      if (data) {
+        this.sections = data;
+      }
+    })
+  }
 
   async ngOnInit() {
-    const data =  await this.getEvents();
-    this.sections = [
+    const data = await this.getEvents();
+    const sectionsData = [
       {
-        name:  "En directo",
-        items: data.data.map( data => (
-          { 
-            title: data.name, 
-            description: data.description, 
+        id: 1,
+        name: "En directo",
+        items: data.data.map((data, index) => (
+          {
+            id: (index + 1),
+            title: data.name,
+            description: data.description,
             url: 'event-detail',
             params: { id: data.id },
+            actived: index === 0 ? true : false
           }
         ))
       }
     ];
+
+    this.sidebarServ.setSections(1, sectionsData);
 
     this.sidebarServ.isExpanded$.subscribe(value => {
       this.isCollapsed = value;

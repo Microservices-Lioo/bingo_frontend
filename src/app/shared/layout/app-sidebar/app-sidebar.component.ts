@@ -4,28 +4,24 @@ import { initFlowbite } from 'flowbite';
 import { IItemSection, ISectionSidebar } from '../../interfaces';
 import { HrComponent } from '../../components/hr/hr.component';
 import { SidebarService } from '../../services/sidebar.service';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [HrComponent],
-  templateUrl: './app-sidebar.component.html',
-  styles: `
-    .bg-sidebar {
-      background: var(--bg-primary-color);
-    }    
-  `
+  imports: [HrComponent, NgClass],
+  templateUrl: './app-sidebar.component.html'
 })
 export class SidebarComponent implements OnInit {
   @Input() sections: ISectionSidebar[] = [];
-
-  isCollapsed= true;
+  @Input() id: number = 0;
+  isCollapsed = true;
 
   constructor(
     protected route: ActivatedRoute,
     protected router: Router,
     private sidebarServ: SidebarService
-  ) {}
+  ) { }
 
   ngOnInit() {
     initFlowbite();
@@ -44,22 +40,29 @@ export class SidebarComponent implements OnInit {
     // });
   }
 
-  navigationTo(item: IItemSection) {
+  navigationTo(idSection: number, item: IItemSection) {
     let route = item.url;
     if (item.params) {
-      this.router.navigate([item.url], { 
+      this.activeSection(idSection, item.id);
+      this.router.navigate([item.url], {
         queryParams: item.params,
         relativeTo: this.route,
       });
     } else {
-      console.log('sin param')
+      this.activeSection(idSection, item.id);
       this.router.navigate([route], { relativeTo: this.route })
     }
   }
+
+  activeSection(idSection: number, idItem: number) {
+    if (this.id === 0) return;
+    this.sidebarServ.setActivedItem(this.id, idSection, idItem);
+  }
+
   // showMore() {
   //   if (!this.eventListActive) return;
   //   if (this.eventListActive && this.eventListActive.meta.page === this.eventListActive.meta.lastPage) return;
-    
+
   //   const page = this.eventListActive.meta.page + 1;
   //   const pagination = { limit: this.limit, page: page };
   //   if (!this.isSession) {
