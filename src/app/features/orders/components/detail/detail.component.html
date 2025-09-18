@@ -1,0 +1,119 @@
+@if (loadingServ.isLoadingG) {
+<app-loading-indicator />
+} @else {
+    <div class="w-full h-full p-2">
+        <h1 class="mb-4 text-xl text-center tracking-tight leading-none text-black">Detalles de la Orden</h1>
+        <div class="mb-4">
+            <h1 class="mb-4 text-base tracking-tight leading-none text-black">Orden principal</h1>
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Items
+                        </th>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Cantida de pago
+                        </th>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Estado
+                        </th>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Pagado
+                        </th>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Fecha de pago
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!order) {
+                    <tr
+                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            No existen ordenes
+                        </th>
+                    </tr>
+                    } @else {
+                        <tr
+                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <td class="px-2 py-1 text-center">
+                                {{ order.totalItems }}
+                            </td>
+                            <th scope="row" class="px-6 py-4 text-center text-gray-900 whitespace-nowrap dark:text-white">
+                                {{ order.totalAmount }}
+                            </th>
+                            <td class="px-2 py-1 text-center">
+                                @if ( order.status == 'PAID') {
+                                <span
+                                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-green-400 border border-green-400"
+                                    >Pagado</span>
+                                } @else if ( order.status == 'PENDING') {
+                                <span
+                                    class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-yellow-300 border border-yellow-300"
+                                    >Pendiente</span>
+                                } @else if ( order.status == 'DELIVERED') {
+                                <span
+                                    class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-yellow-300 border border-yellow-300"
+                                    >Enviado</span>
+                                } @else {
+                                <span
+                                    class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-red-400 border border-red-400"
+                                    >Cancelado</span>
+                                }
+                            </td>
+                            <td class="px-2 py-1 text-center">
+                                {{ order.paid ? 'Sí' : 'No' }}
+                            </td>
+                            <td class="px-2 py-1 text-center">
+                                {{ order.paidAt | date:'short' }}
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h1 class="mb-4 text-base tracking-tight leading-none text-black">Orden Items</h1>
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Card Id
+                        </th>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Precio unitario
+                        </th>
+                        <th scope="col" class="px-4 py-3 text-center">
+                            Cantidad
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!order) {
+                    <tr
+                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            No existen ordenes items
+                        </th>
+                    </tr>
+                    } @else {
+                        @for (item of order.orderItems; track $index) {
+                            <tr
+                                class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <td class="px-2 py-1 text-center">
+                                    {{ item.cardId }}
+                                </td>
+                                <th scope="row" class="px-6 py-4 text-center text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ item.priceUnit }}
+                                </th>
+                                <td class="px-2 py-1 text-center">
+                                    {{ item.quantity }}
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -80,7 +80,7 @@
                             {{ order.paidAt | date:'short' }}
                         </td>
                         <td class="px-2 py-1 text-center">
-                            <button title="Ver toda la orden" class="font-normal text-sm text-blue-600 m-1"><app-icon name="view" [width]="16" [height]="16"  /></button>
+                            <button [routerLink]="order.id" title="Ver toda la orden" class="font-normal text-sm text-blue-600 m-1"><app-icon name="view" [width]="16" [height]="16"  /></button>
                         </td>
                     </tr>
                     }

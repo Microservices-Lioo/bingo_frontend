@@ -5,10 +5,11 @@ import { IOrderPagination } from '../../interfaces';
 import { OrderService } from '../../services/order.service';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from "../../../../shared/components/icon/icon.component";
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-principal',
-  imports: [LoadingIndicatorComponent, CommonModule, IconComponent],
+  imports: [LoadingIndicatorComponent, CommonModule, IconComponent, RouterLink],
   templateUrl: './principal.component.html',
   styles: ``
 })
@@ -22,7 +23,7 @@ export class PrincipalComponent implements OnInit {
   constructor(
     protected loadingServ: LoadingService,
     private orderServ: OrderService,
-    private toastServ: ToastService
+    private toastServ: ToastService,
   ) {}
 
   ngOnInit() {

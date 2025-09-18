@@ -5,12 +5,17 @@ import { SuccessComponent } from './components/success/success.component';
 import { CancelComponent } from './components/cancel/cancel.component';
 import { NotFoundComponent } from '../other-page/not-found/not-found.component';
 import { PrincipalComponent } from './components/principal/principal.component';
+import { DetailComponent } from './components/detail/detail.component';
 
 export const orderRoutesAdmin: Routes = [
     { 
         path: '', 
         component: PrincipalComponent,
         pathMatch: 'full'
+    },
+    {
+        path: ':id',
+        component: DetailComponent,
     },
     { path: '**', component: NotFoundComponent }
 ]

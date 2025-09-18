@@ -3,7 +3,7 @@ import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import { handleError } from '../../../core/errors';
-import { ICreateOrder, IOrderPagination } from '../interfaces';
+import { ICreateOrder, IOrderPagination, IOrderWItems } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +22,12 @@ export class OrderService {
   //* Obtener las ordenes
   getOrders(pagination: {page?: number, limit?: number}): Observable<IOrderPagination> {
     return this.http.get<IOrderPagination>(this.url, { params: pagination })
+      .pipe(catchError(handleError));
+  }
+
+  //* Obtener una orden por ID
+  getOrderById(id: string): Observable<IOrderWItems> {
+    return this.http.get<IOrderWItems>(`${this.url}/id/${id}`)
       .pipe(catchError(handleError));
   }
 }
