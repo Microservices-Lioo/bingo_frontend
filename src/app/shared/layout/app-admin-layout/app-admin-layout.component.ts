@@ -3,7 +3,7 @@ import { ISectionSidebar } from '../../interfaces';
 import { SidebarComponent } from '../app-sidebar/app-sidebar.component';
 import { HeaderComponent } from '../app-header/app-header.component';
 import { SidebarService } from '../../services/sidebar.service';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -22,7 +22,8 @@ export class AppAdminLayoutComponent implements OnInit {
   sections!: ISectionSidebar[];
 
   constructor(
-    private sidebarServ: SidebarService
+    private sidebarServ: SidebarService,
+    private router: Router
   ) {
     effect(() => {
       const data = this.sidebarServ.sections().get(2);
@@ -40,7 +41,8 @@ export class AppAdminLayoutComponent implements OnInit {
   }
 
   get sectionsData(): ISectionSidebar[] {
-    return [
+    const route = this.router.url;
+    const sections = [
       {
         id: 1,
         name: "Modulos",
@@ -48,18 +50,29 @@ export class AppAdminLayoutComponent implements OnInit {
           {
             id: 1,
             title: "Eventos",
-            url: "/admin/events/",
+            url: "/admin/events",
             actived: true
           },
           {
             id: 2,
             title: "Ordenes",
-            url: "/admin/orders/",
+            url: "/admin/orders",
             actived: false
           }
         ]
       }
-    ]
+    ];
+    
+    return sections.map(section => ({
+        ...section,
+        items: section.items.map(
+          item => ({
+            ...item,
+            actived: item.url === route
+          })
+        )
+      })
+    )
   }
 
 }

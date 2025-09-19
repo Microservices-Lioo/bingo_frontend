@@ -51,23 +51,7 @@ export class OrderFormComponent {
     private orderServ: OrderService,
     private cardsServ: CardsServiceShared,
     protected authServ: AuthService
-  ) {
-    effect(() => {
-      const query = new URLSearchParams(window.location.search);
-      if (query.get("success")) {
-        this.toastServ.openToast('order-success', 'success', "Pedido realizado - Recibirá una confirmación por correo electrónico.");
-        this.loadingServ.loadingOff();
-      }
-  
-      if (query.get("canceled")) {
-        this.toastServ.openToast(
-          'order-danger', 'danger', 
-          "Petido cancelado"
-        );
-        this.loadingServ.loadingOff();
-      }
-    })
-  }
+  ) {}
 
   createCard: FormGroup<ItemForm> = this.fb.group<ItemForm>({
     quantity: this.fb.control(1, { validators: [Validators.required, Validators.min(1)]})
@@ -140,16 +124,6 @@ export class OrderFormComponent {
     }
   }
 
-  more() {
-    const quanlity = this.createCard.controls.quantity.value;
-    this.createCard.controls.quantity.setValue(quanlity - 1);
-  }
-
-  less() {
-    const quanlity = this.createCard.controls.quantity.value;
-    this.createCard.controls.quantity.setValue(quanlity + 1);
-  }
-
   buy() {
     this.loadingServ.on();
 
@@ -166,7 +140,7 @@ export class OrderFormComponent {
           this.toastServ.openToast('quantity-data', 'danger', 'No se especificó la cantidad de elementos a comprar para este evento.')
           this.loadingServ.off();
       } else {
-          const orderEvent: ICreateOrder = { quantity, eventId: this.infoEventAward.id };
+        const orderEvent: ICreateOrder = { quantity: typeof quantity == 'string' ? parseInt(quantity) : quantity, eventId: this.infoEventAward.id };
           this.orderServ.createOrder(orderEvent).subscribe({
             next: (data) => {
               if (!data.url) return;

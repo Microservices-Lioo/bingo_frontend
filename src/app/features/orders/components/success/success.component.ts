@@ -12,7 +12,7 @@ import { CustomButtonComponent } from "../../../../shared/components/ui/button/c
           <p class="text-base mt-4 text-gray-500">Ahora puedes participar en el evento. Tu compra se realizó con éxito, puedes
               revisar la orden de compra o regresar al inicio.</p>
           <div class="flex items-center gap-4 mt-6">
-              <app-custom-button [url]="'admin/orders'" [type]="'button'" [label]="'Revisar ordenes'" />
+              <app-custom-button [url]="'/admin/orders'" [type]="'button'" [label]="'Revisar ordenes'" />
               <app-custom-button [url]="'/'" [type]="'button'" [label]="'Regresar al inicio'" />
           </div>
       </div>

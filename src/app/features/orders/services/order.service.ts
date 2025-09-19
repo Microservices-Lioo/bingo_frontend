@@ -21,7 +21,7 @@ export class OrderService {
 
   //* Obtener las ordenes
   getOrders(pagination: {page?: number, limit?: number}): Observable<IOrderPagination> {
-    return this.http.get<IOrderPagination>(this.url, { params: pagination })
+    return this.http.get<IOrderPagination>(`${this.url}/user`, { params: pagination })
       .pipe(catchError(handleError));
   }
 

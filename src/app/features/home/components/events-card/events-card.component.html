@@ -46,7 +46,7 @@
             </div>
             <div class="mt-2">
                 @if ( !isSession ) {
-                    <app-custom-button label="Comprar Cartón" [url]="['/order', { id: event().id }]"  class="mp-3" />
+                    <app-custom-button label="Comprar Cartón" [url]="'/order/'+event().id"  class="mp-3" />
                 } @if(currentUser) { 
                     @if ( currentUser.id === event().userId ) {
                         <app-custom-button label="Administrar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" /> 

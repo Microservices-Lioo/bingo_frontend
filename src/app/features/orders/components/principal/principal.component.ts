@@ -41,6 +41,7 @@ export class PrincipalComponent implements OnInit {
       error: (error) => {
         console.error(error);
         this.toastServ.openToast('get-orders', 'danger', error.message);
+        this.loadingServ.off();
       },
       complete: () => this.loadingServ.off(),
     })
