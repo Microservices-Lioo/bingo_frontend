@@ -1,7 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { BehaviorSubject, Subject, take, takeUntil } from 'rxjs';
-import { AsyncPipe } from '@angular/common';
-import { GamesService } from '../../services/games.service';
+import { Component, effect, OnInit } from '@angular/core';
+import { CalledBallsService } from '../../services/called-balls.service';
 
 export interface Item {
   value: number;
@@ -31,66 +29,53 @@ export interface Item {
   `
 })
 export class BallStatusComponent {
-  items: { value: number; state: boolean; }[];
-  num_cantado: number = 0;
-  colName: string = '';
+  items: Item[];
+  lastNumberSung: string = '';
   
-  private destroyCalledBall$ = new Subject<void>();
-  private destroyLastCalledBall$ = new Subject<void>();
-  private destroyCleanBall$ = new Subject<void>();
 
   constructor(
-    private readonly gamesServ: GamesService
+    private readonly calledBallsServ: CalledBallsService
   ) {
-    this.items = Array.from({ length: 75 }, (_, i) => ({
-      value: i + 1,
-      state: false
-    }));
+    this.items = this.generateNumbers;
 
-    this.gamesServ.calledball$
-    .pipe(takeUntil(this.destroyCalledBall$))
-    .subscribe(num => {
-      if (num == 0 ) return;
-      this.selectedBall(num)
-    });
+    effect(() => {
+      const items = this.calledBallsServ.items();
+      this.setItems(items);
 
-    this.gamesServ.cleanBoardBalls$
-    .pipe(takeUntil(this.destroyCleanBall$))
-    .subscribe(val => {
-      this.cleanBalls(val)
-    });
-
-    this.gamesServ.lastCalledBall$
-    .pipe(takeUntil(this.destroyLastCalledBall$))
-    .subscribe(({num, col}) => {
-      this.num_cantado = num;
-      this.colName = col;
-    });
+      const item = this.calledBallsServ.lastItem();
+      this.setLastItem(item);
+    })
   }
 
-  selectedBall(num: number) {
-    if (num == 0 ) return;
-    const index = num - 1;
+  // marcar los numeros obtenidos
+  setItems(item: number[]) {
+    if (item.length === 0) {
+      this.items = this.generateNumbers;
+      this.lastNumberSung = '';
+      return;
+    }
+
+    const newItems = this.items.map( val => item.includes(val.value) ? { ...val, state: true} : val );
+    this.items = [...newItems];
+  }
+
+  // Ultimo número cantado
+  setLastItem(num: number) {
+    const INTERVAL = 15;
+    const COL_NAMES = ['B', 'I', 'N', 'G', 'O']
     
-    if (this.items[index].value != num) return;
-    if (!this.items[index].state) {
-      this.items[index].state = true;
-    };
+    if (num === 0 || num === undefined) return;
+    const index = Math.ceil(num / INTERVAL) - 1;
+    this.lastNumberSung = `${COL_NAMES[index]} - ${num}`;
+
+    const newItem = this.items.map(val => val.value === num ? { ...val, state: true } : val );
+    this.items = [...newItem];
   }
 
-  cleanBalls(val: boolean) {
-    if (!val) return;
-    this.items = [];
-    this.items = Array.from({ length: 75 }, (_, i) => ({
+  get generateNumbers() {
+    return  Array.from({ length: 75 }, (_, i) => ({
       value: i + 1,
       state: false
     }));
-  }
-
-  ngOnDestroy() {
-    this.destroyCalledBall$.next();
-    this.destroyCalledBall$.complete();
-    this.destroyCleanBall$.next();
-    this.destroyCleanBall$.complete();
   }
 }

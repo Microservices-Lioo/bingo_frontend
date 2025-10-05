@@ -3,9 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import { handleError } from '../../../core/errors';
 import { UpdateIUser } from '../interfaces';
-import { IUser } from '../../../core/interfaces';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../auth/services';
+import { IUserShared } from '../../../shared/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -20,15 +20,16 @@ export class UserService {
   }
 
   //* Obtener un usuario
-  getUser(id: string): Observable<IUser> {
-    return this.http.get<IUser>(this.url+'/id/'+id )
+  getUser(id: string): Observable<IUserShared> {
+    return this.http.get<IUserShared>(this.url+'/id/'+id )
       .pipe(catchError(handleError));
   }
 
-  updateUser(user: UpdateIUser): Observable<IUser> {
+  //* Actualizar un usuario
+  updateUser(user: UpdateIUser): Observable<IUserShared> {
     const currentUser = this.authServ.currentUser;
 
-    return this.http.put<IUser>(`${this.url}/${currentUser.id}`, user)
+    return this.http.put<IUserShared>(`${this.url}/${currentUser.id}`, user)
     .pipe(catchError(handleError));
   }
 

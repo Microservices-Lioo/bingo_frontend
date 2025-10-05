@@ -1,7 +1,6 @@
 export * from './award.service';
 export * from './cards.service';
 export * from './event.service';
-export * from './games-shared.service';
 export * from './loading.service';
 export * from './modal.service';
 export * from './toast.service';

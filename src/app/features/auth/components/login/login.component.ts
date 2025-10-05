@@ -3,9 +3,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { IUser } from '../../../../core/interfaces';
 import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
 import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
+import { IUserShared } from '../../../../shared/interfaces';
 
 export interface ItemForm {
   email: FormControl<string>,
@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
     this.authServ.login(loginData).subscribe({
       next: (values) => {
         if (values && values.user && values.access_token && values.refresh_token) {
-          const user: IUser = values.user;
+          const user: IUserShared = values.user;
           localStorage.setItem('access_token', values.access_token);
           localStorage.setItem('refresh_token', values.refresh_token);
           localStorage.setItem('user', JSON.stringify(user));

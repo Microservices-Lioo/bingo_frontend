@@ -1,4 +1,4 @@
-export interface GameSharedInterface {
+export interface IGameShared {
     id: string;
     eventId: string;
     start_time: Date;

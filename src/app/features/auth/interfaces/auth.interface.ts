@@ -1,7 +1,7 @@
-import { IUser } from "../../../core/interfaces";
+import { IUserShared } from "../../../shared/interfaces";
 
 export interface AuthInterface {
-    user: IUser;
+    user: IUserShared;
     access_token: string;
     refresh_token: string;
 }

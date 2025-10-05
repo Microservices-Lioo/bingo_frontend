@@ -3,9 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
-import { IUser } from '../../../core/interfaces';
 import { AuthInterface, LoginInterface, RegisterInterface } from '../interfaces';
 import { handleError } from '../../../core/errors';
+import { IUserShared } from '../../../shared/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -13,10 +13,10 @@ import { handleError } from '../../../core/errors';
 export class AuthService {
   url: string = environment.apiUrl + environment.apiMSAuthUrl;
   private loggedIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  private currentUserSubject: BehaviorSubject<IUser> = new BehaviorSubject({} as IUser);
+  private currentUserSubject: BehaviorSubject<IUserShared> = new BehaviorSubject({} as IUserShared);
   
   isLoggedIn$: Observable<boolean> = this.loggedIn.asObservable();
-  currentUser$: Observable<IUser> = this.currentUserSubject.asObservable();
+  currentUser$: Observable<IUserShared> = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -32,7 +32,7 @@ export class AuthService {
     }
   }
 
-  setCurrentUser(user: IUser) {
+  setCurrentUser(user: IUserShared) {
     this.currentUserSubject.next(user);
   }
 
@@ -40,7 +40,7 @@ export class AuthService {
     this.loggedIn.next(value);
   }
 
-  get currentUser(): IUser {
+  get currentUser(): IUserShared {
     return this.currentUserSubject.value;
   }
 

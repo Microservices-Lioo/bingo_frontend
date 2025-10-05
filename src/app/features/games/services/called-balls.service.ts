@@ -1,27 +1,39 @@
-import { Injectable } from '@angular/core';
-import { environment } from '../../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
-import { handleError } from '../../../core/errors';
-import { catchError, Observable } from 'rxjs';
-import { CalledBallI } from '../interfaces';
+import { Injectable, signal } from '@angular/core';
+
+export interface Item {
+  value: number;
+  state: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class CalledBallsService {
-  private urlCalledBall = environment.apiUrl + environment.apiMSCalledBallUrl;
-  
+  private itemsSignal = signal<number[]>([]); 
+  private lastItemSignal = signal(0);
+
+  items = this.itemsSignal.asReadonly();
+  lastItem = this.lastItemSignal.asReadonly();
+
   constructor(
-    private http: HttpClient
   ) { }
 
-  unrepeatableTableNumberRaffle(gameId: string, eventId: string): Observable<CalledBallI | null> {
-    return this.http.post<CalledBallI | null>(this.urlCalledBall, {gameId, eventId})
-        .pipe(catchError(handleError));
+  //* Nuevo número llamado
+  setLastItem(num: number) {
+    this.lastItemSignal.set(num);
   }
 
-  findByGameId(gameId: string): Observable<{ num: number}[]> {
-    return this.http.get<{ num: number}[]>(`${this.urlCalledBall}/game/${gameId}`,)
-        .pipe(catchError(handleError));
+  //* Array de los números llamados
+  setItems(items: number[]) {
+    this.itemsSignal.set([...items]);
   }
+
+  clearItems() {
+    this.itemsSignal.set([]);
+  }
+
+  clearLastItem() {
+    this.lastItemSignal.set(0);
+  }
+
 }

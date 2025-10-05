@@ -1,8 +1,7 @@
 import { Component, effect, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { IPagination } from '../../../core/interfaces';
-import { StatusEvent } from '../../enums';
-import { ISectionSidebar, IEventWithBuyer } from '../../interfaces';
+import { EStatusEventShared } from '../../enums';
+import { ISectionSidebar, IEventWithBuyer, IPagination } from '../../interfaces';
 import { EventServiceShared } from '../../services';
 import { SidebarComponent } from '../app-sidebar/app-sidebar.component';
 import { HeaderComponent } from '../app-header/app-header.component';
@@ -66,7 +65,7 @@ export class AppLayoutComponent implements OnInit {
   // Obtener los eventos de activos
   async getEvents(): Promise<IPagination<IEventWithBuyer>> {
     const events = await firstValueFrom(
-      this.eventServ.eventListStatus(StatusEvent.ACTIVE, {})
+      this.eventServ.eventListStatus(EStatusEventShared.ACTIVE, {})
     );
     return events;
   }

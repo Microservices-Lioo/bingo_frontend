@@ -1,6 +1,8 @@
-export interface GameI {
+export interface IGame {
     id: string;
-    eventId: string;
-    start_time: Date;
+    roomId: string;
+    modeId: string;
+    numberHistoryId: string;
+    start_tim: Date;
     end_time?: Date | null;
 }

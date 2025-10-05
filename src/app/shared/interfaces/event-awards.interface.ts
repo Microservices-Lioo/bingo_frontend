@@ -1,6 +1,6 @@
-import { IAward } from "./award.interface";
+import { IAwardShared } from "./award.interface";
 
-export interface IEventAwards {
+export interface IEventAwardsShared {
     id: string;
     name: string;
     description: string;
@@ -10,5 +10,5 @@ export interface IEventAwards {
     start_time: Date;
     end_time: Date;
     price: number;
-    award: IAward[]
+    award: IAwardShared[]
 }

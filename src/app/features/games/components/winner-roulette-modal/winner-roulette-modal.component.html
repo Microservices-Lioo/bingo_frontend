@@ -1,0 +1,132 @@
+@if (isOpen()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+     (click)="closeModal()">
+
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden animate-fadeIn"
+       (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="bg-sky-950 text-white px-6 py-4 flex justify-between items-center">
+      <h2 class="font-bold text-lg">🎡 Sorteo Final</h2>
+      <button (click)="closeModal()" class="hover:bg-white/10 rounded-full p-2">
+        ✕
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-6 flex flex-col items-center gap-6">
+      @if (isLoading()) {
+        <app-loading textMsg="Culminando juego para todos los jugadores..." textLoading="Juego terminado" />
+      } @else {
+        @if (approved().length === 0) {
+          <p class="text-gray-600">No hay jugadores aprobados para el sorteo.</p>
+        }
+
+        @if (approved().length === 1) {
+          @for (winner of approved(); track winner.userId; let i = $index) {
+            <div
+                class="w-full h-auto border border-opacity-40 border-sky-700 justify-center items-center rounded-lg p-3 flex flex-col gap-2">
+                <h5 class="text-start">Felicidades al ganador</h5>
+                <div class="w-full flex flex-col justify-center items-center gap-2 px-5">
+                    <span class="text-xs font-bold text-black">Premio</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+                        <g fill="none">
+                            <path fill="#ffef5e" d="M12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74" />
+                            <path fill="#fff9bf"
+                                d="M9.13 3.87c.001.27.04.54.116.8A2.87 2.87 0 0 0 13.8 1.634A2.87 2.87 0 0 0 9.13 3.87" />
+                            <path fill="#ffbc44"
+                                d="m9.02 11.285l-2.431 1.14a1.598 1.598 0 0 0-.67 2.402l4.169 6.24h3.826l4.168-6.24a1.6 1.6 0 0 0-.67-2.402l-2.614-1.227z" />
+                            <path fill="#ffef5e"
+                                d="M15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913z" />
+                            <path fill="#fff9bf"
+                                d="M12 9.588a8.3 8.3 0 0 1-2.973-.581a.478.478 0 0 0-.638.554l2.655 11.505H12z" />
+                            <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
+                                d="M17.467 22.629a4.26 4.26 0 0 0-3.045-1.542H9.639a4.4 4.4 0 0 0-3.076 1.519L6.262 23H17.74zM15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913zM12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74m4.528 5.27l.884.415a1.598 1.598 0 0 1 .67 2.403l-4.169 6.24m-6.44-9.058l-.884.415a1.598 1.598 0 0 0-.67 2.403l4.169 6.24"
+                                stroke-width="1" />
+                        </g>
+                    </svg>
+                    <p class="text-black text-sm font-bold">
+                        {{ award().name }}</p>
+                    <div class="w-1/2 flex justify-start gap-1">
+                        <p class="text-black text-sm font-bold">Para: </p>
+                        <span class="text-sm text-gray-700">{{ winner.fullnames }}</span>
+                    </div>
+                    <div class="w-1/2 flex justify-start gap-1">
+                        <p class="text-black text-sm font-bold">Tabla: </p>
+                        <span class="text-sm text-gray-700">#{{ winner.cardId }}</span>
+                    </div>
+                </div>
+                <!-- <button (click)="endGameAndNewGame()" type="button"
+                    class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                    Terminar juego y continuar
+                </button> -->
+            </div>
+          }
+        }
+
+        @if (approved().length > 1) {
+          <div class="relative w-64 h-64">
+            <!-- Ruleta -->
+            <div class="roulette w-full h-full rounded-full border-4 border-gray-300 flex items-center justify-center"
+                [style.transform]="'rotate(' + rotation() + 'deg)'">
+              <div class="absolute inset-0 flex items-center justify-center">
+                @for (winner of approved(); track winner.userId; let i = $index) {
+                  <div class="absolute w-1/2 h-1/2 origin-bottom-left rotate-[calc(360deg/{{approved().length}}*{{i}})]"
+                      [style.transform]="'rotate(' + (i * (360/approved().length)) + 'deg)'">
+                    <div class="bg-sky-500/70 text-white text-xs font-bold flex items-center justify-center
+                                w-full h-full rounded-tr-full">
+                      {{ winner.fullnames }}
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Flecha -->
+            <div class="absolute -top-6 left-1/2 -translate-x-1/2">
+              <div class="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-600"></div>
+            </div>
+          </div>
+
+          <!-- Ganador -->
+          @if (selectedWinner()) {
+            <p class="mt-4 text-lg font-bold text-emerald-600">
+              🎉 Ganador: {{ selectedWinner()!.fullnames }}
+            </p>
+          }
+        }
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
+      <button (click)="closeModal()"
+              class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+        Cancelar
+      </button>
+      @if (isAdmin()) {
+        @if (approved().length > 1) {
+          <button (click)="startSpin()"
+                  [disabled]="spinning() || selectedWinner()"
+                  class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 disabled:bg-gray-300">
+            Iniciar Sorteo
+          </button>
+
+        } @else {
+          <!-- <button (click)="concludeGame()"
+                  class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:bg-gray-300">
+            Concluir Juego
+          </button> -->
+          <app-custom-button
+            bg="!bg-emerald-500"
+            label="Concluir Juego"
+            (btnCliked)="concludeGame()" 
+          />
+        }
+  
+      }
+    </div>
+
+  </div>
+</div>
+}

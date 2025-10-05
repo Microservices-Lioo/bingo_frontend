@@ -9,7 +9,8 @@ import { Component, Input } from '@angular/core';
 export class StatusConnectionComponent {
   @Input() title!: string;
   @Input() message!: string;
-  @Input() type!: 'connected' | 'disconnected' | 'reconnecting' | 'failed' | 'on-standby';
+  @Input() type!: 'connected' | 'disconnected' | 'reconnecting' | 'failed' 
+  | 'NOT_STARTED' | 'STARTED' | 'CANCELED' | 'FINISHED' | 'ONLINE' | 'OFFLINE';
 
   reloadPage() {
     window.location.reload();

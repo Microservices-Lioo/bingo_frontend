@@ -1,14 +1,14 @@
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, switchMap } from 'rxjs';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IUser } from '../../../../core/interfaces';
 import { AuthService } from '../../../auth/services';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { UserService } from '../../services';
 import { UpdateIUser } from '../../interfaces';
 import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
 import { CustomInputComponent } from '../../../../shared/components/ui/input/custom-input.component';
+import { IUserShared } from '../../../../shared/interfaces';
 
 export interface ItemForm {
   name: FormControl<string>,
@@ -35,7 +35,7 @@ export interface ItemForm {
     } `
 })
 export class EditProfileComponent implements OnInit {
-  user: IUser | any = null;
+  user: IUserShared | any = null;
   loading: boolean = false;
 
   fb = inject(NonNullableFormBuilder);

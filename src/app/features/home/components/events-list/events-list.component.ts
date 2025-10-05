@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IPagination, PaginationQueryInterface } from '../../../../core/interfaces';
-import { StatusEvent } from '../../../../shared/enums';
+import { EStatusEventShared } from '../../../../shared/enums';
 import { EventsCardComponent } from '../events-card/events-card.component';
 import { HrComponent } from '../../../../shared/components/hr/hr.component';
 import { EventServiceShared } from '../../../../shared/services/event.service';
 import { AuthService } from '../../../auth/services';
-import { IEventWithBuyer } from '../../../../shared/interfaces';
+import { IEventWithBuyer, IPagination, IPaginationQuery } from '../../../../shared/interfaces';
 import { ISectionItem } from '../principal/home.component';
 import { LoadingComponent } from "../../../../shared/components/loading/loading.component";
 import { ToastService } from '../../../../shared/services';
@@ -31,7 +30,7 @@ export class EventsListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const status = this.route.snapshot.paramMap.get('status') as StatusEvent;
+    const status = this.route.snapshot.paramMap.get('status') as EStatusEventShared;
     if (status === null) {
       this.router.navigate(['..'], { relativeTo: this.route });
       return;
@@ -45,7 +44,7 @@ export class EventsListComponent implements OnInit {
   } 
 
   // Obtener los eventos por status
-  getEventsStatus(status: StatusEvent, pagination: PaginationQueryInterface) {
+  getEventsStatus(status: EStatusEventShared, pagination: IPaginationQuery) {
     this.eventServ.eventListStatus(status, pagination).subscribe({
       next: (eventList) => {
         if (eventList && eventList.data.length > 0) {
@@ -60,8 +59,8 @@ export class EventsListComponent implements OnInit {
   }
 
   // llenar las secciones
-  setEventList(status: StatusEvent, eventList: IPagination<IEventWithBuyer>) {
-    if (status === StatusEvent.ACTIVE) {
+  setEventList(status: EStatusEventShared, eventList: IPagination<IEventWithBuyer>) {
+    if (status === EStatusEventShared.ACTIVE) {
       if (this.section && this.section.events.data.length > 0) {
         this.section.events.data.push(...eventList.data);
         this.section.events.meta = eventList.meta;
@@ -87,14 +86,14 @@ export class EventsListComponent implements OnInit {
   }
 
   // Mostrar mas eventos
-  moreEventStatus(status: StatusEvent) {
-    const pagination = this.getPagination(status);
+  moreEventStatus(status: EStatusEventShared) {
+    const pagination = this.getPagination();
     if (!pagination) return;
     this.getEventsStatus(status, pagination);
   }
 
-    // Obtener las paginación
-  getPagination(status: StatusEvent): PaginationQueryInterface | null {
+  // Obtener las paginación
+  getPagination(): IPaginationQuery | null {
     let page = 1;
     page = this.section.events.meta.page + 1;
     return { limit:  this.limit, page: page };

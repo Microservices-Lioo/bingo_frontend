@@ -1,10 +1,10 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { IUser } from '../../../../core/interfaces';
 import { LoadingService, ToastService } from '../../../../shared/services';
 import { UserService } from '../../services';
 import { AuthService } from '../../../auth/services';
 import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
+import { IUserShared } from '../../../../shared/interfaces';
 
 @Component({
   selector: 'app-profile',
@@ -14,7 +14,7 @@ import { CustomButtonComponent } from "../../../../shared/components/ui/button/c
   styles: ``
 })
 export class ProfileComponent implements OnInit {
-  user: IUser | null = null;
+  user: IUserShared | null = null;
   isLogged: boolean = false;
 
   constructor(

@@ -1,6 +1,6 @@
 export interface ICardNumsShared {
     marked: boolean;
-    number: number;
+    num: number;
 }
 export interface ICardShared {
     id: string;

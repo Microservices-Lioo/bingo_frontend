@@ -1,9 +1,9 @@
-import { StatusEvent } from "../enums";
+import { EStatusEventShared } from "../enums";
 
-export interface EventUpdateSharedInterface {
+export interface IEventUpdateShared {
     name?: string;
     description?: string;
-    status?: StatusEvent;
+    status?: EStatusEventShared;
     time?: Date;
     start_time?: Date;
     end_time?: Date;

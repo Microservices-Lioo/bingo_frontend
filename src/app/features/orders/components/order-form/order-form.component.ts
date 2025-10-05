@@ -68,7 +68,7 @@ export class OrderFormComponent {
             .pipe(map(user => ({event, user})))
           ),
           switchMap(
-            ({event, user}) => this.cardsServ.getCardCountForUserAndEvent(event.id)
+            ({event, user}) => this.cardsServ.numberCardsToUserFromEvent(event.id)
             .pipe(map(cant => ({event, user, cant})))
           ),
           finalize(() => this.loadingServ.off())

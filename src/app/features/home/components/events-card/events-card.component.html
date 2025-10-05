@@ -46,27 +46,23 @@
             </div>
             <div class="mt-2">
                 @if ( !isSession ) {
-                    <app-custom-button label="Comprar Cartón" [url]="'/order/'+event().id"  class="mp-3" />
+                    <app-custom-button label="Comprar tabla" [url]="'/order/'+event().id"  class="mp-3" />
                 } @if(currentUser) { 
                     @if ( currentUser.id === event().userId ) {
-                        <app-custom-button label="Administrar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" /> 
+                        <app-custom-button label="Administrar" [url]="'/room/'+event().userId+'/'+event().id" class="pt-3" /> 
                     } @else {  
-                        @if ( event().status == 'ACTIVE' ) {
-                            @if (event().buyer) {
-                                <app-custom-button label="Jugar" [url]="'/home/game/'+event().userId+'/'+event().id" class="pt-3" />
+                        @if ( event().status === 'ACTIVE' ) {
+                            <app-custom-button label="Jugar" [url]="'/room/'+event().userId+'/'+event().id" class="pt-3" />
+                        } @else if ( event().status === 'PENDING' ) {
+                            @if (numberCards > 0) {
+                                <div class="w-full flex gap-2 py-1">
+                                    <app-custom-button icon="shopping-cart" [url]="'/order/'+event().id" class="w-auto flex-none" />
+                                    <app-custom-button label="Entrar" [url]="'/room/'+event().userId+'/'+event().id" class="w-full" />
+                                </div>
                             } @else {
-                                <app-custom-button label="No disponible" [disabled]="true" class="w-full pt-3" />
+                                <app-custom-button label="Comprar tabla" [url]="'/order/'+event().id"  class="mp-3" />
                             }
-                        } @else if ( event().status == 'PENDING' ) {
-                            <div class="w-full flex gap-2 py-1">
-                                @if(event().buyer) {
-                                <app-custom-button icon="shopping-cart" [url]="['/order', { id: event().id }]" class="w-auto flex-none" />
-                                <app-custom-button label="Próximamente" class="w-full" />
-                                } @else {
-                                    <app-custom-button label="Comprar Carttón" [url]="'order/' + event().id" class="w-full flex-none" />
-                                }
-                            </div>
-                        }  @else {
+                        } @else {
                             <app-custom-button label="No disponible" [disabled]="true" class="pt-3" />
                         } 
                     }

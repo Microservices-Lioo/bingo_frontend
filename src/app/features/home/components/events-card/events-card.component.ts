@@ -1,11 +1,11 @@
-import { Component, input } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IUser } from '../../../../core/interfaces';
 import { AuthService } from '../../../auth/services';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { IEventWithBuyer } from '../../../../shared/interfaces';
+import { IEventWithBuyer, IUserShared } from '../../../../shared/interfaces';
 import { CustomButtonComponent } from "../../../../shared/components/ui/button/custom-button.component";
+import { CardsServiceShared } from '../../../../shared/services';
 
 @Component({
   selector: 'app-events-card',
@@ -13,14 +13,16 @@ import { CustomButtonComponent } from "../../../../shared/components/ui/button/c
   imports: [CommonModule, IconComponent, RouterLink, CustomButtonComponent],
   templateUrl: './events-card.component.html'
 })
-export class EventsCardComponent {
+export class EventsCardComponent implements OnInit {
   isSession: boolean = false;
-  currentUser: IUser | undefined;
+  currentUser: IUserShared | undefined;
   event = input.required<IEventWithBuyer>();
+  numberCards = 0;
 
   constructor(
     private authServ: AuthService,
-    protected route: ActivatedRoute
+    protected route: ActivatedRoute,
+    private cardServ: CardsServiceShared
   ) {
     this.authServ.isLoggedIn$.subscribe( value => {
       this.isSession = value;
@@ -29,7 +31,16 @@ export class EventsCardComponent {
       } else {
         this.currentUser = undefined;
       }
-    });
+    });    
+  }
+
+  ngOnInit() {
+    this.cardServ.numberCardsToUserFromEvent(this.event().id).subscribe({
+      next: (cant) => this.numberCards = cant,
+      error: (error) => {
+        console.error(error);
+      }
+    })
   }
 
 }

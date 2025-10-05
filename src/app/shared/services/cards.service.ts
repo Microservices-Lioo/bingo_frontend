@@ -15,23 +15,33 @@ export class CardsServiceShared {
     private http: HttpClient
   ) { }
 
-  getCardCountForUserAndEvent(eventId: string): Observable<number> {
+  //* Obtener el numero de tablas de bingo compradas por un usuario
+  numberCardsToUserFromEvent(eventId: string): Observable<number> {
     return this.http.get<number>(`${this.url}/count/user/${eventId}`)
       .pipe(catchError(handleError));
   }
 
+  //* Buscar las tablas de bingo (cards) de un comprador
   findToEventByBuyer(eventId: string): Observable<ICardShared[]> {
     return this.http.get<ICardShared[]>(`${this.url}/buyer/event/${eventId}`)
       .pipe(catchError(handleError));
   }
 
-  checkOrUncheckBoxCard(cardId: string, markedNum: number, marked?: boolean): Observable<ICardNumsShared | null> {
-    return this.http.post<ICardNumsShared | null>(`${this.url}/check-or.uncheck/${cardId}`, { markedNum, marked })
+  //* Marcar o desmarcar una celda de una tabla de bingo
+  checkOrUncheckBoxCard(cardId: string, markedNum: number, marked: boolean): Observable<ICardShared | null> {
+    return this.http.post<ICardShared | null>(`${this.url}/check-or-uncheck/${cardId}`, { markedNum, marked })
       .pipe(catchError(handleError));
   }
 
-  getCardByIdBuyerEvent(eventId: string, cardId: string, buyer: string): Observable<ICardNumsShared[][]> {
-    return this.http.get<ICardNumsShared[][]>(`${this.url}/${cardId}/${buyer}/${eventId}`)
+  //* Obtener una card por el Id
+  getCardById(cardId: string): Observable<ICardShared> {
+    return this.http.get<ICardShared>(`${this.url}/${cardId}`)
+      .pipe(catchError(handleError));
+  }
+
+  //* Obtener una card por el Id
+  resetCards(eventId: string, ids: string[]): Observable<ICardShared[]> {
+    return this.http.patch<ICardShared[]>(`${this.url}/reset/event/${eventId}`, ids)
       .pipe(catchError(handleError));
   }
 }

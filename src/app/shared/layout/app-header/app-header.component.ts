@@ -1,9 +1,9 @@
 import { Component, effect, HostListener, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../features/auth/services';
-import { IUser } from '../../../core/interfaces';
 import { CustomButtonComponent } from "../../components/ui/button/custom-button.component";
 import { SidebarService } from '../../services/sidebar.service';
+import { IUserShared } from '../../interfaces';
 
 @Component({
   selector: 'app-header',
@@ -18,7 +18,7 @@ import { SidebarService } from '../../services/sidebar.service';
 })
 export class HeaderComponent implements OnInit {
   sesion = false;
-  user: IUser | null = null;
+  user: IUserShared | null = null;
   expanded = true;
   isMobile = signal(false);
 

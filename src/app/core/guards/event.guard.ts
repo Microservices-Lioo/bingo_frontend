@@ -14,7 +14,7 @@ export const eventGuard: CanActivateFn = (route, state) => {
       return router.navigateByUrl('/').then(() => false);
     }
 
-    eventSharedServ.getEventWithAwards(eventId, userId).subscribe({
+    eventSharedServ.getEventWithAwards(eventId).subscribe({
       next: (event) => {
         return true;
       },
