@@ -40,9 +40,4 @@ export class GamesService {
             .pipe(catchError(handleError));
     }
 
-    //* Actualizar un juego
-    updateGame(id: string, game: Partial<IGame>) {
-        return this.http.patch<IGame>(`${this.urlGame}/${id}`, game)
-            .pipe(catchError(handleError));
-    }
 }

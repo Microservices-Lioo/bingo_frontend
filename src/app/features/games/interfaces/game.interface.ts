@@ -3,6 +3,6 @@ export interface IGame {
     roomId: string;
     modeId: string;
     numberHistoryId: string;
-    start_tim: Date;
+    start_time: Date;
     end_time?: Date | null;
 }

@@ -6,6 +6,7 @@ export * from './event.interface';
 export * from './game.interface';
 export * from './pagination-query.interface';
 export * from './pagination.interface';
+export * from './roulette.interface';
 export * from './section-sidebar.interfaces';
 export * from './table-winners.interface';
 export * from './user.interface';

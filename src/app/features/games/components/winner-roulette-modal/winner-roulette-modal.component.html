@@ -1,13 +1,13 @@
 @if (isOpen()) {
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-     (click)="closeModal()">
+  (click)="closeModal()">
 
   <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden animate-fadeIn"
-       (click)="$event.stopPropagation()">
+    (click)="$event.stopPropagation()">
 
     <!-- Header -->
     <div class="bg-sky-950 text-white px-6 py-4 flex justify-between items-center">
-      <h2 class="font-bold text-lg">🎡 Sorteo Final</h2>
+      <h2 class="font-bold text-lg">Premiación</h2>
       <button (click)="closeModal()" class="hover:bg-white/10 rounded-full p-2">
         ✕
       </button>
@@ -15,115 +15,162 @@
 
     <!-- Content -->
     <div class="p-6 flex flex-col items-center gap-6">
-      @if (isLoading()) {
-        <app-loading textMsg="Culminando juego para todos los jugadores..." textLoading="Juego terminado" />
+      @if (isLoadingCulminate()) {
+      <app-loading 
+      textMsg="Culminando juego para todos los jugadores..." 
+      textLoading="Juego terminado" />
       } @else {
-        @if (approved().length === 0) {
-          <p class="text-gray-600">No hay jugadores aprobados para el sorteo.</p>
-        }
+      @if (approved().length === 0) {
+      <p class="text-gray-600">No hay jugadores aprobados para la premiación.</p>
+      }
 
-        @if (approved().length === 1) {
-          @for (winner of approved(); track winner.userId; let i = $index) {
-            <div
-                class="w-full h-auto border border-opacity-40 border-sky-700 justify-center items-center rounded-lg p-3 flex flex-col gap-2">
-                <h5 class="text-start">Felicidades al ganador</h5>
-                <div class="w-full flex flex-col justify-center items-center gap-2 px-5">
-                    <span class="text-xs font-bold text-black">Premio</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-                        <g fill="none">
-                            <path fill="#ffef5e" d="M12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74" />
-                            <path fill="#fff9bf"
-                                d="M9.13 3.87c.001.27.04.54.116.8A2.87 2.87 0 0 0 13.8 1.634A2.87 2.87 0 0 0 9.13 3.87" />
-                            <path fill="#ffbc44"
-                                d="m9.02 11.285l-2.431 1.14a1.598 1.598 0 0 0-.67 2.402l4.169 6.24h3.826l4.168-6.24a1.6 1.6 0 0 0-.67-2.402l-2.614-1.227z" />
-                            <path fill="#ffef5e"
-                                d="M15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913z" />
-                            <path fill="#fff9bf"
-                                d="M12 9.588a8.3 8.3 0 0 1-2.973-.581a.478.478 0 0 0-.638.554l2.655 11.505H12z" />
-                            <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.467 22.629a4.26 4.26 0 0 0-3.045-1.542H9.639a4.4 4.4 0 0 0-3.076 1.519L6.262 23H17.74zM15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913zM12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74m4.528 5.27l.884.415a1.598 1.598 0 0 1 .67 2.403l-4.169 6.24m-6.44-9.058l-.884.415a1.598 1.598 0 0 0-.67 2.403l4.169 6.24"
-                                stroke-width="1" />
-                        </g>
-                    </svg>
-                    <p class="text-black text-sm font-bold">
-                        {{ award().name }}</p>
-                    <div class="w-1/2 flex justify-start gap-1">
-                        <p class="text-black text-sm font-bold">Para: </p>
-                        <span class="text-sm text-gray-700">{{ winner.fullnames }}</span>
-                    </div>
-                    <div class="w-1/2 flex justify-start gap-1">
-                        <p class="text-black text-sm font-bold">Tabla: </p>
-                        <span class="text-sm text-gray-700">#{{ winner.cardId }}</span>
-                    </div>
-                </div>
-                <!-- <button (click)="endGameAndNewGame()" type="button"
-                    class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
-                    Terminar juego y continuar
-                </button> -->
+      <!-- Premiación -->
+      @if (selectedWinner()) {
+      <div class="relative w-full mx-auto overflow-hidden">
+
+        <!-- Banner de ganador -->
+        <div
+          class="w-full text-center py-2 rounded-lg text-amber-600 font-bold text-lg animate-pulse animate-once animate-duration-[1000ms] animate-delay-[3000ms] animate-ease-linear">
+          🎉 Ya tenemos un ganador 🎉
+        </div>
+
+        @if (isLoading()) {
+          <app-loading textMsg="En unos segundos conoceremos al ganador"/>
+        } @else {
+          <div class="flex flex-col items-center p-6 gap-4 mt-4">
+            <!-- Icono/medalla -->
+            <div class="bg-yellow-200 p-4 rounded-full shadow-md animate-bounce">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+                <g fill="none">
+                  <path fill="#ffef5e" d="M12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74" />
+                  <path fill="#fff9bf"
+                    d="M9.13 3.87c.001.27.04.54.116.8A2.87 2.87 0 0 0 13.8 1.634A2.87 2.87 0 0 0 9.13 3.87" />
+                  <path fill="#ffbc44"
+                    d="m9.02 11.285l-2.431 1.14a1.598 1.598 0 0 0-.67 2.402l4.169 6.24h3.826l4.168-6.24a1.6 1.6 0 0 0-.67-2.402l-2.614-1.227z" />
+                  <path fill="#ffef5e"
+                    d="M15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913z" />
+                  <path fill="#fff9bf" d="M12 9.588a8.3 8.3 0 0 1-2.973-.581a.478.478 0 0 0-.638.554l2.655 11.505H12z" />
+                  <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
+                    d="M17.467 22.629a4.26 4.26 0 0 0-3.045-1.542H9.639a4.4 4.4 0 0 0-3.076 1.519L6.262 23H17.74zM15.61 9.569a.477.477 0 0 0-.64-.554a7.94 7.94 0 0 1-5.943-.008a.478.478 0 0 0-.638.554l2.655 11.505h1.913zM12 6.74A2.87 2.87 0 1 0 12 1a2.87 2.87 0 0 0 0 5.74m4.528 5.27l.884.415a1.598 1.598 0 0 1 .67 2.403l-4.169 6.24m-6.44-9.058l-.884.415a1.598 1.598 0 0 0-.67 2.403l4.169 6.24"
+                    stroke-width="1" />
+                </g>
+              </svg>
             </div>
-          }
-        }
 
-        @if (approved().length > 1) {
-          <div class="relative w-64 h-64">
-            <!-- Ruleta -->
-            <div class="roulette w-full h-full rounded-full border-4 border-gray-300 flex items-center justify-center"
-                [style.transform]="'rotate(' + rotation() + 'deg)'">
-              <div class="absolute inset-0 flex items-center justify-center">
-                @for (winner of approved(); track winner.userId; let i = $index) {
-                  <div class="absolute w-1/2 h-1/2 origin-bottom-left rotate-[calc(360deg/{{approved().length}}*{{i}})]"
-                      [style.transform]="'rotate(' + (i * (360/approved().length)) + 'deg)'">
-                    <div class="bg-sky-500/70 text-white text-xs font-bold flex items-center justify-center
-                                w-full h-full rounded-tr-full">
-                      {{ winner.fullnames }}
-                    </div>
-                  </div>
-                }
+            <!-- Premio -->
+            <div class="text-center">
+              <h5 class="text-lg font-semibold text-gray-800">Premio</h5>
+              <p class="text-xl font-bold text-yellow-700">{{ award().name }}</p>
+            </div>
+
+            <!-- Información del ganador -->
+            <div class="w-[50%] flex flex-col gap-2">
+              <div class="flex justify-between text-gray-700">
+                <span class="font-semibold">Para:</span>
+                <span>{{ selectedWinner()?.fullnames }}</span>
+              </div>
+              <div class="flex justify-between text-gray-700">
+                <span class="font-semibold">Tabla:</span>
+                <span>{{ selectedWinner()?.cardId }}</span>
               </div>
             </div>
+          </div>
+        }
+      </div>
+      }
 
-            <!-- Flecha -->
-            <div class="absolute -top-6 left-1/2 -translate-x-1/2">
-              <div class="w-0 h-0 border-l-8 border-r-8 border-b-16 border-transparent border-b-red-600"></div>
+      <!-- Ruleta -->
+      @if (!selectedWinner()) {
+      <div class="flex flex-col items-center gap-6 mt-1">
+        <!-- Banner de ganador -->
+        <div
+          class="w-full text-center py-2 rounded-lg text-amber-600 font-bold text-lg animate-pulse animate-once animate-duration-[1000ms] animate-delay-[3000ms] animate-ease-linear">
+          Tenemos mas de un canto valido!!!
+        </div>
+        <!-- Nota -->
+        <p 
+        class="w-full text-sm text-gray-600">
+          Ahora procederá a aplicar la ruleta de la suerte. Su función es muy conocida,
+          Cuando se detenga la ruleta el jugador que este indicando la fecha será el ganadorde este juego.
+        </p>
+
+        <!-- Banner de estado de premiación-->
+        @if (awardStatus) {
+            <div 
+                class="w-auto px-3 py-0.5 mb-0.5 rounded-md font-medium text-xs text-white text-center"
+                [class]="{
+                    'bg-blue-400': rouletteStatus === 'NO_INICIADA',
+                    'bg-amber-400': rouletteStatus === 'GIRANDO',
+                    'bg-red-400': rouletteStatus === 'DETENIDA',
+                }"
+                >
+                <p>{{ rouletteStatus === 'NO_INICIADA'
+                      ? 'NO INICIA' : rouletteStatus }}</p>
             </div>
+        }
+
+        <!-- Ruleta -->
+        <div class="relative w-64 h-64 overflow-hidden">
+          <!-- Flecha/Indicador (arriba del círculo) -->
+          <div class="absolute left-1/2 -translate-x-1/2 z-50">
+            <!-- <div class="w-0 h-0 border-l-8 border-r-8 border-t-16 border-transparent border-t-red-600"
+              style="border-top-width: 24px;"></div> -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16">
+                <path fill="#0c4a6e" d="M8 15.5L15.5 8H11V0H5v8H.5z" />
+              </svg>
           </div>
 
-          <!-- Ganador -->
-          @if (selectedWinner()) {
-            <p class="mt-4 text-lg font-bold text-emerald-600">
-              🎉 Ganador: {{ selectedWinner()!.fullnames }}
-            </p>
-          }
+          <!-- SVG Ruleta -->
+          <svg class="w-full h-full ease-out" [class.transition-transform]="isTransitioning()"
+            [class.duration-[3000ms]]="isTransitioning()"
+            [style.transform]="'rotate(' + (currentRotation() - 90) + 'deg)'" viewBox="0 0 200 200">
+
+            @for (app of approved(); track $index; let i = $index) {
+            <g>
+              <!-- Segmento -->
+              <path [attr.d]="getSegmentPath(i)" [attr.fill]="getSegmentColor(i)" stroke="white" stroke-width="2" />
+
+              <!-- Texto -->
+              <text [attr.x]="getTextX(i)" [attr.y]="getTextY(i)" [attr.transform]="getTextTransform(i)" fill="black"
+                font-size="10" text-anchor="middle" dominant-baseline="middle">
+                {{ getCustomNames(app.fullnames) }}
+              </text>
+            </g>
+            }
+
+            <!-- Borde del círculo -->
+            <circle cx="100" cy="100" r="99" fill="none" stroke="#d1d5db" stroke-width="4" />
+
+            <!-- Centro decorativo -->
+            <circle cx="100" cy="100" r="15" fill="white" stroke="#e5e7eb" stroke-width="2" />
+          </svg>
+        </div>
+
+        <!-- Botones -->
+        @if (isAdmin()) {
+          <div class="flex gap-4">
+            <button
+              class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              (click)="spinOrStop()" [disabled]="!isAwarding()">
+              {{ spinning() ? 'Parar' : 'Girar' }}
+            </button>
+          </div>
         }
+      </div>
+      }
+
       }
     </div>
 
     <!-- Footer -->
     <div class="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
-      <button (click)="closeModal()"
-              class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+      <button (click)="closeModal()" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
         Cancelar
       </button>
       @if (isAdmin()) {
-        @if (approved().length > 1) {
-          <button (click)="startSpin()"
-                  [disabled]="spinning() || selectedWinner()"
-                  class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 disabled:bg-gray-300">
-            Iniciar Sorteo
-          </button>
-
-        } @else {
-          <!-- <button (click)="concludeGame()"
-                  class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:bg-gray-300">
-            Concluir Juego
-          </button> -->
-          <app-custom-button
-            bg="!bg-emerald-500"
-            label="Concluir Juego"
-            (btnCliked)="concludeGame()" 
-          />
-        }
-  
+      @if (selectedWinner()) {
+        <app-custom-button bg="!bg-emerald-500" label="Concluir Juego" (btnCliked)="concludeGame()" />
+      }
       }
     </div>
 

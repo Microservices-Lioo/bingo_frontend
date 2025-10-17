@@ -22,3 +22,14 @@ export enum HostActivity {
     ESPERANDO = 'esperando',
     CANTANDO = 'cantando',
 }
+
+export enum EAwardsStatus {
+    PREMIANDO = 'PREMIANDO',
+    PREMIADO = 'PREMIADO',
+}
+
+export enum ERouletteStatus {
+    NO_INICIADA = 'NO_INICIADA',
+    GIRANDO = 'GIRANDO',
+    DETENIDA = 'DETENIDA',
+}

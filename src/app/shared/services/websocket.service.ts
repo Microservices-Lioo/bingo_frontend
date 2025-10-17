@@ -4,12 +4,13 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
 import { EWebSocket } from '../enums';
-import { ITableWinners } from '../interfaces';
+import { IRouletterWinner, ITableWinners } from '../interfaces';
 import { WsConst } from '../consts/ws.const';
 import { LoadingService } from './loading.service';
 import { ToastService } from './toast.service';
-import { HostActivity, StatusGame, StatusHostRoom, StatusRoom } from '../../features/games/enums';
-import { IGame } from '../../features/games/interfaces';
+import { EAwardsStatus, ERouletteStatus, HostActivity, StatusGame, StatusHostRoom, StatusRoom } from '../../features/games/enums';
+import { AwardGameInterface, IGame, IRoom } from '../../features/games/interfaces';
+import { IAward } from '../../features/award/interfaces';
 
 interface IStatusCount {
   endTime: number;
@@ -27,10 +28,13 @@ export class WebsocketServiceShared {
   private connectedPlayers$ =
     new BehaviorSubject<number>(0);
 
+  public room$ = new BehaviorSubject<IRoom | null>(null);
+  public game$ = new BehaviorSubject<IGame | null>(null);
+  public award$ = new BehaviorSubject<AwardGameInterface | null>(null);
+
   public hostActivity$ = new BehaviorSubject<HostActivity>(HostActivity.ESPERANDO);
   public statusHost$ = new BehaviorSubject<StatusHostRoom>(StatusHostRoom.OFFLINE);
   public statusRoom$ = new BehaviorSubject<StatusRoom>(StatusRoom.NOT_STARTED);
-  public game$ = new BehaviorSubject<IGame | null>(null);
   public getCellCard$ = new BehaviorSubject<string | null>(null);
   public statusCount$ = new BehaviorSubject<IStatusCount | null>(null);
   public tableWinner$ = new BehaviorSubject<{table: ITableWinners[], sing?: ITableWinners} | null>(null);
@@ -38,6 +42,12 @@ export class WebsocketServiceShared {
   public winnerModal$ = new BehaviorSubject<{isOpen: boolean} | null>(null);
   public statusRaffle$ = 
     new BehaviorSubject<StatusGame>(StatusGame.INICIAR);
+  public awardStatus$ = 
+    new BehaviorSubject<EAwardsStatus | null>(null);
+  public rouletteStatus$ = 
+    new BehaviorSubject<ERouletteStatus>(ERouletteStatus.NO_INICIADA);
+  public rouletteWinner$ = 
+    new BehaviorSubject<IRouletterWinner | null>(null);
   
   constructor(
     private router: Router,
@@ -124,43 +134,36 @@ export class WebsocketServiceShared {
     }
   }
 
-
+  //* Emitir
   countUsersToRoom() {
     this.socket.emit(EWebSocket.COUNT);
   }
 
   async listenRoom(roomId: string) {
-    // cantidad de usuarios de la sala
+    // Número de usuarios
     this.socket.off(WsConst.countUser(roomId));
     this.socket.on(WsConst.countUser(roomId), (value: number) => {
       this.connectedPlayers$.next(value);
     });
 
-    // actualización de estado del host de la sala
-    this.socket.off(WsConst.statusHostRoom(roomId));
-    this.socket.on(WsConst.statusHostRoom(roomId), (value: StatusHostRoom) => {
-      this.statusHost$.next(value);
-    });
-    
-    // actualización de estado de la sala
-    this.socket.off(WsConst.statusRoom(roomId));
-    this.socket.on(WsConst.statusRoom(roomId), (value: StatusRoom) => {
-      console.log(value)
-      this.statusRoom$.next(value);
-    });
-    
-    // actualización de estado del juego de la sala
-    this.socket.off(WsConst.statusGame(roomId));
-    this.socket.on(WsConst.statusGame(roomId), (value) => {
-      this.statusRaffle$.next(value);
+    // Room
+    this.socket.off(WsConst.room(roomId));
+    this.socket.on(WsConst.room(roomId), (value: IRoom) => {
+      this.room$.next(value);
     });
 
-    // actualización la data del juego de la sala
+    // Game
     this.socket.off(WsConst.game(roomId));
     this.socket.on(WsConst.game(roomId), (value: IGame) => {
       this.game$.next(value);
     });
     
+    // Award
+    this.socket.off(WsConst.award(roomId));
+    this.socket.on(WsConst.award(roomId), (value: AwardGameInterface) => {
+      this.award$.next(value);
+    });
+
     // Escuchar los cantos numericos desde el servidor
     this.socket.off(WsConst.getCellCard(roomId));
     this.socket.on(WsConst.getCellCard(roomId), (value: string) => {
@@ -197,6 +200,24 @@ export class WebsocketServiceShared {
       this.hostActivity$.next(value);
     });
 
+    // Escuchar el estado de la premiacion
+    this.socket.off(WsConst.awardStatus(roomId));
+    this.socket.on(WsConst.awardStatus(roomId), (value: EAwardsStatus) => {
+      this.awardStatus$.next(value);
+    });
+
+    // Escuchar el estado de la ruleta de premiación
+    this.socket.off(WsConst.rouletteStatus(roomId));
+    this.socket.on(WsConst.rouletteStatus(roomId), (value: ERouletteStatus) => {
+      this.rouletteStatus$.next(value);
+    });
+
+    // Escuchar la posicion del ganador en la ruleta
+    this.socket.off(WsConst.rouletteWinner(roomId));
+    this.socket.on(WsConst.rouletteWinner(roomId), (value: IRouletterWinner) => {
+      this.rouletteWinner$.next(value);
+    });
+
     await this.emitRoom();
   }
 
@@ -205,20 +226,10 @@ export class WebsocketServiceShared {
   }
 
   async offListenRoom(roomId: string) {
-    // cantidad de usuarios de la sala
     this.socket.off(WsConst.countUser(roomId));
-
-    // actualización de estado del host de la sala
-    this.socket.off(WsConst.statusHostRoom(roomId));
-    
-    // actualización de estado de la sala
-    this.socket.off(WsConst.statusRoom(roomId));
-    
-    // actualización de estado del juego de la sala
-    this.socket.off(WsConst.statusGame(roomId));
-
-    // actualización la data del juego de la sala
+    this.socket.off(WsConst.room(roomId));
     this.socket.off(WsConst.game(roomId));
+    this.socket.off(WsConst.award(roomId));
 
     // Escuchar los cantos numericos desde el servidor
     this.socket.off(WsConst.getCellCard(roomId));
@@ -247,7 +258,7 @@ export class WebsocketServiceShared {
     }
   }
 
-  //* crear un juego
+  // Iniciar o crear un juego
   createGame(awardId: string, modeId: string) {
     this.socket.emit(EWebSocket.CREATE_GAME, {awardId, modeId});
   }
@@ -282,13 +293,28 @@ export class WebsocketServiceShared {
     this.socket.emit(EWebSocket.UPDATE_STATUS_WINNER_MODAL, { status });
   }
 
-  //* Actualizar el estado del juego
-  statusGame(status: string) {
-    this.socket.emit(EWebSocket.STATUS_GAME, { status });
-  }
-
   //* Actualizar de la actividad del host
   updateHostActivity(status: HostActivity) {
     this.socket.emit(EWebSocket.HOST_ACTIVITY, { status });
+  }
+
+  //* Actualizar el estado de la premiación
+  updateAwardStatus(status: EAwardsStatus) {
+    this.socket.emit(EWebSocket.AWARD_STATUS, { status });
+  }
+
+  //* Actualizar el estado de la ruleta de premiación
+  updateRouletteStatus(status: ERouletteStatus) {
+    this.socket.emit(EWebSocket.ROULETTE_STATUS, { status });
+  }
+
+  //* Actualizar la posicion del ganador en la ruleta
+  updateRouletteWinner(data: IRouletterWinner) {
+    this.socket.emit(EWebSocket.ROULETTE_WINNER, data);
+  }
+
+  //* Limpiar tabla de cantos de jugadores
+  cleanTableSongs() {
+    this.socket.emit(EWebSocket.CLEAN_TABLE_SONGS);
   }
 }

@@ -1,452 +1,478 @@
 <div class="w-full h-full relative">
-    <!-- Banner de estado de juego -->
-    <div 
-        class="w-full py-0.5 mb-0.5 rounded-md font-medium text-xs text-white text-center"
-        [class]="{
-            'bg-green-400': statusGame === 'INICIAR',
-            'bg-blue-400': statusGame === 'INICIADO',
-            'bg-amber-400': statusGame === 'CONCLUIDO',
-            'bg-red-400': statusGame === 'ERROR',
-        }"
-        >
-        <p>{{ statusGame }} | {{ textStatusgame }}</p>
-    </div>
-    <!-- Estados de sala -->
-     <div
-        class="fixed right-0 top-16 z-20 flex flex-col bg-gray-100/80 text-gray-500 text-xs font-medium px-2.5 py-0.5 rounded-sm">
-        
-        <!-- Jugadores conectados -->
-        <div
-            class="flex gap-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24">
-                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M18 19v-1.25c0-2.071-1.919-3.75-4.286-3.75h-3.428C7.919 14 6 15.679 6 17.75V19m9-11a3 3 0 1 1-6 0a3 3 0 0 1 6 0" />
-            </svg>
-            {{ connectedPlayers }}
-        </div>
-        <!-- Estado websocket -->
-        <div
-            [class]="{
-                'text-green-400': statusConnection === 'connected',
-                'text-gray-400': statusConnection === 'disconnected',
-                'text-amber-400': statusConnection === 'reconnecting',
-                'text-red-400': statusConnection === 'failed',
-            }"
-            >
-            {{ statusConnection }}
-        </div>
-    </div>
-
-    <!-- Estado del host -->
-      <div
-        class="fixed right-0 bottom-0 z-20 flex flex-col bg-gray-100/80 text-gray-500 text-xs font-medium px-2.5 py-0.5 rounded-sm">
-        <!-- header -->
-        <div class="flex flex-col text-sm justify-between w-32">
-            <span class="font-bold text-black">{{
-                hostActivity == HostActivity.ESPERANDO
-                ? 'Esperando...' : hostActivity == HostActivity.MEZCLANDO
-                ? 'Mezclando...' : 'Nuevo canto'
-                }}</span>
-            <p class="text-xs">Host: <span 
-                [class]="room && room.status_host === StatusHostRoom.ONLINE 
-                ? 'text-green-400' : 'text-red-400'"
-                >{{ room && room.status_host === StatusHostRoom.ONLINE ? 'conectado' : 'desconectado' }}</span></p>
-        </div>
-      </div>
-
-    @if(statusConnection === 'connected' && room && room.status === 'STARTED' ) {
-    <div class="w-full h-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-
-        <!-- Números cantados -->
-        <div
-            class="order-1 sm:col-span-2 min-h-52 max-h-60 overflow-y-auto border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="flex justify-between items-center p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm font-medium text-white">Números cantados</h3>
-            </div>
-            <app-ball-status />
-        </div>
-
-        <!-- Modo de juego -->
-        <div
-            class="order-3 sm:col-span-2 min-h-52 max-h-60 overflow-y-auto sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm text-center font-medium text-white">Modo de juego</h3>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2">
-                <div>
-                    <h2 class="text-sm font-bold mb-2">
-                        {{ modeSelected?.name || 'No seleccionado' }}
-                    </h2>
-        
-                    <!-- Descripción -->
-                    <p class="text-xs text-gray-600 dark:text-gray-300">
-                        {{ modeSelected?.description || 'No seleccionado' }}
-                    </p>
-        
-                    <!-- Reglas -->
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-                            Reglas
-                        </h3>
-                        <!-- Descripción -->
-                        <p class="text-xs text-gray-600 dark:text-gray-300">
-                            Debe completar los cuadros marcados con verde en la sig. tabla:
-                        </p>
-                    </div>
-                </div>
-                <div>
-                    <!-- Tabla de reglas -->
-                    <div class="text-sm">
-                        @if (modeSelected) {
-                        <div
-                            class="w-full h-full grid grid-cols-5 grid-rows-6 grid-flow-row gap-0 justify-stretch items-stretch p-3 m-0">
-                            <div
-                                class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
-                                <span>B</span>
-                            </div>
-                            <div
-                                class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
-                                <span>I</span>
-                            </div>
-                            <div
-                                class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
-                                <span>N</span>
-                            </div>
-                            <div
-                                class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
-                                <span>G</span>
-                            </div>
-                            <div
-                                class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
-                                <span>O</span>
-                            </div>
-                            @for (row of [0,1,2,3,4]; track $index; let idrow = $index) {
-                            @for (col of [0,1,2,3,4]; track $index; let idcol = $index) {
-                                <div
-                                class="cell border flex justify-center items-center"
-                                [class]="
-                                    verifyRule(row, col) || (idrow === 2 && idcol === 2)
-                                    ? 'bg-green-500'
-                                    : ''
-                                "
-                                >
-                                @if (idrow === 2 && idcol === 2) {
-                                    <span class="text-xs text-center text-white">x</span>
-                                }
-                                </div>
-                            }
-                            }
-                        </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Premios -->
-        <div class="order-4 sm:row-span-1 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm  text-center font-medium text-white">Premios</h3>
-            </div>
-
-            <div class="flow-root">
-                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @for (award of awardsList; track $index) {
-                    <li class="py-1 sm:py-2">
-                        <div class="flex items-center flex-wrap">
-                            <div class="flex-1 mt-2">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ award.name }}
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    <strong> Ganador:</strong> {{ award.winner != null ? 'tabla #' + award.winner : ' - ' }}
-                                </p>
-                            </div>
-                            <div class="inline-flex text-xs p-1 items-center font-semibold text-gray-900 dark:text-white rounded"
-                            [class]="award.status == 'NOW' ? 'bg-green-400' : award.status == 'END' ? 'bg-red-500' : 'bg-yellow-300'">
-                                {{ award.status == 'NOW' ? 'Ahora' : award.status == 'END' ? 'Fin' : 'Prox.' }}
-                            </div>
-                        </div>
-                    </li>
-                    }
-                </ul>
-            </div>
-
-        </div>
-
-        <!-- Cantos de Bingo por jugadores -->
-        <div
-            class="order-5 lg:col-start-4 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
-            <div class="p-1 mb-2 bg-sky-800 rounded-md">
-                <h3 class="text-sm text-center font-medium text-white">Cantos</h3>
-            </div>
-            @if(IsAdmin) {
-            <div class="flex justify-between gap-1">
-                <button 
-                    (click)="openValidationWinners()"
-                    title="Premiar" class="bg-transparent w-10 h-10 flex justify-center items-center"
-                    >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <g fill="none">
-                            <path fill="#ff808c" d="M8.548 1v4.44c.035.62.302 1.201.749 1.63l2.705 2.318V1z" />
-                            <path fill="#66e1ff"
-                                d="M15.455 5.44V1h-3.454v8.388l2.705-2.318a2.45 2.45 0 0 0 .749-1.63" />
-                            <path fill="#ffef5e"
-                                d="m16.44 18.764l2.119-2.12a.494.494 0 0 0 0-.697l-2.118-2.118l.395-1.983a.305.305 0 0 0-.22-.395a.3.3 0 0 0-.167.008l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119l-.395 1.983a.306.306 0 0 0 .387.387l1.984-.395l2.116 2.116a.49.49 0 0 0 .698 0l2.118-2.118l1.984.395a.305.305 0 0 0 .387-.387z" />
-                            <path fill="#fff9bf"
-                                d="M7.164 20.747a.34.34 0 0 0 .072.311l9.528-9.527a.34.34 0 0 0-.311-.072l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119z" />
-                            <path fill="#ffbc44" d="M12 18.764a2.467 2.467 0 1 0 0-4.935a2.467 2.467 0 0 0 0 4.935" />
-                            <path fill="#ffdda1" d="M10.256 18.041a2.468 2.468 0 0 1 3.49-3.49z" />
-                            <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
-                                d="m16.44 18.764l2.119-2.12a.494.494 0 0 0 0-.697l-2.118-2.118l.395-1.983a.305.305 0 0 0-.22-.395a.3.3 0 0 0-.167.008l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119l-.395 1.983a.306.306 0 0 0 .387.387l1.984-.395l2.116 2.116a.49.49 0 0 0 .698 0l2.118-2.118l1.984.395a.305.305 0 0 0 .387-.387zM15.456 5.44a2.45 2.45 0 0 1-.75 1.63l-2.704 2.318L9.297 7.07a2.45 2.45 0 0 1-.75-1.63V1h6.909zM12.001 1v8.388M5.587 1h12.83"
-                                stroke-width="1" />
-                            <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 18.764a2.467 2.467 0 1 0 0-4.935a2.467 2.467 0 0 0 0 4.935" stroke-width="1" />
-                        </g>
-                    </svg>
-                </button>
-                <button title="Eliminar cantos" class="bg-transparent w-10 h-10 flex justify-center items-center"
-                    (click)="deleteAllSongs()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="#f46c6c"
-                            d="M16 16h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1m0-8h5c.55 0 1 .45 1 1s-.45 1-1 1h-5c-.55 0-1-.45-1-1s.45-1 1-1m0 4h4c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1s.45-1 1-1M3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3zM13 5h-2l-.71-.71c-.18-.18-.44-.29-.7-.29H6.41c-.26 0-.52.11-.7.29L5 5H3c-.55 0-1 .45-1 1s.45 1 1 1h10c.55 0 1-.45 1-1s-.45-1-1-1"
-                            stroke-width="0.5" stroke="#f46c6c" />
-                    </svg>
-                </button>
-            </div>
-            }
-            <div class="relative overflow-x-auto sm:rounded-lg">
-                <table class="w-full h-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th scope="col" class="px-2 py-3">
-                                Jugador
-                            </th>
-                            <th scope="col" class="px-2 py-3">
-                                Acciones
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if(tableWinners.length === 0) {
-                            <tr>
-                            <td class="px-2 py-4 text-gray-400">
-                                <p class="text-sm">No hay cantos pendientes</p>
-                            </td>
-                            </tr>
-                        }
-
-                        @for(sing of tableWinners; track $index; let i = $index){
-                        <tr [id]="'player-'+i"
-                            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                            <th scope="row"
-                                class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ sing.fullnames }} {{ getCurrentUserId() == sing.userId ? ' (tú)' : ''}}
-                            </th>
-                            <td class="px-2 py-4">
-                                @if(IsAdmin && sing.status === EStatusTableBingo.PENDIENTE){
-                                <div class="flex flex-col">                                    
-                                    <button (click)="openValidationModal(sing)"
-                                            class="flex-1 text-xs py-2 px-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors font-medium">
-                                    Revisar
-                                    </button>
-                                    <button (click)="quickReject(sing)"
-                                            class="flex-1 text-xs py-2 px-3 bg-red-500 text-white rounded hover:bg-red-600 transition-colors font-medium">
-                                    Rechazar
-                                    </button>
-                                </div>
-                                } @else {
-                                <div class="flex flex-col gap-1 items-start">
-                                    @if(IsAdmin){
-                                    <button (click)="openValidationModal(sing)"
-                                            class="w-full text-xs py-2 px-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors font-medium">
-                                    Ver Detalles
-                                    </button>
-                                    }
-                                    <span
-                                        [class]="sing.status === EStatusTableBingo.APROBADO  
-                                        ? 'bg-green-500' : sing.status === EStatusTableBingo.PENDIENTE 
-                                        ? 'bg-yellow-400' : 'bg-red-500'"
-                                        class="p-1 rounded-md text-white">
-                                        {{ sing.status }}
-                                    </span>
-                                </div>
-                                }
-                            </td>
-                        </tr>
-                        }
-                        
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Tablas / Sorteo -->
-        <div
-            class="order-2 sm:col-span-2 lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:row-span-2 items-center justify-center text-center border border-opacity-40 border-sky-700 rounded-lg p-3">
-            @if (!IsAdmin) {
-            <!-- Jugador -->
-            <ng-container>
-                <div class="flex items-center flex-col gap-1">
-                    <!-- Tiempo y AutoJugar -->
-                    <div class="flex w-full justify-between gap-1 mb-2">
-                        <div class="w-full rounded-md p-2 bg-amber-200">
-                            <h3 class="text-sm">Próxima bola en: <span class="font-bold">00:{{statusCount}}</span></h3>
-                        </div>
-                        <div class="w-full rounded-md p-2 border border-sky-900">
-                            <h3 class="text-sm font-medium">Autocompletado</h3>
-                            <div class="inline-flex rounded-md shadow-xs" role="group">
-                                <button class="px-4 py-2 text-xs font-medium border border-sky-900 rounded-s-lg"
-                                    [class]="modoActive === 'manual' ? '!bg-sky-900 !text-white hover:!bg-sky-800' : '!bg-transparent !text-sky-900 hover:!bg-sky-900 hover:!text-white'"
-                                    (click)="modoSelect('manual')" type="button">
-                                    Manual
-                                </button>
-                                <button class="px-4 py-2 text-xs font-medium border border-sky-900 rounded-e-lg"
-                                    [class]="modoActive === 'automatico' ? '!bg-sky-900 !text-white hover:!bg-sky-800' : '!bg-transparent !text-sky-900 hover:!bg-sky-900 hover:!text-white'"
-                                    (click)="modoSelect('automatico')" type="button">
-                                    Automático
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tablas -->
-                    <div class="w-full flex justify-between items-center">
-                        <div class="w-full p-1 mb-2 bg-sky-800 rounded-md">
-                            <h3 class="text-sm font-medium text-white">Mis tablas</h3>
-                        </div>
-                    </div>
-
-                    <!-- Opciones de tabla de bingo -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start justify-around">
-                        <!-- Pagination Cards -->
-                         <div>
-                        <div
-                            class="flex items-center justify-between w-full">
-                            <button type="button"
-                                class="inline-flex items-center justify-center h-8 px-1 w-6 hover:text-sky-800"
-                                [disabled]="cardsList && cardPosition == 0 ? true : false" (click)="btnPrevCard()">
-                                <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="M5 1 1 5l4 4" />
-                                </svg>
-                                <span class="sr-only">Previous page</span>
-                            </button>
-                            @if(cardsList) {
-                            <span id="pagination-card"
-                                class="shrink-0 mx-1 text-sm font-medium space-x-0.5 rtl:space-x-reverse">Tabla
-                                {{cardPosition + 1}} de {{cardsList.length}} </span>
-                            }
-                            <button type="button"
-                                class="inline-flex items-center justify-center h-8 px-1 w-6 hover:text-sky-800"
-                                [disabled]="cardsList && (cardPosition + 1) == cardsList.length ? true : false"
-                                (click)="btnNextCard()">
-                                <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="m1 9 4-4-4-4" />
-                                </svg>
-                                <span class="sr-only">Next page</span>
-                            </button>
-                        </div>
-                        </div>
-                        <div>
-                             <!-- Cantar bingo -->
-                             <app-custom-button 
-                                (btnCliked)="singBingo()"
-                                label="Cantar"
-                                bg="bg-green-500"
-                                />
-                         </div>
-                    </div>
-
-                    <!-- Cards -->
-                    <div
-                        class="w-full h-full grid grid-cols-5 grid-rows-6 grid-flow-row gap-0 justify-stretch items-stretch p-3 m-0">
-                        @if (cardsList) {
-                        <div
-                            class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
-                            <span>B</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
-                            <span>I</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
-                            <span>N</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
-                            <span>G</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
-                            <span>O</span>
-                        </div>
-                        @for (row of cardsList[cardPosition].nums; track $index; let idrow = $index) {
-
-                        @for (col of row; track $index; let idcol = $index) {
-                        <button [class]="col.marked || (idrow == 2 && idcol == 2 ) ? 'bg-green-500' : ''"
-                            class="cell border py-3" (click)="btnCellSelected(cardsList[cardPosition].id, col, idrow+','+idcol )">
-                            @if (idrow == 2 && idcol == 2) {
-                            <span class="text-xl text-white">X</span>
-                            } @else {
-                            <span class="text-xl">{{ col.num }}</span>
-                            }
-                        </button>
-                        }
-                        }
-                        }
-                    </div>
-                </div>
-            </ng-container>
-            } @else {
-            <!-- Adminstrador -->
-            <ng-container>
-                @if (game && gameMode) {
-                <div class="w-full h-full flex flex-col items-center justify-center gap-y-3">
-                    <!-- Contador -->
-                    <div class="flex w-full justify-between gap-1 mb-2">
-                        <div class="w-full rounded-md p-2 bg-amber-200">
-                            <h3 class="text-sm">Próxima bola en: <span class="font-bold">00:{{statusCount}}</span></h3>
-                        </div>
-                    </div>
-
-                    <!-- Cantador y estado de juego -->
-                    <div class="relative">
-                        <div
-                            class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-4 rounded-full blur-md bg-black/90">
-                        </div>
-                        <button (click)="btnSinger()"
-                            style="box-shadow: inset 0 0 9px 1px #fff, 0 5px 5px rgba(0, 0, 0, 0.15);"
-                            class=" w-52 h-52 rounded-full bg-sky-900 text-white text-8x1 font-bold shadow-md transform transition duration-300 hover:scale-105">
-                            @if(statusGame !== 'INICIADO') {
-                            <span class="text-[1.5rem] md:text-[2.5rem]">
-                                {{ statusGame }} </span>
-                            } @else {
-                            <span class="text-[1.5rem] md:text-[2.5rem]">{{ textSings || 'Comenzar' }}</span>
-                            }
-                        </button>
-                    </div>
-                </div>
-                }
-            </ng-container>
-            }
+    @if( finishedEventHtml() ) {
+    <div class="w-full h-full flex justify-center items-center">
+        <div class="p-2">
+            <h1 class="font-bold py-3">Evento terminado</h1>
+            <p class="text-gray-500 text-sm">El evento ha finalizado, gracias por participar</p>
         </div>
     </div>
     }
 
-    @if (statusConnection === 'reconnecting' || statusConnection === 'failed') {
-    <app-status-connection class="absolute inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10" [title]="titleMsgConnection" [message]="textMsgConnection"
-        [type]="statusConnection" />
-    } @else if (room && room.status_host == StatusHostRoom.OFFLINE) {
-    <app-status-connection class="absolute inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10" 
-        title="Host no conectado" message="Host desconectado, espera mientras se conecta."
-        type="OFFLINE" />
-    } @else if (!game && IsAdmin) {
+    @if( suspendedEventHtml() ) {
+    <div class="w-full h-full flex justify-center items-center">
+        <div class="p-2">
+            <h1 class="font-bold py-3">Evento suspendido</h1>
+            <p class="text-gray-500 text-sm">El evento se ha suspendido por alguna razón, si compraste una tabla de
+                bingo, recibiraz tu reembolso próximamente,</p>
+        </div>
+    </div>
+    }
+
+    @if (principalHtml()) {
+        <!-- Banner de estado de juego -->
+        <div class="w-full py-0.5 mb-0.5 rounded-md font-medium text-xs text-white text-center" [class]="{
+                'bg-green-400': statusGame === 'INICIAR',
+                'bg-blue-400': statusGame === 'INICIADO',
+                'bg-amber-400': statusGame === 'CONCLUIDO',
+                'bg-red-400': statusGame === 'ERROR',
+            }">
+            <p>{{ statusGame }} | {{ textStatusgame }}</p>
+        </div>
+    
+        <!-- Estados de sala -->
+        <div
+            class="fixed right-0 top-16 z-20 flex flex-col bg-gray-100/80 text-gray-500 text-xs font-medium px-2.5 py-0.5 rounded-sm">
+    
+            <!-- Jugadores conectados -->
+            <div class="flex gap-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 19v-1.25c0-2.071-1.919-3.75-4.286-3.75h-3.428C7.919 14 6 15.679 6 17.75V19m9-11a3 3 0 1 1-6 0a3 3 0 0 1 6 0" />
+                </svg>
+                {{ connectedPlayers }}
+            </div>
+            <!-- Estado websocket -->
+            <div [class]="{
+                    'text-green-400': statusConnection === 'connected',
+                    'text-gray-400': statusConnection === 'disconnected',
+                    'text-amber-400': statusConnection === 'reconnecting',
+                    'text-red-400': statusConnection === 'failed',
+                }">
+                {{ statusConnection }}
+            </div>
+        </div>
+    
+        <!-- Estado del host -->
+        <div
+            class="fixed right-0 bottom-0 z-20 flex flex-col bg-gray-100/80 text-gray-500 text-xs font-medium px-2.5 py-0.5 rounded-sm">
+            <!-- header -->
+            <div class="flex flex-col text-sm justify-between w-32">
+                <span class="font-bold text-black">{{
+                    hostActivity == HostActivity.ESPERANDO
+                    ? 'Esperando...' : hostActivity == HostActivity.MEZCLANDO
+                    ? 'Mezclando...' : 'Nuevo canto'
+                    }}</span>
+                <p class="text-xs">Host: <span [class]="room() && room()!.status_host === StatusHostRoom.ONLINE 
+                    ? 'text-green-400' : 'text-red-400'">{{ room() && room()!.status_host === StatusHostRoom.ONLINE ?
+                        'conectado' : 'desconectado' }}</span></p>
+            </div>
+        </div>
+
+        <div class="w-full h-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    
+            <!-- Números cantados -->
+            <div
+                class="order-1 sm:col-span-2 min-h-52 max-h-60 overflow-y-auto border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="flex justify-between items-center p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm font-medium text-white">Números cantados</h3>
+                </div>
+                <app-ball-status />
+            </div>
+    
+            <!-- Modo de juego -->
+            <div
+                class="order-3 sm:col-span-2 min-h-52 max-h-60 overflow-y-auto sm:col-start-1 lg:col-start-3 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm text-center font-medium text-white">Modo de juego</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div>
+                        <h2 class="text-sm font-bold mb-2">
+                            {{ modeSelected?.name || 'No seleccionado' }}
+                        </h2>
+    
+                        <!-- Descripción -->
+                        <p class="text-xs text-gray-600 dark:text-gray-300">
+                            {{ modeSelected?.description || 'No seleccionado' }}
+                        </p>
+    
+                        <!-- Reglas -->
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
+                                Reglas
+                            </h3>
+                            <!-- Descripción -->
+                            <p class="text-xs text-gray-600 dark:text-gray-300">
+                                Debe completar los cuadros marcados con verde en la sig. tabla:
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <!-- Tabla de reglas -->
+                        <div class="text-sm">
+                            @if (modeSelected) {
+                            <div
+                                class="w-full h-full grid grid-cols-5 grid-rows-6 grid-flow-row gap-0 justify-stretch items-stretch p-3 m-0">
+                                <div
+                                    class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
+                                    <span>B</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
+                                    <span>I</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
+                                    <span>N</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
+                                    <span>G</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-center text-xs bg-sky-800 text-white border border-slate-400">
+                                    <span>O</span>
+                                </div>
+                                @for (row of [0,1,2,3,4]; track $index; let idrow = $index) {
+                                @for (col of [0,1,2,3,4]; track $index; let idcol = $index) {
+                                <div class="cell border flex justify-center items-center" [class]="
+                                        verifyRule(row, col) || (idrow === 2 && idcol === 2)
+                                        ? 'bg-green-500'
+                                        : ''
+                                    ">
+                                    @if (idrow === 2 && idcol === 2) {
+                                    <span class="text-xs text-center text-white">x</span>
+                                    }
+                                </div>
+                                }
+                                }
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+    
+            </div>
+    
+            <!-- Premios -->
+            <div
+                class="order-4 sm:row-span-1 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm  text-center font-medium text-white">Premios</h3>
+                </div>
+    
+                <div class="flow-root">
+                    <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (award of awardsList; track $index) {
+                        <li class="py-1 sm:py-2">
+                            <div class="flex items-center flex-wrap">
+                                <div class="flex-1 mt-2">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ award.name }}
+                                    </p>
+                                    @if (award.winner) {
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        <strong> Ganador:</strong> {{ award.winner }}
+                                    </p>
+                                    }
+                                </div>
+                                <div class="inline-flex text-xs p-1 items-center font-semibold text-gray-900 dark:text-white rounded"
+                                    [class]="award.status == 'NOW' ? 'bg-green-400' : award.status == 'END' ? 'bg-red-500' : 'bg-yellow-300'">
+                                    {{ award.status == 'NOW' ? 'Ahora' : award.status == 'END' ? 'Fin' : 'Prox.' }}
+                                </div>
+                            </div>
+                        </li>
+                        }
+                    </ul>
+                </div>
+    
+            </div>
+    
+            <!-- Cantos de Bingo por jugadores -->
+            <div
+                class="order-5 lg:col-start-4 lg:row-span-2 lg:row-start-2 border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <div class="p-1 mb-2 bg-sky-800 rounded-md">
+                    <h3 class="text-sm text-center font-medium text-white">Cantos</h3>
+                </div>
+                @if(IsAdmin) {
+                <div class="flex justify-between gap-1">
+                    <button (click)="openValidationWinners()" title="Premiar"
+                        class="bg-transparent w-10 h-10 flex justify-center items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <g fill="none">
+                                <path fill="#ff808c" d="M8.548 1v4.44c.035.62.302 1.201.749 1.63l2.705 2.318V1z" />
+                                <path fill="#66e1ff"
+                                    d="M15.455 5.44V1h-3.454v8.388l2.705-2.318a2.45 2.45 0 0 0 .749-1.63" />
+                                <path fill="#ffef5e"
+                                    d="m16.44 18.764l2.119-2.12a.494.494 0 0 0 0-.697l-2.118-2.118l.395-1.983a.305.305 0 0 0-.22-.395a.3.3 0 0 0-.167.008l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119l-.395 1.983a.306.306 0 0 0 .387.387l1.984-.395l2.116 2.116a.49.49 0 0 0 .698 0l2.118-2.118l1.984.395a.305.305 0 0 0 .387-.387z" />
+                                <path fill="#fff9bf"
+                                    d="M7.164 20.747a.34.34 0 0 0 .072.311l9.528-9.527a.34.34 0 0 0-.311-.072l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119z" />
+                                <path fill="#ffbc44" d="M12 18.764a2.467 2.467 0 1 0 0-4.935a2.467 2.467 0 0 0 0 4.935" />
+                                <path fill="#ffdda1" d="M10.256 18.041a2.468 2.468 0 0 1 3.49-3.49z" />
+                                <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
+                                    d="m16.44 18.764l2.119-2.12a.494.494 0 0 0 0-.697l-2.118-2.118l.395-1.983a.305.305 0 0 0-.22-.395a.3.3 0 0 0-.167.008l-1.984.395L12 9.388l-2.467 2.467l-1.984-.394a.3.3 0 0 0-.313.074a.31.31 0 0 0-.074.313l.395 1.983l-2.116 2.116a.494.494 0 0 0 0 .698l2.118 2.119l-.395 1.983a.306.306 0 0 0 .387.387l1.984-.395l2.116 2.116a.49.49 0 0 0 .698 0l2.118-2.118l1.984.395a.305.305 0 0 0 .387-.387zM15.456 5.44a2.45 2.45 0 0 1-.75 1.63l-2.704 2.318L9.297 7.07a2.45 2.45 0 0 1-.75-1.63V1h6.909zM12.001 1v8.388M5.587 1h12.83"
+                                    stroke-width="1" />
+                                <path stroke="#191919" stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 18.764a2.467 2.467 0 1 0 0-4.935a2.467 2.467 0 0 0 0 4.935" stroke-width="1" />
+                            </g>
+                        </svg>
+                    </button>
+                    <button title="Eliminar cantos" class="bg-transparent w-10 h-10 flex justify-center items-center"
+                        (click)="deleteAllSongs()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path fill="#f46c6c"
+                                d="M16 16h2c.55 0 1 .45 1 1s-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1m0-8h5c.55 0 1 .45 1 1s-.45 1-1 1h-5c-.55 0-1-.45-1-1s.45-1 1-1m0 4h4c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1s.45-1 1-1M3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3zM13 5h-2l-.71-.71c-.18-.18-.44-.29-.7-.29H6.41c-.26 0-.52.11-.7.29L5 5H3c-.55 0-1 .45-1 1s.45 1 1 1h10c.55 0 1-.45 1-1s-.45-1-1-1"
+                                stroke-width="0.5" stroke="#f46c6c" />
+                        </svg>
+                    </button>
+                </div>
+                }
+                <div class="relative overflow-x-auto sm:rounded-lg">
+                    <table class="w-full h-full text-xs text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="px-2 py-3">
+                                    Jugador
+                                </th>
+                                <th scope="col" class="px-2 py-3">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(tableWinners.length === 0) {
+                            <tr>
+                                <td class="px-2 py-4 text-gray-400">
+                                    <p class="text-sm">No hay cantos pendientes</p>
+                                </td>
+                            </tr>
+                            }
+    
+                            @for(sing of tableWinners; track $index; let i = $index){
+                            <tr [id]="'player-'+i"
+                                class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                <th scope="row"
+                                    class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ sing.fullnames }} {{ getCurrentUserId() == sing.userId ? ' (tú)' : ''}}
+                                </th>
+                                <td class="px-2 py-4">
+                                    @if(IsAdmin && sing.status === EStatusTableBingo.PENDIENTE){
+                                    <div class="flex flex-col">
+                                        <button (click)="openValidationModal(sing)"
+                                            class="flex-1 text-xs py-2 px-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors font-medium">
+                                            Revisar
+                                        </button>
+                                        <button (click)="quickReject(sing)"
+                                            class="flex-1 text-xs py-2 px-3 bg-red-500 text-white rounded hover:bg-red-600 transition-colors font-medium">
+                                            Rechazar
+                                        </button>
+                                    </div>
+                                    } @else {
+                                    <div class="flex flex-col gap-1 items-start">
+                                        @if(IsAdmin){
+                                        <button (click)="openValidationModal(sing)"
+                                            class="w-full text-xs py-2 px-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors font-medium">
+                                            Ver Detalles
+                                        </button>
+                                        }
+                                        <span [class]="sing.status === EStatusTableBingo.APROBADO  
+                                            ? 'bg-green-500' : sing.status === EStatusTableBingo.PENDIENTE 
+                                            ? 'bg-yellow-400' : 'bg-red-500'" class="p-1 rounded-md text-white">
+                                            {{ sing.status }}
+                                        </span>
+                                    </div>
+                                    }
+                                </td>
+                            </tr>
+                            }
+    
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+            <!-- Tablas / Sorteo -->
+            <div
+                class="order-2 sm:col-span-2 lg:col-span-2 lg:col-start-2 lg:row-start-2 lg:row-span-2 items-center justify-center text-center border border-opacity-40 border-sky-700 rounded-lg p-3">
+                <!-- Banner de estado de premiación-->
+                @if (awardStatus) {
+                <div class="w-full py-0.5 mb-0.5 rounded-md cursor-pointer font-medium text-xs text-white text-center"
+                    (click)="openValidationWinners()" [class]="{
+                             'bg-blue-400': awardStatus === 'PREMIANDO',
+                             'bg-amber-400': awardStatus === 'PREMIADO',
+                         }">
+                    <p>{{ awardStatus === 'PREMIANDO'
+                        ? awardStatus + ' | Haz click aquí para ver la premiación'
+                        : awardStatus + ' | Ya tenemos ganador de este modo de juego'}}</p>
+                </div>
+                }
+                @if (!IsAdmin) {
+                <!-- Jugador -->
+                <ng-container>
+                    <div class="flex items-center flex-col gap-1">
+                        <!-- Tiempo y AutoJugar -->
+                        <div class="flex w-full justify-between gap-1 mb-2">
+                            <div class="w-full rounded-md p-2 bg-amber-200">
+                                <h3 class="text-sm">Próxima bola en: <span class="font-bold">00:{{statusCount}}</span></h3>
+                            </div>
+                            <div class="w-full rounded-md p-2 border border-sky-900">
+                                <h3 class="text-sm font-medium">Autocompletado</h3>
+                                <div class="inline-flex rounded-md shadow-xs" role="group">
+                                    <button class="px-4 py-2 text-xs font-medium border border-sky-900 rounded-s-lg"
+                                        [class]="modoActive === 'manual' ? '!bg-sky-900 !text-white hover:!bg-sky-800' : '!bg-transparent !text-sky-900 hover:!bg-sky-900 hover:!text-white'"
+                                        (click)="modoSelect('manual')" type="button">
+                                        Manual
+                                    </button>
+                                    <button class="px-4 py-2 text-xs font-medium border border-sky-900 rounded-e-lg"
+                                        [class]="modoActive === 'automatico' ? '!bg-sky-900 !text-white hover:!bg-sky-800' : '!bg-transparent !text-sky-900 hover:!bg-sky-900 hover:!text-white'"
+                                        (click)="modoSelect('automatico')" type="button">
+                                        Automático
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <!-- Tablas -->
+                        <div class="w-full flex justify-between items-center">
+                            <div class="w-full p-1 mb-2 bg-sky-800 rounded-md">
+                                <h3 class="text-sm font-medium text-white">Mis tablas</h3>
+                            </div>
+                        </div>
+    
+                        <!-- Opciones de tabla de bingo -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start justify-around">
+                            <!-- Pagination Cards -->
+                            <div>
+                                <div class="flex items-center justify-between w-full">
+                                    <button type="button"
+                                        class="inline-flex items-center justify-center h-8 px-1 w-6 hover:text-sky-800"
+                                        [disabled]="cardsList && cardPosition == 0 ? true : false" (click)="btnPrevCard()">
+                                        <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="2" d="M5 1 1 5l4 4" />
+                                        </svg>
+                                        <span class="sr-only">Previous page</span>
+                                    </button>
+                                    @if(cardsList) {
+                                    <span id="pagination-card"
+                                        class="shrink-0 mx-1 text-sm font-medium space-x-0.5 rtl:space-x-reverse">Tabla
+                                        {{cardPosition + 1}} de {{cardsList.length}} </span>
+                                    }
+                                    <button type="button"
+                                        class="inline-flex items-center justify-center h-8 px-1 w-6 hover:text-sky-800"
+                                        [disabled]="cardsList && (cardPosition + 1) == cardsList.length ? true : false"
+                                        (click)="btnNextCard()">
+                                        <svg class="w-2 h-2 rtl:rotate-180" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="2" d="m1 9 4-4-4-4" />
+                                        </svg>
+                                        <span class="sr-only">Next page</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <!-- Cantar bingo -->
+                                <app-custom-button (btnCliked)="singBingo()" label="Cantar" bg="bg-green-500" />
+                            </div>
+                        </div>
+    
+                        <!-- Cards -->
+                        <div
+                            class="w-full h-full grid grid-cols-5 grid-rows-6 grid-flow-row gap-0 justify-stretch items-stretch p-3 m-0">
+                            @if (cardsList) {
+                            <div
+                                class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
+                                <span>B</span>
+                            </div>
+                            <div
+                                class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
+                                <span>I</span>
+                            </div>
+                            <div
+                                class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
+                                <span>N</span>
+                            </div>
+                            <div
+                                class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
+                                <span>G</span>
+                            </div>
+                            <div
+                                class="flex items-center justify-center text-xl bg-sky-800 text-white border border-slate-400">
+                                <span>O</span>
+                            </div>
+                            @for (row of cardsList[cardPosition].nums; track $index; let idrow = $index) {
+    
+                            @for (col of row; track $index; let idcol = $index) {
+                            <button [class]="col.marked || (idrow == 2 && idcol == 2 ) ? 'bg-green-500' : ''"
+                                class="cell border py-3"
+                                (click)="btnCellSelected(cardsList[cardPosition].id, col, idrow+','+idcol )">
+                                @if (idrow == 2 && idcol == 2) {
+                                <span class="text-xl text-white">X</span>
+                                } @else {
+                                <span class="text-xl">{{ col.num }}</span>
+                                }
+                            </button>
+                            }
+                            }
+                            }
+                        </div>
+                    </div>
+                </ng-container>
+                } @else {
+                <!-- Adminstrador -->
+                <ng-container>
+                    @if (game() && gameMode) {
+                    <div class="w-full h-full flex flex-col items-center justify-center gap-y-3">
+                        <!-- Contador -->
+                        <div class="flex w-full justify-between gap-1 mb-2">
+                            <div class="w-full rounded-md p-2 bg-amber-200">
+                                <h3 class="text-sm">Próxima bola en: <span class="font-bold">00:{{statusCount}}</span></h3>
+                            </div>
+                        </div>
+    
+                        <!-- Cantador y estado de juego -->
+                        <div class="relative">
+                            <div
+                                class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-4 rounded-full blur-md bg-black/90">
+                            </div>
+                            <button (click)="btnSinger()"
+                                style="box-shadow: inset 0 0 9px 1px #fff, 0 5px 5px rgba(0, 0, 0, 0.15);"
+                                class=" w-52 h-52 rounded-full bg-sky-900 text-white text-8x1 font-bold shadow-md transform transition duration-300 hover:scale-105">
+                                @if(statusGame !== 'INICIADO') {
+                                <span class="text-[1.5rem] md:text-[2.5rem]">
+                                    {{ statusGame }} </span>
+                                } @else {
+                                <span class="text-[1.5rem] md:text-[2.5rem]">{{ textSings || 'Comenzar' }}</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                    }
+                </ng-container>
+                }
+            </div>
+        </div>
+    }
+
+    @if (statusConnectionWSHtml()) {
+    <app-status-connection 
+    class="absolute inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10"
+    [title]="titleMsgConnection" 
+    [message]="textMsgConnection" 
+    [type]="statusConnection" />
+    }
+    
+    @if (offlineHostHtml()) {
+    <app-status-connection 
+    class="absolute inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10"
+    title="Host no conectado" 
+    message="Host desconectado, espera mientras se conecta." 
+    type="OFFLINE" />
+    }
+
+    @if (selecGameModeHtml()) {
     <div class="absolute  inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10 flex items-center justify-center p-4">
         <form [formGroup]="createGameForm" class="w-full max-w-2xl">
             <div class=" bg-white">
@@ -482,33 +508,41 @@
                 </div>
                 <div
                     class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-                    <app-custom-button label="Crear juego" type="submit"
-                        (btnCliked)="createGame()" />
+                    <app-custom-button 
+                    label="Crear juego" 
+                    type="submit" 
+                    (btnCliked)="createGame()"
+                    [loading]="loadingBtn"
+                    [disabled]="loadingBtn" />
                 </div>
             </div>
         </form>
     </div>
-    } @else if (countdownGame != 0) {
-        <app-status-connection class="absolute inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10" 
-        [title]="countdownGame.toString()" message="El juego comenzará en unos segundos..."
-        type="OFFLINE" />
+    }
+
+    @if (countdownGame != 0) {
+    <app-status-connection 
+    class="absolute inset-0 rounded-sm backdrop-blur-sm bg-black/5 z-10"
+    [title]="countdownGame.toString()" 
+    message="El juego comenzará en unos segundos..." 
+    type="OFFLINE" />
     }
 </div>
 
-<!-- Modal de Validación -->
-<app-validate-bingo-modal
-      [isOpen]="isModalOpen()"
-      [validationData]="currentValidationData()"
-      (close)="closeModal()"
-      (accept)="handleAccept($event)"
-      (reject)="handleReject($event)"
-    />
-<app-winner-roulette-modal
-      [isOpen]="isModalOpenWR()"
-      [winners]="currentValidationDataWR()"
-      [award]="awardWr()!"
-      [isAdmin]="IsAdmin"
-      [isLoading]="isLoadingCulminate()"
-      (close)="closeModalWR()"
-      (finish)="handleFinishWR($event)"
-/>
+<!-- Modal de Validación de cantos -->
+<app-validate-bingo-modal 
+[isOpen]="isModalOpen()" 
+[validationData]="currentValidationData()" 
+(close)="closeModal()"
+(accept)="handleAccept($event)" 
+(reject)="handleReject($event)" />
+
+<!-- Modal de premiación -->
+<app-winner-roulette-modal 
+[isOpen]="isModalOpenWR()" 
+[approved]="currentValidationDataWR()" 
+[award]="awardWr()!"
+[isAdmin]="IsAdmin" 
+[isLoadingCulminate]="isLoadingCulminate()" 
+(close)="closeModalWR()"
+(finish)="handleFinishWR($event)" />

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   AwardServiceShared,
@@ -34,14 +34,15 @@ import {
 } from '../../../shared/interfaces';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
-import { initTabs } from 'flowbite';
 import { CalledBallsService } from '../services/called-balls.service';
 import { firstValueFrom, lastValueFrom, Subscription } from 'rxjs';
 import { CustomButtonComponent } from "../../../shared/components/ui/button/custom-button.component";
-import { EStatusTableBingoShared } from '../../../shared/enums';
+import { EStatusEventShared, EStatusTableBingoShared } from '../../../shared/enums';
 import { IWinnerValidationData, ValidateBingoModalComponent } from './validate-bingo-modal/validate-bingo-modal.component';
 import { WinnerRouletteModalComponent } from './winner-roulette-modal/winner-roulette-modal.component';
-import { HostActivity, StatusGame, StatusHostRoom } from '../enums';
+import { EAwardsStatus, HostActivity, StatusGame, StatusHostRoom, StatusRoom } from '../enums';
+import { UserService } from '../../profile/services';
+import { IAward } from '../../award/interfaces';
 
 @Component({
   selector: 'app-principal',
@@ -77,10 +78,10 @@ import { HostActivity, StatusGame, StatusHostRoom } from '../enums';
   `
 })
 export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
-  protected room!: IRoom;
-  protected event!: IEventAwardsShared;
+  room = signal<IRoom | null>(null);
+  event = signal<IEventAwardsShared | null>(null);
   protected cardsList!: ICardShared[];
-  protected game: IGame | null = null;
+  game = signal<IGame | null>(null);
   protected gameMode: IGameMode[] = [];
   protected awardsList!: AwardGameInterface[];
   protected numberHistory: INumberHistory | null = null;
@@ -130,12 +131,15 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   // Iniciar sala
   connectedPlayers: number = 0;
   textMsgForm = "";
+  loadingBtn = false;
 
   countdownGame = 0; // Contador de inicio de juego
   textSings?: string;
 
   private subscriptions: Subscription[] = [];
   private intervalBtnSinger?: number;
+
+  awardStatus?: EAwardsStatus;
 
   constructor(
     private route: ActivatedRoute,
@@ -148,6 +152,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     private awardSharedServ: AwardServiceShared,
     private socketServ: WebsocketServiceShared,
     private cardsServiceShared: CardsServiceShared,
+    private userServ: UserService,
   ) { }
 
   async ngOnInit() {
@@ -161,12 +166,21 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       const room = await firstValueFrom(
         this.gameServ.findRoomByEvent(eventId)
       );
+
+      if (room.status === StatusRoom.NOT_STARTED) {
+        this.toastServ.openToast('room', 'warning', 'La sala aun no inicia');
+        this.router.navigate(["/"]);
+        return;
+      }
+
+      await this.getEventWithAwards(eventId); // Obtengo datos del evento
+
       this.socketServ.initWS(room.id);
 
       //* Web Socket subscriptions
       this.subscriptionsWs();
 
-      this.room = room;
+      this.room.set(room);
 
     } catch (error: any) {
       console.error(error);
@@ -174,37 +188,17 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toastServ.openToast('obtener-sala', 'danger', error.message);
     }
 
-    await this.getEventWithAwards(eventId); // Obtengo datos del evento
     await this.initializateDataGame(); // Inicializo variables para el juego
   }
 
   ngAfterViewInit() {
     initFlowbite();
-    initTabs();
   }
 
   ngOnDestroy() {
-    if (this.room) {
-      this.socketServ.disconnect(this.room.id);
-      this.subscriptions.forEach(sub => sub.unsubscribe());
-    }
-  }
-
-  // Mensaje de estados de la sala
-  messageStatusRoom() {
-    if (this.room.status === 'NOT_STARTED') {
-      this.titleMsgConnection = 'Sala no iniciada'
-      this.textMsgConnection = 'Está sala aun no inicia. Espera a que llegue la hora del evento'
-    } else if (this.room.status === 'FINISHED') {
-      this.titleMsgConnection = 'Sala finalizada'
-      this.textMsgConnection = 'Está sala ya finalizó. Puedes ver los resultados del evento en tu panel de adminitración > participaciones'
-    } else if (this.room.status === 'CANCELED') {
-      this.titleMsgConnection = 'Sala cancelada'
-      this.textMsgConnection = 'Está sala se ha cancelado. El dinero será reembolsado a los que compraron su tabla de bingo'
-    } else if (this.room.status_host === 'OFFLINE') {
-      this.titleMsgConnection = 'Sala sin anfitrión'
-      this.textMsgConnection = 'Sala en espera, el anfitrión no está conectado'
-    }
+    if (!this.room() || !this.event()) return;
+    this.socketServ.disconnect(this.room()!.id);
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   subscriptionsWs() {
@@ -215,7 +209,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
           if (status === 'connected') {
             this.titleMsgConnection = 'Conectado';
             this.textMsgConnection = 'Estas conectado a la sala';
-            this.messageStatusRoom();
           } else if (status === 'disconnected') {
             this.titleMsgConnection = 'Has sido desconectado';
             this.textMsgConnection = 'No tienes acceso a esta sala';
@@ -249,14 +242,12 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    // Actualización de estado del host
+    // Room
     this.subscriptions.push(
-      this.socketServ.statusHost$.subscribe({
-        next: (value) => {
-          if (this.room) {
-            this.room.status_host = value;
-            this.messageStatusRoom();
-          }
+      this.socketServ.room$.subscribe({
+        next: async (room) => {
+          if (!room) return;
+          await this.updateRoom(room);          
         },
         error: (error) => {
           console.error(error);
@@ -264,72 +255,26 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    // Actualización de estado de la sala
-    this.subscriptions.push(
-      this.socketServ.statusRoom$.subscribe({
-        next: (value) => {
-          if (this.room) {
-            this.room.status = value;
-          }
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      })
-    );
-
-    // Actualización de estado del juego
-    this.subscriptions.push(
-      this.socketServ.statusRaffle$.subscribe({
-        next: async (value) => {
-          if (value) {
-            this.updateStatusGame(value);
-
-            if (value === 'INICIADO') {
-              const maxCount = 10;
-              this.countdownGame = maxCount;
-
-              const interval = setInterval(() => {
-                this.countdownGame--;
-
-                if (this.countdownGame <= 0) {
-                  clearInterval(interval);
-                }
-              }, 1000);
-
-            }
-            if (value === 'CONCLUIDO') {
-              // Limpiar las tablas de bingo
-              const ids = this.cardsList.map( card => card.id);
-              const cards = await lastValueFrom(
-                this.cardsServiceShared.resetCards(this.event.id, ids)
-              );
-              this.cardsList = cards.map(card => ({ ...card, nums: card.nums[0].map((_, colIndex) => card.nums.map(row => row[colIndex])) }));
-
-              // Actualizar los premios
-              await this.getAwards()
-
-              // Limpiar los datos
-              this.clearDataGame();
-            }
-          }
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      })
-    );
-
-    // Actualización de los datos del juego de la sala
+    // Game
     this.subscriptions.push(
       this.socketServ.game$.subscribe({
         next: async (game) => {
           if (game) {
-            this.game = game;
-
-            // obtengo de nuevo los premios
-            await this.getAwards();
+            await this.updateGame(game);          
           }
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      })
+    );
+
+    // Award
+    this.subscriptions.push(
+      this.socketServ.award$.subscribe({
+        next: async (award) => {
+          if (!award) return;
+          await this.updateAward(award);          
         },
         error: (error) => {
           console.error(error);
@@ -340,53 +285,54 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     // Obtención de ultima celda cantada
     this.subscriptions.push(
       this.socketServ.getCellCard$.subscribe({
-      next: async (value) => {
-        if (this.intervalBtnSinger) {
-          clearInterval(this.intervalBtnSinger);
-          this.intervalBtnSinger = undefined;
-        }
-
-        if(value) {
-          this.textSings = value;
-
-          const lastNumber = parseInt(value.split(' - ')[1]);
-          this.calledBallServ.setLastItem(lastNumber);
-          // disparador automatico
-          this.cellSelectedAuto(lastNumber);
-          
-          if (this.numberHistory) {
-            this.numberHistory.nums.push(lastNumber);
-          } else {
-            if (!this.game || !this.game.numberHistoryId) {
-              await this.getGame()
-            };
-
-            const numberHist = await this.getNumberHistory(this.game!.numberHistoryId);
-            if (!numberHist) return;
-            this.numberHistory = numberHist;
+        next: async (value) => {
+          if (this.intervalBtnSinger) {
+            clearInterval(this.intervalBtnSinger);
+            this.intervalBtnSinger = undefined;
           }
 
-        }        
-      },
-      error: (error) => {
-        console.error('Error en getCellCard$:', error);
-        if (this.intervalBtnSinger) {
-          clearInterval(this.intervalBtnSinger);
+          if (value) {
+            this.textSings = value;
+
+            const lastNumber = parseInt(value.split(' - ')[1]);
+            this.calledBallServ.setLastItem(lastNumber);
+            // disparador automatico
+            this.cellSelectedAuto(lastNumber);
+
+            if (this.numberHistory) {
+              this.numberHistory.nums.push(lastNumber);
+            } else {
+              if (!this.game() || !this.game()?.numberHistoryId) {
+                await this.getGame()
+              };
+
+              const numberHist = await this.getNumberHistory(this.game()!.numberHistoryId);
+              if (!numberHist) return;
+              this.numberHistory = numberHist;
+            }
+
+          }
+        },
+        error: (error) => {
+          console.error('Error en getCellCard$:', error);
+          if (this.intervalBtnSinger) {
+            clearInterval(this.intervalBtnSinger);
+          }
+          this.statusGame = 'ERROR';
+          this.toastServ.openToast('cell-card-error', 'danger', 'Error al obtener número');
         }
-        this.statusGame = 'ERROR';
-        this.toastServ.openToast('cell-card-error', 'danger', 'Error al obtener número');
-      }}
-    )
+      }
+      )
     );
 
     // Actualización de contador regresivo
     this.subscriptions.push(
       this.socketServ.statusCount$.subscribe(state => {
         if (!state && this.hostActivity == HostActivity.CANTANDO && this.IsAdmin) {
-            this.socketServ.updateHostActivity(HostActivity.ESPERANDO)
+          this.socketServ.updateHostActivity(HostActivity.ESPERANDO)
         }
 
-        if (state) {          
+        if (state) {
           const update = () => {
             const msLeft = state.endTime - Date.now();
             const secLeft = Math.max(Math.floor(msLeft / 1000), 0);
@@ -418,13 +364,9 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
           const original = table ? [...table] : [];
           this.tableWinners = original;
           if (sing) {
-            if (sing.status === EStatusTableBingoShared.APROBADO) {
-              this.toastServ.openToast('my-bingo', 'success', `Tu canto ha sido ${sing.status}`);
-            } else if (sing.status === EStatusTableBingoShared.PENDIENTE) {
-              this.toastServ.openToast('my-bingo', 'warning', `Tu canto ha sido ${sing.status}`);
-            } else {
-              this.toastServ.openToast('my-bingo', 'danger', `Tu canto ha sido ${sing.status}`);
-            }            
+            this.toastServ.openToast('my-bingo',
+              sing.status === EStatusTableBingoShared.APROBADO ? 'success' :
+                sing.status === EStatusTableBingoShared.PENDIENTE ? 'warning' : 'danger', `Tu canto ha sido ${sing.status}`);
           }
         }
       })
@@ -459,11 +401,113 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketServ.hostActivity$.subscribe(activity => {
         if (!activity) return;
 
-        this.hostActivity = activity;        
+        this.hostActivity = activity;
+      })
+    );
+
+    // Evento de la premiación
+    this.subscriptions.push(
+      this.socketServ.awardStatus$.subscribe(status => {
+        if (!status) return;
+
+        this.awardStatus = status;
       })
     );
   }
 
+  // ===========================
+  //      Renderizado html
+  // ===========================
+  finishedEventHtml = computed(() => {
+    return (this.event()?.status === EStatusEventShared.COMPLETED
+      && this.room()?.status === StatusRoom.FINISHED) || this.awardsList?.some(award => award.status === StatusAward.END);
+  });
+
+  suspendedEventHtml = computed(() => {
+    return this.event()?.status === EStatusEventShared.CANCELLED
+      && this.room()?.status === StatusRoom.CANCELED;
+  });
+
+  principalHtml() {
+    return (
+      !this.finishedEventHtml() &&
+      !this.suspendedEventHtml() &&
+      this.event()?.status === EStatusEventShared.ACTIVE &&
+      this.room()?.status === StatusRoom.STARTED &&
+      this.statusConnection === 'connected'
+    );
+  }
+
+  statusConnectionWSHtml(): boolean {
+    const isValid = ['reconnecting', 'failed'];
+    if (isValid.includes(this.statusConnection)) return true;
+    return false;
+  }
+
+  offlineHostHtml = computed(() => {
+    return (
+      this.principalHtml() &&
+      !this.statusConnectionWSHtml() &&
+      !this.IsAdmin &&
+      this.room()?.status_host !== StatusHostRoom.ONLINE
+    );
+  });
+
+  selecGameModeHtml = computed(() => {
+    return (
+      !this.finishedEventHtml() &&
+      !this.suspendedEventHtml() &&
+      !this.game() &&
+      this.IsAdmin
+    );
+  });
+
+  // ===========================
+  //      Actualizaciones de datos
+  // ===========================
+  // Room
+  async updateRoom(room: IRoom) {
+    this.room.set(room);
+  }
+
+  // Game
+  async updateGame(game: IGame) {
+    this.game.set(game);
+    const { end_time, numberHistoryId, modeId } = game;
+
+    if (end_time) {
+      this.updateStatusGame(StatusGame.CONCLUIDO);
+      // Limpiar las tablas de bingo
+      const ids = this.cardsList.map(card => card.id);
+      const cards = await lastValueFrom(
+        this.cardsServiceShared.resetCards(this.event()!.id, ids)
+      );
+      this.cardsList = cards.map(card => ({ ...card, nums: card.nums[0].map((_, colIndex) => card.nums.map(row => row[colIndex])) }));
+
+      // Limpiar los datos
+      this.clearDataGame();
+      return;
+    }
+
+    if (modeId || numberHistoryId) {
+      this.updateStatusGame(StatusGame.INICIADO);
+
+      this.countReverse();
+
+      this.loadingBtn = false;
+      return;
+    }
+  }
+
+  // Award
+  async updateAward(award: AwardGameInterface) {
+    const awards = this.awardsList.map(a => a.id === award.id ? award : a);
+    this.awardsList = [...awards];
+  }
+
+  // ===========================
+  //      Actualizaciones ws
+  // ===========================
   // Método para inicializar un juego
   async initializateDataGame() {
     this.updateStatusGame(StatusGame.INICIAR);
@@ -476,11 +520,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!game) return;
 
     this.updateStatusGame(StatusGame.INICIADO);
-    
+
     // obtengo los números cantados
     if (!game.numberHistoryId) return;
     const numberHist = await this.getNumberHistory(game.numberHistoryId);
-    
+
     if (!numberHist) return;
 
     this.numberHistory = numberHist;
@@ -497,44 +541,62 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       status: award.gameId && !award.winner ? StatusAward.NOW : award.gameId && award.winner ? StatusAward.END : StatusAward.PROX
     }));
 
-    this.awardsList = this.orderAwards(awardsList);
+    const awardWinners = awardsList.filter(award => award.winner != null);
+    const awardNotWinners = awardsList.filter(award => !award.winner);
+
+    const newPromiseAwardsW = awardWinners.map(async (w) => {
+      const data = await this.getUserNames(w.winner!);
+      return { ...w, winner: data }
+    });
+
+    const newAwardsW = await Promise.all(newPromiseAwardsW);
+
+    this.awardsList = this.orderAwards([...awardNotWinners, ...newAwardsW]);
   }
 
   // Método para obtener datos del evento (event) y sus premios (awards) asociados
   async getEventWithAwards(eventId: string) {
-    this.eventSharedServ.getEventWithAwards(eventId).subscribe({
-      next: async (event) => {
-        this.event = event;
-
-        const currentUserId = this.authServ.currentUser.id;
-        const owner = event.userId;
-        if (currentUserId !== owner) {
-          await this.getCardsList(eventId);
-        }
-
-        this.IsAdmin = currentUserId === owner;
-
-        await this.transformAwardList(event.award);
-      },
-      error: (error) => {
-        console.error(error);
-        this.toastServ.openToast('get-event-awards', 'danger', error.message);
+    try {
+      const event = await lastValueFrom(
+        this.eventSharedServ.getEventWithAwards(eventId)
+      );
+  
+      if (event.status === EStatusEventShared.PENDING) {
+        this.toastServ.openToast('room', 'warning', 'El evento aun no inicia');
+        this.router.navigate(["/"]);
+        return;
       }
-    });
+  
+      this.event.set(event);
+      
+      const currentUserId = this.authServ.currentUser.id;
+      const owner = event.userId;
+      if (currentUserId !== owner) {
+        await this.getCardsList(eventId);
+      }
+  
+      this.IsAdmin = currentUserId === owner;
+  
+      await this.transformAwardList(event.award);
+    } catch (error: any) {
+      console.error(error);
+      this.toastServ.openToast('get-event-awards', 'danger', 'Error al obtener el evento');
+      
+    }
   }
 
   // Método para obtener los premios del evento
   async getAwards() {
-    this.awardSharedServ.getAwards(this.room.eventId).subscribe({
-      next: async (awards) => {
-
-        await this.transformAwardList(awards);
-      },
-      error: (error) => {
-        console.error(error);
-        this.toastServ.openToast('get-awards', 'danger', 'Error al obtener los premios');
-      }
-    });
+    try {
+      if (!this.room()) return;
+      const awards = await lastValueFrom(
+        this.awardSharedServ.getAwards(this.room()!.eventId)
+      )
+      await this.transformAwardList(awards);
+    } catch (error) {
+      console.error(error);
+      this.toastServ.openToast('get-awards', 'danger', 'Error al obtener los premios');
+    }
   }
 
   // Método para obtener las tablas de bingo(cards) del usuario jugador
@@ -565,8 +627,8 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       const newCell = cell.map(pos => pos.num === num ? { ...pos, marked: !pos.marked } : pos);
       return newCell;
     });
-    this.cardsList[position ?? this.cardPosition] = { ...card, nums: newNums};
-    
+    this.cardsList[position ?? this.cardPosition] = { ...card, nums: newNums };
+
     try {
       await lastValueFrom(
         this.cardsServiceShared.checkOrUncheckBoxCard(cardId, num, !marked)
@@ -574,26 +636,27 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (error) {
       console.error(error);
       this.toastServ.openToast('cell-selected', 'danger', 'Error al actualizar la celda seleccionada');
-      this.cardsList[this.cardPosition] = card; 
+      this.cardsList[this.cardPosition] = card;
     }
   }
 
   // Obtener el ultimo juego de la sala activo
   async getGame() {
     try {
+      if (!this.room()) return;
       const game = await lastValueFrom(
-        this.gameServ.findGameToRoom(this.room.id)
+        this.gameServ.findGameToRoom(this.room()!.id)
       );
-  
+
       if (!game) {
         this.updateStatusGame(StatusGame.INICIAR);
         return undefined;
       }
-      this.game = game;
-      return game;    
+      this.game.set(game);
+      return game;
     } catch (error) {
       console.error(error);
-        this.updateStatusGame(StatusGame.ERROR);
+      this.updateStatusGame(StatusGame.ERROR);
       this.toastServ.openToast('get-game', 'danger', 'Error al obtener el juego actual');
       return undefined;
     }
@@ -616,16 +679,19 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Crear el juego de la sala
+  //* Crear el juego de la sala
   createGame() {
-    if (this.game) {
+    this.loadingBtn = true;
+    if (this.game()) {
       this.toastServ.openToast('game', 'warning', 'Ya existe un juego en curso');
+      this.loadingBtn = false;
       return;
     }
 
     this.textMsgForm = '';
     if (this.createGameForm.invalid) {
       this.textMsgForm = "El formulario no es incorrecto";
+      this.loadingBtn = false;
       return;
     }
 
@@ -633,22 +699,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     const modeId = this.createGameForm.value.mode_id!;
 
     this.socketServ.createGame(awardId, modeId);
-    this.socketServ.statusGame('INICIADO');
-    this.updateStatusGame(StatusGame.INICIADO);
-
-    const maxCount = 10;
-    this.countdownGame = maxCount;
-
-    const interval = setInterval(() => {
-      this.countdownGame--;
-
-      if (this.countdownGame <= 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
     this.createGameForm.reset();
-
   }
 
   // Método para obtener todos los modos de juego que existen
@@ -674,7 +725,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.game) return undefined;
     if (this.gameMode.length === 0) return undefined;
 
-    const mode = this.gameMode.find(mode => mode.id === this.game?.modeId);
+    const mode = this.gameMode.find(mode => mode.id === this.game()?.modeId);
     return mode;
   }
 
@@ -697,12 +748,12 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    if (!this.game || !this.gameMode) {
+    if (!this.game() || !this.gameMode) {
       this.toastServ.openToast('btn-singer', 'warning', 'El juego no esta inicializado');
       this.updateStatusGame(StatusGame.INICIAR);
       return;
     }
-    
+
     if (this.statusCount !== '00') {
       this.toastServ.openToast('btn-status-count', 'warning', 'Espera a que se agote el tiempo de espera');
       return;
@@ -727,12 +778,12 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
 
     const interval = setInterval(async () => {
-        colName = this.COL_NAMES[Math.floor(Math.random() * this.COL_NAMES.length)];
-        num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
-        this.textSings = `${colName} - ${num}`;
+      colName = this.COL_NAMES[Math.floor(Math.random() * this.COL_NAMES.length)];
+      num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
+      this.textSings = `${colName} - ${num}`;
     }, intervalTime) as any;
     this.intervalBtnSinger = interval;
-    const {id} = this.game;
+    const { id } = this.game()!;
     this.socketServ.cellCard(id); // Emito la solicitud para generar un campo válido
     this.socketServ.updateHostActivity(HostActivity.MEZCLANDO); // Emito la soli de la actividad del host
   }
@@ -747,7 +798,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (status === StatusGame.CONCLUIDO) {
       this.textStatusgame = 'El juego ha terminado, espera mientras el host configura el próximo juego';
     } else {
-      this.textStatusgame = '1Error en la creación del juego, espera mientras resolvemos';
+      this.textStatusgame = 'Error en la creación del juego, espera mientras resolvemos';
     }
   }
 
@@ -765,7 +816,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   // Método para seleccionar una celada manualmente al dar click
   async btnCellSelected(cardId: string, cel: ICardNumsShared, position: string) {
     this.modoActive = 'manual';
-    
+
     if (!this.game) {
       this.toastServ.openToast('game', 'warning', 'El juego aun no inicia');
       return;
@@ -773,7 +824,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     if (position === '2,2') return;
     await this.cellSelected(cardId, cel);
   }
-  
+
   // Método para seleccionar una celada manualmente al dar click
   async cellSelectedAuto(num: number) {
     if (this.modoActive === 'automatico') {
@@ -788,10 +839,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Método para limpiar los datos de un juego concluido
   clearDataGame() {
-    this.game = null;
+    this.game.set(null);
     this.numberHistory = null;
     this.calledBallServ.setItems([]);
     this.calledBallServ.setLastItem(0);
+    this.awardStatus = undefined;
 
     this.tableWinners = [];
   }
@@ -821,7 +873,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       // Datos de ejemplo para demostración
       const mockCard: ICardShared = {
         id: winner.cardId,
-        eventId: this.event.id,
+        eventId: this.event()!.id,
         buyer: winner.userId,
         available: true,
         nums
@@ -892,18 +944,29 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Abrir modal de validación para sortear ganadores
   openValidationWinners() {
+    // Lista de jugadores aprobados
+    const winners = this.tableWinners.filter(w => w.status === EStatusTableBingoShared.APROBADO);
 
-    // Abro el modal de premiación para todos los jugadores
-    this.socketServ.winnerModal(true);
-    // awardsList
-    this.currentValidationDataWR.set(this.tableWinners);
+    if (this.tableWinners.length === 0 || winners.length === 0) {
+      this.toastServ.openToast('open-winner-modal', 'warning', 'todavía no existen ganadores aprobados');
+      return;
+    }
+
+    // Premio seleccionado
     const award = this.awardsList.find(award => award.status === StatusAward.NOW);
     if (!award) {
       this.toastServ.openToast('open-winner-modal', 'warning', 'No se encontró un premio disponible');
       return;
     }
-    this.awardWr.set(award);
-    this.isModalOpenWR.set(true);
+
+    if (this.IsAdmin && !this.awardStatus) {
+      this.socketServ.winnerModal(true); // Abro el modal de premiación para todos los jugadores
+      this.socketServ.updateAwardStatus(EAwardsStatus.PREMIANDO); // Cambio el estado del premio a premiando
+    }
+
+    this.currentValidationDataWR.set(winners); // Envio los posibles ganadores a la premiación
+    this.awardWr.set(award); // Envio el premio designado
+    this.isModalOpenWR.set(true); // Abro el modal
   }
 
   // Cierra el modal
@@ -926,7 +989,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isLoadingCulminate.set(true);
 
       const { cardId } = winner;
-      const { id: gameId, } = this.game!;
+      const { id: gameId, } = this.game()!;
 
       // Actualizar el premio de award por gameId y asignar al ganador winner (cardId)
       const awardNow = this.awardsList.find(a => a.status === StatusAward.NOW);
@@ -942,12 +1005,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       const newAwards = this.awardsList.map(a => a.id === awardNow.id ? { ...a, winner: updateAward.winner, status: StatusAward.END } : a);
       this.awardsList = newAwards;
 
-      // Actualizar el end_time de game
-      const updateGame = await lastValueFrom(
-        this.gameServ.updateGame(gameId, { end_time: new Date()})
-      );
-
-      this.socketServ.statusGame(StatusGame.CONCLUIDO);
       this.updateStatusGame(StatusGame.CONCLUIDO);
 
       // Limpiar los datos
@@ -969,23 +1026,23 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       const card = await lastValueFrom(
         this.cardsServiceShared.getCardById(cardId)
       );
-  
+
       if (!card) {
         this.toastServ.openToast('get-card', 'warning', 'No se encontro la tabla de bingo');
         return null;
       }
 
-      const newCard = card.nums[0].map((_, colIndex) => 
+      const newCard = card.nums[0].map((_, colIndex) =>
         card.nums.map(row => row[colIndex])
       );
       return newCard;
-      
+
     } catch (error) {
       console.error(error);
       this.toastServ.openToast('get-card', 'warning', 'Error al obtener la tabla de bingo');
       return null;
     }
-    
+
   }
 
   // Método para actualizar el estado del evento
@@ -998,11 +1055,11 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       });
   }
-  
-  // todo: Hacer Método para limpiar la tabla de cantos
+
+  // Hacer Método para limpiar la tabla de cantos
   deleteAllSongs() {
-    if (!this.event) return this.toastServ.openToast('song-verify', 'danger', 'El evento no está inicializado');
-    const { id: roomId } = this.event;
+    if (this.tableWinners.length === 0) return;
+    this.socketServ.cleanTableSongs();
   }
 
   // Método para cambiar la posicion de la tabla de bingo (card) presentada a la siguiente.
@@ -1038,5 +1095,33 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     //* enviar para verificar
     this.toastServ.openToast('sing', 'success', 'Has cantado bingo');
     this.socketServ.singBingo(this.cardsList[this.cardPosition].id, this.numberHistory?.id, this.modeSelected?.id);
+  }
+
+  // Método para obtener un usuario por id
+  async getUserNames(id: string) {
+    try {
+      const user = await lastValueFrom(
+        this.userServ.getUser(id)
+      );
+      return `${user.name} ${user.lastname}`
+    } catch (error) {
+      console.error(error);
+      this.toastServ.openToast('get-user', 'danger', 'Error al obtener el usuario');
+      return 'Desconocido';
+    }
+  }
+
+  // Cuenta regresiva
+  countReverse() {
+    const maxCount = 10;
+    this.countdownGame = maxCount;
+
+    const interval = setInterval(() => {
+      this.countdownGame--;
+
+      if (this.countdownGame <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
   }
 }
