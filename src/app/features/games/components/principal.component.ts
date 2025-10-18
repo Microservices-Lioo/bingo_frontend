@@ -30,7 +30,7 @@ import {
   ICardNumsShared,
   ICardShared,
   IEventUpdateShared,
-  ITableWinners
+  ITableWinners,
 } from '../../../shared/interfaces';
 import { StatusConnectionComponent } from '../../../shared/components/status-connection/status-connection.component';
 import { AuthService } from '../../auth/services';
@@ -204,7 +204,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   subscriptionsWs() {
     // Estados del ws
     this.subscriptions.push(
-      this.socketServ.getConnectionStatus().subscribe({
+      this.socketServ.statusConnection$.subscribe({
         next: (status) => {
           if (status === 'connected') {
             this.titleMsgConnection = 'Conectado';
@@ -232,7 +232,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Cantidad de usuarios en la sala
     this.subscriptions.push(
-      this.socketServ.getConnectedPlayers().subscribe({
+      this.socketServ.connectedPlayers$.subscribe({
         next: (players) => {
           this.connectedPlayers = players;
         },
@@ -386,12 +386,9 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketServ.winnerModal$.subscribe(modal => {
         if (this.IsAdmin) return;
         if (modal) {
-          const { isOpen } = modal;
-          if (isOpen) {
-            this.openValidationWinners();
-          } else {
-            this.closeModalWR();
-          }
+          this.openValidationWinners();
+        } else {
+          this.closeModalWR();
         }
       })
     );

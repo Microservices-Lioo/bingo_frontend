@@ -10,3 +10,10 @@ export enum EStatusTableBingoShared {
     RECHAZADO = 'rechazado',
     PENDIENTE = 'pendiente',
 }
+
+export enum ESConnectionWs {
+    CONNECTED = 'connected',
+    DISCONNECTED = 'disconnected',
+    RECONNECTING = 'reconnecting',
+    FAILED = 'failed'
+}

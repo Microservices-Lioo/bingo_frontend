@@ -3,19 +3,13 @@ import { io, Socket } from 'socket.io-client';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
-import { EWebSocket } from '../enums';
-import { IRouletterWinner, ITableWinners } from '../interfaces';
+import { ESConnectionWs, EWebSocket } from '../enums';
+import { IRouletterWinner, ISocket, IStatusCount, IStatusGame, IStatusRoom, ITableWinners } from '../interfaces';
 import { WsConst } from '../consts/ws.const';
 import { LoadingService } from './loading.service';
 import { ToastService } from './toast.service';
-import { EAwardsStatus, ERouletteStatus, HostActivity, StatusGame, StatusHostRoom, StatusRoom } from '../../features/games/enums';
+import { EAwardsStatus, ERouletteStatus, HostActivity, StatusGame, StatusHostRoom } from '../../features/games/enums';
 import { AwardGameInterface, IGame, IRoom } from '../../features/games/interfaces';
-import { IAward } from '../../features/award/interfaces';
-
-interface IStatusCount {
-  endTime: number;
-  duration: number;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -23,24 +17,26 @@ interface IStatusCount {
 export class WebsocketServiceShared {
   private socket!: Socket;
   private urlWS = environment.apiUrlWS;
-  private statusConnection$ = 
-    new BehaviorSubject<'connected' | 'disconnected' | 'reconnecting' | 'failed'>('disconnected');
-  private connectedPlayers$ =
-    new BehaviorSubject<number>(0);
 
+  // socket
+  public statusConnection$ = 
+    new BehaviorSubject<ESConnectionWs>(ESConnectionWs.DISCONNECTED);
+  public connectedPlayers$ = new BehaviorSubject<number>(0);
+
+  // Sala
   public room$ = new BehaviorSubject<IRoom | null>(null);
-  public game$ = new BehaviorSubject<IGame | null>(null);
-  public award$ = new BehaviorSubject<AwardGameInterface | null>(null);
-
   public hostActivity$ = new BehaviorSubject<HostActivity>(HostActivity.ESPERANDO);
   public statusHost$ = new BehaviorSubject<StatusHostRoom>(StatusHostRoom.OFFLINE);
-  public statusRoom$ = new BehaviorSubject<StatusRoom>(StatusRoom.NOT_STARTED);
+
+  // Juego
+  public game$ = new BehaviorSubject<IGame | null>(null);
+  public award$ = new BehaviorSubject<AwardGameInterface | null>(null);
   public getCellCard$ = new BehaviorSubject<string | null>(null);
-  public statusCount$ = new BehaviorSubject<IStatusCount | null>(null);
-  public tableWinner$ = new BehaviorSubject<{table: ITableWinners[], sing?: ITableWinners} | null>(null);
   public myBingo$ = new BehaviorSubject<string>('');
-  public winnerModal$ = new BehaviorSubject<{isOpen: boolean} | null>(null);
-  public statusRaffle$ = 
+  public tableWinner$ = new BehaviorSubject<{table: ITableWinners[], sing?: ITableWinners} | null>(null);
+  public statusCount$ = new BehaviorSubject<IStatusCount | null>(null);
+  public winnerModal$ = new BehaviorSubject<boolean>(false);
+  public statusGame$ = 
     new BehaviorSubject<StatusGame>(StatusGame.INICIAR);
   public awardStatus$ = 
     new BehaviorSubject<EAwardsStatus | null>(null);
@@ -76,23 +72,22 @@ export class WebsocketServiceShared {
       
       //* Eventos de conexión
       this.socket.on(EWebSocket.CONNECT, async () => {
-        this.statusConnection$.next('connected');
+        this.statusConnection$.next(ESConnectionWs.CONNECTED);
         // Para obtener la data de la sala
         await this.listenRoom(roomId);
       });
   
       this.socket.on(EWebSocket.DISCONNECT, () => {
-        this.statusConnection$.next('disconnected');
+        this.statusConnection$.next(ESConnectionWs.DISCONNECTED);
       });
   
       //* Eventos de reconexión
       this.socket.io.on(EWebSocket.RECONNECT_ATTEMPT, (count) => {
         console.log('Intentos de reconexión: ' + count);
         if (reconnectionAttempts === count) {
-          this.statusConnection$.next('failed');
+          this.statusConnection$.next(ESConnectionWs.FAILED);
         } else {
-          console.log('reconecting')
-          this.statusConnection$.next('reconnecting');
+          this.statusConnection$.next(ESConnectionWs.RECONNECTING);
         }
       });
   
@@ -114,7 +109,7 @@ export class WebsocketServiceShared {
           ) {
             this.router.navigate(['/']);
           } else {
-            this.statusConnection$.next('failed');
+            this.statusConnection$.next(ESConnectionWs.FAILED);
             this.socket.connect();
           }
         }
@@ -140,82 +135,65 @@ export class WebsocketServiceShared {
   }
 
   async listenRoom(roomId: string) {
-    // Número de usuarios
-    this.socket.off(WsConst.countUser(roomId));
-    this.socket.on(WsConst.countUser(roomId), (value: number) => {
-      this.connectedPlayers$.next(value);
+    // Estado del socket
+    this.socket.off(WsConst.socket(roomId));
+    this.socket.on(WsConst.socket(roomId), (value: ISocket) => {
+      if ('numUsers' in value) { // numero de usuarios conectados
+        this.connectedPlayers$.next(value.numUsers!);
+      }
     });
 
     // Room
     this.socket.off(WsConst.room(roomId));
-    this.socket.on(WsConst.room(roomId), (value: IRoom) => {
-      this.room$.next(value);
+    this.socket.on(WsConst.room(roomId), (value: IStatusRoom) => {
+      if ('room' in value) { // datos de la sala
+        this.room$.next(value.room!);
+      }
+      if ('hostActivity' in value) { // Actividad del host
+        this.hostActivity$.next(value.hostActivity!);
+      }
+      if ('status' in value) { // esatdo de la conectividad del host
+        this.statusHost$.next(value.status!);
+      }
     });
 
     // Game
     this.socket.off(WsConst.game(roomId));
-    this.socket.on(WsConst.game(roomId), (value: IGame) => {
-      this.game$.next(value);
-    });
-    
-    // Award
-    this.socket.off(WsConst.award(roomId));
-    this.socket.on(WsConst.award(roomId), (value: AwardGameInterface) => {
-      this.award$.next(value);
-    });
-
-    // Escuchar los cantos numericos desde el servidor
-    this.socket.off(WsConst.getCellCard(roomId));
-    this.socket.on(WsConst.getCellCard(roomId), (value: string) => {
-      this.getCellCard$.next(value);
-    });
-    
-    // Escuchar el estado del tiempo regresivo activado en el servidor
-    this.socket.off(WsConst.count(roomId));
-    this.socket.on(WsConst.count(roomId), (value: IStatusCount | null) => {
-      this.statusCount$.next(value);
-    });
-
-    // Escuchar el estado de la solicitud de bingo
-    this.socket.off(WsConst.myBingo(roomId));
-    this.socket.on(WsConst.myBingo(roomId), (value) => {
-      this.myBingo$.next(value)
-    });
-
-    // Escuchar el estado de la tabla de ganadores
-    this.socket.off(WsConst.tableWinners(roomId));
-    this.socket.on(WsConst.tableWinners(roomId), (value: {table: ITableWinners[], sing?: ITableWinners}) => {
-      this.tableWinner$.next(value);
-    });
-
-    // Escuchar el estado del modal de ganadores
-    this.socket.off(WsConst.winnerModal(roomId));
-    this.socket.on(WsConst.winnerModal(roomId), (value: {isOpen: boolean}) => {
-      this.winnerModal$.next(value);
-    });
-
-    // Escuchar la actividad del host al cantar un número
-    this.socket.off(WsConst.activityHost(roomId));
-    this.socket.on(WsConst.activityHost(roomId), (value: HostActivity) => {
-      this.hostActivity$.next(value);
-    });
-
-    // Escuchar el estado de la premiacion
-    this.socket.off(WsConst.awardStatus(roomId));
-    this.socket.on(WsConst.awardStatus(roomId), (value: EAwardsStatus) => {
-      this.awardStatus$.next(value);
-    });
-
-    // Escuchar el estado de la ruleta de premiación
-    this.socket.off(WsConst.rouletteStatus(roomId));
-    this.socket.on(WsConst.rouletteStatus(roomId), (value: ERouletteStatus) => {
-      this.rouletteStatus$.next(value);
-    });
-
-    // Escuchar la posicion del ganador en la ruleta
-    this.socket.off(WsConst.rouletteWinner(roomId));
-    this.socket.on(WsConst.rouletteWinner(roomId), (value: IRouletterWinner) => {
-      this.rouletteWinner$.next(value);
+    this.socket.on(WsConst.game(roomId), (value: IStatusGame) => {
+      if ('game' in value) { // datos del juego
+        this.game$.next(value.game!);
+      }
+      if ('award' in value) { // datos de los premios del juego
+        this.award$.next(value.award!);
+      }
+      if ('cell' in value) { // numero cantado
+        this.getCellCard$.next(value.cell!);
+      }
+      if ('myBingo' in value) { // resouesta del canto del jugador
+        this.myBingo$.next(value.myBingo!);
+      }
+      if ('counter' in value) { // Estado del conteo regresivo
+        this.statusCount$.next(value.counter!);
+      }
+      if ('tableWinner' in value) { // Tabla de ganadores
+        this.tableWinner$.next(value.tableWinner!);
+      }
+      if ('winnerModal' in value) { // Estado del modal true or false
+        this.winnerModal$.next(value.winnerModal!);
+      }
+      if ('awardStatus' in value) { // Estado de la premiación
+        this.awardStatus$.next(value.statusAward!);
+      }
+      if ('rouletteStatus' in value) { // Estado de la ruleta de premiación
+        this.rouletteStatus$.next(value.rouletteStatus!);
+      }
+      if ('rouletteWinner' in value) { // posicion del ganador en la ruleta
+        this.rouletteWinner$.next(value.rouletteWinner!);
+      }
+      if ('statusGame' in value) { // Estado del juego
+        this.statusGame$.next(value.statusGame!);
+      }
+      
     });
 
     await this.emitRoom();
@@ -226,28 +204,9 @@ export class WebsocketServiceShared {
   }
 
   async offListenRoom(roomId: string) {
-    this.socket.off(WsConst.countUser(roomId));
     this.socket.off(WsConst.room(roomId));
     this.socket.off(WsConst.game(roomId));
-    this.socket.off(WsConst.award(roomId));
-
-    // Escuchar los cantos numericos desde el servidor
-    this.socket.off(WsConst.getCellCard(roomId));
-    
-    // Escuchar el estado del tiempo regresivo activado en el servidor
-    this.socket.off(WsConst.count(roomId));
-
-    // Escuchar el estado de la solicitud de bingo
-    this.socket.off(WsConst.myBingo(roomId));
-
-    // Escuchar el estado de la tabla de ganadores
-    this.socket.off(WsConst.tableWinners(roomId));
-
-    // Escuchar el estado del modal de ganadores
-    this.socket.off(WsConst.winnerModal(roomId));
-
-    // Escuchar la actividad del host al cantar un número
-    this.socket.off(WsConst.activityHost(roomId));
+    this.socket.off(WsConst.socket(roomId));
   }
 
   //* Me desconecto del ws
@@ -263,19 +222,9 @@ export class WebsocketServiceShared {
     this.socket.emit(EWebSocket.CREATE_GAME, {awardId, modeId});
   }
 
-  //* Obtener el estado del usuario en la sala
-  getConnectionStatus() {
-    return this.statusConnection$.asObservable();
-  }
-
   //* Solicitar una celda random sin repetir las anteriores
   cellCard(gameId: string) {
     this.socket.emit(EWebSocket.CELL_CARD, {gameId});
-  }
-
-  //* Obtener el número de jugadores en la sala
-  getConnectedPlayers() {
-    return this.connectedPlayers$.asObservable();
   }
 
   //* Cantar bingo

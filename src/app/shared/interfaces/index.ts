@@ -10,3 +10,4 @@ export * from './roulette.interface';
 export * from './section-sidebar.interfaces';
 export * from './table-winners.interface';
 export * from './user.interface';
+export * from './web-socket.interface';
