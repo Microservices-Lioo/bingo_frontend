@@ -13,6 +13,7 @@ export enum EWebSocket {
     ROULETTE_STATUS = 'roulette-status',
     ROULETTE_WINNER = 'roulette-winner',
     CLEAN_TABLE_SONGS = 'clean-table-songs',
+    END_GAME = 'end-game',
 
     // listening
     CONNECT = 'connect',

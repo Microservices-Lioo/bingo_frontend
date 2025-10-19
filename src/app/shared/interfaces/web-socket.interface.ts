@@ -36,5 +36,4 @@ export interface IStatusGame {
     statusAward?: EAwardsStatus,
     rouletteStatus?: ERouletteStatus,
     rouletteWinner?: IRouletterWinner,
-    statusGame: StatusGame
 }

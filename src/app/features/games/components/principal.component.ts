@@ -93,7 +93,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
   titleMsgConnection: string = '';
   textMsgConnection: string = '';
 
-  protected IsAdmin: boolean = false;
+  protected IsAdmin = signal<boolean>(false);
   cardPosition: number = 0; // Posicion de la tabla de bingo actual
   modoActive: 'manual' | 'automatico' = 'manual'; // Modo de juego
 
@@ -247,7 +247,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketServ.room$.subscribe({
         next: async (room) => {
           if (!room) return;
-          await this.updateRoom(room);          
+          await this.updateRoom(room);
         },
         error: (error) => {
           console.error(error);
@@ -260,7 +260,9 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketServ.game$.subscribe({
         next: async (game) => {
           if (game) {
-            await this.updateGame(game);          
+            await this.updateGame(game);
+          } else {
+            await this.updateEndgame();
           }
         },
         error: (error) => {
@@ -274,7 +276,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socketServ.award$.subscribe({
         next: async (award) => {
           if (!award) return;
-          await this.updateAward(award);          
+          await this.updateAward(award);
         },
         error: (error) => {
           console.error(error);
@@ -286,11 +288,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.push(
       this.socketServ.getCellCard$.subscribe({
         next: async (value) => {
-          if (this.intervalBtnSinger) {
-            clearInterval(this.intervalBtnSinger);
-            this.intervalBtnSinger = undefined;
-          }
-
           if (value) {
             this.textSings = value;
 
@@ -328,10 +325,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     // Actualización de contador regresivo
     this.subscriptions.push(
       this.socketServ.statusCount$.subscribe(state => {
-        if (!state && this.hostActivity == HostActivity.CANTANDO && this.IsAdmin) {
-          this.socketServ.updateHostActivity(HostActivity.ESPERANDO)
-        }
-
         if (state) {
           const update = () => {
             const msLeft = state.endTime - Date.now();
@@ -346,9 +339,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
           const interval = setInterval(() => {
             remaining = update();
             if (remaining <= 0) {
-              if (this.hostActivity == HostActivity.CANTANDO && this.IsAdmin) {
-                this.socketServ.updateHostActivity(HostActivity.ESPERANDO)
-              }
               clearInterval(interval); // detener cuando llegue a 0
             }
           }, 1000);
@@ -384,7 +374,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     // Evento de premiación
     this.subscriptions.push(
       this.socketServ.winnerModal$.subscribe(modal => {
-        if (this.IsAdmin) return;
+        if (this.IsAdmin()) return;
         if (modal) {
           this.openValidationWinners();
         } else {
@@ -397,7 +387,16 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.push(
       this.socketServ.hostActivity$.subscribe(activity => {
         if (!activity) return;
-
+        if (activity != HostActivity.MEZCLANDO) {
+          if (this.intervalBtnSinger) {
+            clearInterval(this.intervalBtnSinger);
+            this.intervalBtnSinger = undefined;
+          }
+        } else {
+          if (!this.intervalBtnSinger) {
+            this.tableNumberMix();
+          }
+        }
         this.hostActivity = activity;
       })
     );
@@ -445,7 +444,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     return (
       this.principalHtml() &&
       !this.statusConnectionWSHtml() &&
-      !this.IsAdmin &&
+      !this.IsAdmin() &&
       this.room()?.status_host !== StatusHostRoom.ONLINE
     );
   });
@@ -455,7 +454,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       !this.finishedEventHtml() &&
       !this.suspendedEventHtml() &&
       !this.game() &&
-      this.IsAdmin
+      this.IsAdmin()
     );
   });
 
@@ -496,10 +495,24 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  async updateEndgame() {
+    if (this.IsAdmin()) {
+
+    }
+    this.isLoadingCulminate.set(false);
+    this.updateStatusGame(StatusGame.CONCLUIDO);
+
+    // Limpiar los datos
+    this.clearDataGame();
+
+    this.closeModalWR();
+
+  }
   // Award
   async updateAward(award: AwardGameInterface) {
     const awards = this.awardsList.map(a => a.id === award.id ? award : a);
-    this.awardsList = [...awards];
+    // this.awardsList = [...awards];
+    await this.transformAwardList(awards);
   }
 
   // ===========================
@@ -557,28 +570,28 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       const event = await lastValueFrom(
         this.eventSharedServ.getEventWithAwards(eventId)
       );
-  
+
       if (event.status === EStatusEventShared.PENDING) {
         this.toastServ.openToast('room', 'warning', 'El evento aun no inicia');
         this.router.navigate(["/"]);
         return;
       }
-  
+
       this.event.set(event);
-      
+
       const currentUserId = this.authServ.currentUser.id;
       const owner = event.userId;
       if (currentUserId !== owner) {
         await this.getCardsList(eventId);
       }
-  
-      this.IsAdmin = currentUserId === owner;
-  
+
+      this.IsAdmin.set(currentUserId === owner);
+
       await this.transformAwardList(event.award);
     } catch (error: any) {
       console.error(error);
       this.toastServ.openToast('get-event-awards', 'danger', 'Error al obtener el evento');
-      
+
     }
   }
 
@@ -676,7 +689,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  //* Crear el juego de la sala
+  // Crear el juego de la sala
   createGame() {
     this.loadingBtn = true;
     if (this.game()) {
@@ -734,7 +747,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Método para cambiar de modo para un juego manual o automático
   modoSelect(modo: 'manual' | 'automatico') {
-    if (this.IsAdmin) return;
+    if (this.IsAdmin()) return;
     this.modoActive = modo;
   }
 
@@ -767,22 +780,10 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    let colName = '';
-    let num = 0;
-    const intervalTime = 100;
+    this.tableNumberMix();
 
-    colName = this.COL_NAMES[Math.floor(Math.random() * this.COL_NAMES.length)];
-    num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
-
-    const interval = setInterval(async () => {
-      colName = this.COL_NAMES[Math.floor(Math.random() * this.COL_NAMES.length)];
-      num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
-      this.textSings = `${colName} - ${num}`;
-    }, intervalTime) as any;
-    this.intervalBtnSinger = interval;
     const { id } = this.game()!;
     this.socketServ.cellCard(id); // Emito la solicitud para generar un campo válido
-    this.socketServ.updateHostActivity(HostActivity.MEZCLANDO); // Emito la soli de la actividad del host
   }
 
   //Actualizar status ranfle
@@ -799,17 +800,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Método para ordenar un array numerico de manera ascendente
-  sortAscendantForNumber(array: number[]) {
-    return array.sort((a, b) => a - b);
-  }
-
-  // Método para ordenar un array de objetos de manera ascendente
-  sortAscendantForObject(array: ICardNumsShared[][]) {
-    const arrayFlat = array.flat();
-    return arrayFlat.sort((a, b) => a.num - b.num);
-  }
-
   // Método para seleccionar una celada manualmente al dar click
   async btnCellSelected(cardId: string, cel: ICardNumsShared, position: string) {
     this.modoActive = 'manual';
@@ -822,7 +812,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
     await this.cellSelected(cardId, cel);
   }
 
-  // Método para seleccionar una celada manualmente al dar click
+  // Método para seleccionar una celda manualmente al dar click
   async cellSelectedAuto(num: number) {
     if (this.modoActive === 'automatico') {
       this.cardsList.forEach((card, i) => {
@@ -956,7 +946,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    if (this.IsAdmin && !this.awardStatus) {
+    if (this.IsAdmin() && !this.awardStatus) {
       this.socketServ.winnerModal(true); // Abro el modal de premiación para todos los jugadores
       this.socketServ.updateAwardStatus(EAwardsStatus.PREMIANDO); // Cambio el estado del premio a premiando
     }
@@ -968,7 +958,7 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Cierra el modal
   closeModalWR() {
-    if (this.IsAdmin) {
+    if (this.IsAdmin()) {
       // cierro el modal de premiación para todos los jugadores
       this.socketServ.winnerModal(false);
     }
@@ -986,7 +976,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isLoadingCulminate.set(true);
 
       const { cardId } = winner;
-      const { id: gameId, } = this.game()!;
 
       // Actualizar el premio de award por gameId y asignar al ganador winner (cardId)
       const awardNow = this.awardsList.find(a => a.status === StatusAward.NOW);
@@ -995,20 +984,12 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         this.toastServ.openToast('award-game', 'danger', 'Premio no encontrado');
         return;
       }
-      const updateAward = await lastValueFrom(
-        this.awardSharedServ.updateAward(awardNow.id, gameId, cardId)
-      );
 
-      const newAwards = this.awardsList.map(a => a.id === awardNow.id ? { ...a, winner: updateAward.winner, status: StatusAward.END } : a);
-      this.awardsList = newAwards;
-
-      this.updateStatusGame(StatusGame.CONCLUIDO);
-
-      // Limpiar los datos
-      this.clearDataGame();
-
-      this.isLoadingCulminate.set(false);
-      this.closeModalWR();
+      this.socketServ.endGame({
+        gameId: this.game()!.id,
+        cardId,
+        awardId: awardNow.id,
+      });
     } catch (error) {
       console.error(error);
       this.toastServ.openToast('finish-game', 'danger', 'Error al culminar el juego');
@@ -1039,18 +1020,6 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toastServ.openToast('get-card', 'warning', 'Error al obtener la tabla de bingo');
       return null;
     }
-
-  }
-
-  // Método para actualizar el estado del evento
-  async updateStatusEvent(eventId: string, data: IEventUpdateShared) {
-    this.eventSharedServ.updateStatusEvent(eventId, data)
-      .subscribe({
-        complete: () => console.log('Evento actualizado'),
-        error: (error) => {
-          this.toastServ.openToast('event', 'danger', error.message);
-        }
-      });
   }
 
   // Hacer Método para limpiar la tabla de cantos
@@ -1120,5 +1089,34 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         clearInterval(interval);
       }
     }, 1000);
+  }
+
+  // Mezcla de numero a cantar
+  tableNumberMix() {
+    if (!this.IsAdmin) return;
+    let colName = '';
+    let num = 0;
+    const intervalTime = 100;
+
+    colName = this.COL_NAMES[Math.floor(Math.random() * this.COL_NAMES.length)];
+    num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
+
+    this.intervalBtnSinger = setInterval(async () => {
+      colName = this.COL_NAMES[Math.floor(Math.random() * this.COL_NAMES.length)];
+      num = Math.floor(Math.random() * this.MAX_NUMBER) + 1;
+      this.textSings = `${colName} - ${num}`;
+    }, intervalTime) as any;
+
+  }
+
+  // Método para ordenar un array numerico de manera ascendente
+  sortAscendantForNumber(array: number[]) {
+    return array.sort((a, b) => a - b);
+  }
+
+  // Método para ordenar un array de objetos de manera ascendente
+  sortAscendantForObject(array: ICardNumsShared[][]) {
+    const arrayFlat = array.flat();
+    return arrayFlat.sort((a, b) => a.num - b.num);
   }
 }

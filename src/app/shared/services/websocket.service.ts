@@ -8,7 +8,7 @@ import { IRouletterWinner, ISocket, IStatusCount, IStatusGame, IStatusRoom, ITab
 import { WsConst } from '../consts/ws.const';
 import { LoadingService } from './loading.service';
 import { ToastService } from './toast.service';
-import { EAwardsStatus, ERouletteStatus, HostActivity, StatusGame, StatusHostRoom } from '../../features/games/enums';
+import { EAwardsStatus, ERouletteStatus, HostActivity, StatusHostRoom } from '../../features/games/enums';
 import { AwardGameInterface, IGame, IRoom } from '../../features/games/interfaces';
 
 @Injectable({
@@ -36,8 +36,6 @@ export class WebsocketServiceShared {
   public tableWinner$ = new BehaviorSubject<{table: ITableWinners[], sing?: ITableWinners} | null>(null);
   public statusCount$ = new BehaviorSubject<IStatusCount | null>(null);
   public winnerModal$ = new BehaviorSubject<boolean>(false);
-  public statusGame$ = 
-    new BehaviorSubject<StatusGame>(StatusGame.INICIAR);
   public awardStatus$ = 
     new BehaviorSubject<EAwardsStatus | null>(null);
   public rouletteStatus$ = 
@@ -128,12 +126,7 @@ export class WebsocketServiceShared {
       console.error(error);
     }
   }
-
-  //* Emitir
-  countUsersToRoom() {
-    this.socket.emit(EWebSocket.COUNT);
-  }
-
+  
   async listenRoom(roomId: string) {
     // Estado del socket
     this.socket.off(WsConst.socket(roomId));
@@ -190,23 +183,25 @@ export class WebsocketServiceShared {
       if ('rouletteWinner' in value) { // posicion del ganador en la ruleta
         this.rouletteWinner$.next(value.rouletteWinner!);
       }
-      if ('statusGame' in value) { // Estado del juego
-        this.statusGame$.next(value.statusGame!);
-      }
       
     });
 
     await this.emitRoom();
   }
 
-  async emitRoom() {
-    this.countUsersToRoom();
-  }
-
   async offListenRoom(roomId: string) {
     this.socket.off(WsConst.room(roomId));
     this.socket.off(WsConst.game(roomId));
     this.socket.off(WsConst.socket(roomId));
+  }
+
+  async emitRoom() {
+    this.countUsersToRoom();
+  }
+
+  //* Emitir
+  countUsersToRoom() {
+    this.socket.emit(EWebSocket.COUNT);
   }
 
   //* Me desconecto del ws
@@ -217,7 +212,7 @@ export class WebsocketServiceShared {
     }
   }
 
-  // Iniciar o crear un juego
+  //* Iniciar o crear un juego
   createGame(awardId: string, modeId: string) {
     this.socket.emit(EWebSocket.CREATE_GAME, {awardId, modeId});
   }
@@ -242,11 +237,6 @@ export class WebsocketServiceShared {
     this.socket.emit(EWebSocket.UPDATE_STATUS_WINNER_MODAL, { status });
   }
 
-  //* Actualizar de la actividad del host
-  updateHostActivity(status: HostActivity) {
-    this.socket.emit(EWebSocket.HOST_ACTIVITY, { status });
-  }
-
   //* Actualizar el estado de la premiación
   updateAwardStatus(status: EAwardsStatus) {
     this.socket.emit(EWebSocket.AWARD_STATUS, { status });
@@ -265,5 +255,10 @@ export class WebsocketServiceShared {
   //* Limpiar tabla de cantos de jugadores
   cleanTableSongs() {
     this.socket.emit(EWebSocket.CLEAN_TABLE_SONGS);
+  }
+
+  //* Terminar juego
+  endGame(obj: { gameId: string, cardId: string, awardId: string}) {
+    this.socket.emit(EWebSocket.END_GAME, obj);
   }
 }

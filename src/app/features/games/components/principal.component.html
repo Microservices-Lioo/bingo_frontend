@@ -194,7 +194,7 @@
                 <div class="p-1 mb-2 bg-sky-800 rounded-md">
                     <h3 class="text-sm text-center font-medium text-white">Cantos</h3>
                 </div>
-                @if(IsAdmin) {
+                @if(IsAdmin()) {
                 <div class="flex justify-between gap-1">
                     <button (click)="openValidationWinners()" title="Premiar"
                         class="bg-transparent w-10 h-10 flex justify-center items-center">
@@ -256,7 +256,7 @@
                                     {{ sing.fullnames }} {{ getCurrentUserId() == sing.userId ? ' (tú)' : ''}}
                                 </th>
                                 <td class="px-2 py-4">
-                                    @if(IsAdmin && sing.status === EStatusTableBingo.PENDIENTE){
+                                    @if(IsAdmin() && sing.status === EStatusTableBingo.PENDIENTE){
                                     <div class="flex flex-col">
                                         <button (click)="openValidationModal(sing)"
                                             class="flex-1 text-xs py-2 px-3 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors font-medium">
@@ -269,7 +269,7 @@
                                     </div>
                                     } @else {
                                     <div class="flex flex-col gap-1 items-start">
-                                        @if(IsAdmin){
+                                        @if(IsAdmin()){
                                         <button (click)="openValidationModal(sing)"
                                             class="w-full text-xs py-2 px-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors font-medium">
                                             Ver Detalles
@@ -306,7 +306,7 @@
                         : awardStatus + ' | Ya tenemos ganador de este modo de juego'}}</p>
                 </div>
                 }
-                @if (!IsAdmin) {
+                @if (!IsAdmin()) {
                 <!-- Jugador -->
                 <ng-container>
                     <div class="flex items-center flex-col gap-1">
@@ -542,7 +542,7 @@
 [isOpen]="isModalOpenWR()" 
 [approved]="currentValidationDataWR()" 
 [award]="awardWr()!"
-[isAdmin]="IsAdmin" 
+[isAdmin]="IsAdmin()" 
 [isLoadingCulminate]="isLoadingCulminate()" 
 (close)="closeModalWR()"
 (finish)="handleFinishWR($event)" />
