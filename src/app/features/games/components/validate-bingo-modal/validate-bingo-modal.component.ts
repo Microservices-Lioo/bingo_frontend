@@ -125,7 +125,7 @@ export class ValidateBingoModalComponent {
 
   getStatusLabel(status: EStatusTableBingoShared): string {
     const labels = {
-      [EStatusTableBingoShared.PENDIENTE]: '⏳ Pendiente',
+      [EStatusTableBingoShared.PENDIENTE]: 'Pendiente',
       [EStatusTableBingoShared.APROBADO]: '✓ Verificado',
       [EStatusTableBingoShared.RECHAZADO]: '✗ Rechazado'
     };
@@ -138,7 +138,7 @@ export class ValidateBingoModalComponent {
 
   handleAccept(): void {
     const data = this.validationData();
-    if (data && !this.hasInvalidMarks()) {
+    if (data && !this.validationMode()) {
       this.accept.emit(data.winner);
     }
   }
@@ -148,5 +148,15 @@ export class ValidateBingoModalComponent {
     if (data) {
       this.reject.emit(data.winner);
     }
+  }
+
+  validationMode() {
+    const data = this.validationData();
+    if (!data) return false;
+
+    return data.gameMode.rule.some(position => {
+      const [row, col] = position.split(':').map(Number);
+      return !data.card.nums[row][col]?.marked;
+    });
   }
 }

@@ -209,7 +209,7 @@
                                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <div>
-                            <h4 class="font-semibold text-red-800 mb-1">⚠️ Canto Inválido Detectado</h4>
+                            <h4 class="font-semibold text-red-800 mb-1">Campos incorrectos detectado</h4>
                             <p class="text-sm text-red-700">
                                 El jugador ha marcado números que <strong>NO han sido cantados</strong>.
                                 Revisa las celdas marcadas en amarillo en el cartón.
@@ -233,7 +233,7 @@
                 class="px-6 py-2.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors shadow-md hover:shadow-lg flex items-center gap-2">
                 Rechazar Canto
             </button>
-            <button (click)="handleAccept()" [disabled]="hasInvalidMarks()"
+            <button (click)="handleAccept()" [disabled]="validationMode()"
                 class="px-6 py-2.5 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg flex items-center gap-2">
                 Aprobar Canto
             </button>
