@@ -10,6 +10,7 @@ import { LoadingService } from './loading.service';
 import { ToastService } from './toast.service';
 import { EAwardsStatus, ERouletteStatus, HostActivity, StatusHostRoom } from '../../features/games/enums';
 import { AwardGameInterface, IGame, IRoom } from '../../features/games/interfaces';
+import { IEvent } from '../../features/events/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,7 @@ export class WebsocketServiceShared {
 
   // Sala
   public room$ = new BehaviorSubject<IRoom | null>(null);
+  public event$ = new BehaviorSubject<IEvent | null>(null);
   public hostActivity$ = new BehaviorSubject<HostActivity>(HostActivity.ESPERANDO);
   public statusHost$ = new BehaviorSubject<StatusHostRoom>(StatusHostRoom.OFFLINE);
 
@@ -147,6 +149,9 @@ export class WebsocketServiceShared {
       }
       if ('status' in value) { // esatdo de la conectividad del host
         this.statusHost$.next(value.status!);
+      }
+      if ('event' in value) { // el evento
+        this.event$.next(value.event!);
       }
     });
 

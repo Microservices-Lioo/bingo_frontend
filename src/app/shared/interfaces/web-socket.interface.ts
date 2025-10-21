@@ -1,3 +1,4 @@
+import { IEvent } from "../../features/events/interfaces";
 import { EAwardsStatus, ERouletteStatus, HostActivity, StatusGame, StatusHostRoom } from "../../features/games/enums";
 import { AwardGameInterface, IGame, IRoom } from "../../features/games/interfaces";
 import { IRouletterWinner } from "./roulette.interface";
@@ -18,6 +19,7 @@ export interface ISocket {
 
 export interface IStatusRoom {
     room?: IRoom,
+    event?: IEvent,
     hostActivity?: HostActivity,
     status?: StatusHostRoom
 }

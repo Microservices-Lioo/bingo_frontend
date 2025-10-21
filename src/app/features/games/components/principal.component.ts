@@ -409,6 +409,15 @@ export class PrincipalComponent implements OnInit, AfterViewInit, OnDestroy {
         this.awardStatus = status;
       })
     );
+
+    // Datos del evento
+    this.subscriptions.push(
+      this.socketServ.event$.subscribe(event => {
+        if (!event) return;
+
+        this.event.set({ ...event, award: this.event()!.award} as IEventAwardsShared)
+      })
+    );
   }
 
   // ===========================
